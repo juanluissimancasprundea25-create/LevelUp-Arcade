@@ -1,33 +1,51 @@
-HELP.md
+# === Compilados Maven ===
 target/
-.mvn/wrapper/maven-wrapper.jar
+!.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
 
-### STS ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
+# === Variables de entorno (NUNCA subir el .env real) ===
+.env
+.env.local
+.env.production
+*.env
+!.env.example
 
-### IntelliJ IDEA ###
-.idea
-*.iws
+# === IDEs ===
+.idea/
 *.iml
 *.ipr
-
-### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
-build/
-!**/src/main/**/build/
-!**/src/test/**/build/
-
-### VS Code ###
+*.iws
 .vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.classpath
+.project
+.settings/
+.springBeans
+.sts4-cache
+.factorypath
+.apt_generated/
+.apt_generated_test/
+
+# === Logs ===
+logs/
+*.log
+*.log.*
+
+# === Sistema operativo ===
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# === Docker volumes locales ===
+postgres_data/
+pgadmin_data/
+
+# === Otros ===
+*.bak
+*.swp
+*.swo
+*~
