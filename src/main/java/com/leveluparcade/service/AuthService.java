@@ -5,6 +5,11 @@ import com.leveluparcade.repository.UsuarioRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+/**
+ * Servicio de autenticación:
+ * - Login de usuarios
+ * - Validación de credenciales
+ */
 @Service
 public class AuthService {
 
@@ -17,13 +22,6 @@ public class AuthService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    /**
-     * Autentica un usuario con email y contraseña.
-     *
-     * @param email email del usuario
-     * @param password contraseña en texto plano
-     * @return Usuario autenticado
-     */
     public Usuario login(String email, String password) {
 
         Usuario user = usuarioRepository.findByEmail(email)
