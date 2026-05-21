@@ -1,9 +1,3 @@
-# ============================================================
-# docker-compose para LevelUp Arcade
-# Levanta tres servicios: PostgreSQL, la app Spring Boot, y pgAdmin
-# Comando: docker compose up --build
-# ============================================================
-
 services:
   postgres:
     image: postgres:16-alpine
@@ -26,7 +20,7 @@ services:
       - levelup-net
 
   app:
-    build: .
+    build: .  
     container_name: levelup-app
     restart: unless-stopped
     depends_on:
@@ -57,19 +51,21 @@ services:
     container_name: levelup-pgadmin
     restart: unless-stopped
     environment:
-      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
-      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
-      PGADMIN_CONFIG_SERVER_MODE: 'False'
+      PGADMIN_DEFAULT_EMAIL: admin@levelup.local
+      PGADMIN_DEFAULT_PASSWORD: admin
     ports:
       - "5050:80"
     depends_on:
       - postgres
     networks:
       - levelup-net
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
 
 volumes:
   postgres_data:
     name: levelup_postgres_data
+  pgadmin_data:
 
 networks:
   levelup-net:
