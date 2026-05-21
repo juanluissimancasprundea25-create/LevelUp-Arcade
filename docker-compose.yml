@@ -1,8 +1,4 @@
-# ============================================================
-# docker-compose para LevelUp Arcade
-# Levanta tres servicios: PostgreSQL, la app Spring Boot, y pgAdmin
-# Comando: docker compose up --build
-# ============================================================
+version: '3.8'
 
 services:
   postgres:
@@ -66,10 +62,13 @@ services:
       - postgres
     networks:
       - levelup-net
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
 
 volumes:
   postgres_data:
     name: levelup_postgres_data
+  pgadmin_data:
 
 networks:
   levelup-net:
