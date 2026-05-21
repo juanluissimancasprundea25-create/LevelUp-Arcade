@@ -1,0 +1,19 @@
+# ============================================================
+# Perfil "docker": se activa cuando SPRING_PROFILES_ACTIVE=docker
+# (configurado en docker-compose.yml)
+# Lee de variables de entorno inyectadas por Docker Compose
+# ============================================================
+
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+
+  thymeleaf:
+    cache: true
+
+logging:
+  level:
+    com.leveluparcade: INFO
+    org.hibernate.SQL: WARN
