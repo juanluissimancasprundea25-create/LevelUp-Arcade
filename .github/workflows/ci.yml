@@ -53,6 +53,9 @@ jobs:
       - name: Verificar versión de Java
         run: java -version
 
+      - name: Dar permisos de ejecución a mvnw
+        run: chmod +x ./mvnw
+
       - name: Compilar proyecto
         run: ./mvnw -B compile
 
