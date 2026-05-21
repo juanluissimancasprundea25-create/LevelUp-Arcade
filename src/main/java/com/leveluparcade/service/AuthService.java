@@ -5,11 +5,6 @@ import com.leveluparcade.repository.UsuarioRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-/**
- * Servicio de autenticación:
- * - Login de usuarios
- * - Validación de credenciales
- */
 @Service
 public class AuthService {
 
@@ -23,7 +18,6 @@ public class AuthService {
     }
 
     public Usuario login(String email, String password) {
-
         Usuario user = usuarioRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
