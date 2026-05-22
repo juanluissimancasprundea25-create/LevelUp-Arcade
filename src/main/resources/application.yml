@@ -9,9 +9,7 @@ spring:
 
   # --- Datasource (se sobrescribe en application-docker.yml) ---
   datasource:
-    url: jdbc:postgresql://localhost:5432/levelup
-    username: levelup_user
-    password: cambiame_en_local
+
     driver-class-name: org.postgresql.Driver
 
   # --- JPA / Hibernate ---
@@ -46,4 +44,4 @@ logging:
     root: INFO
     com.leveluparcade: DEBUG
     org.springframework.security: INFO
-    org.hibernate.SQL: WARN
+

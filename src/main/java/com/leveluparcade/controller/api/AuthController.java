@@ -1,8 +1,6 @@
 package com.leveluparcade.controller.api;
 
-import com.leveluparcade.entity.Usuario;
 import com.leveluparcade.service.AuthService;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -20,33 +18,30 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest request) {
-        Usuario user = authService.login(request.getEmail(), request.getPassword());
-        LoginResponse response = new LoginResponse(
-                user.getId(),
-                user.getEmail(),
-                user.getNombre(),
-                user.getApellidos(),
-                user.getRol().name()
+
+        String token = authService.login(
+                request.getEmail(),
+                request.getPassword()
         );
-        return ResponseEntity.ok(response);
+
+        return ResponseEntity.ok(new LoginResponse(token));
     }
 
+    // DTO LOGIN REQUEST
     @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
     public static class LoginRequest {
         private String email;
         private String password;
     }
 
+    // DTO LOGIN RESPONSE (SOLO TOKEN)
     @Data
     @NoArgsConstructor
-    @AllArgsConstructor
     public static class LoginResponse {
-        private Long id;
-        private String email;
-        private String nombre;
-        private String apellidos;
-        private String rol;
+        private String token;
+
+        public LoginResponse(String token) {
+            this.token = token;
+        }
     }
 }
