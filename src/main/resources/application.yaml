@@ -47,3 +47,7 @@ logging:
     com.leveluparcade: DEBUG
     org.springframework.security: INFO
     org.hibernate.SQL: WARN
+
+jwt:
+  secret: ${JWT_SECRET}
+  expiration: 86400000

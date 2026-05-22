@@ -4,7 +4,7 @@ import com.leveluparcade.entity.Categoria;
 import com.leveluparcade.service.CategoriaService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import jakarta.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -28,12 +28,12 @@ public class CategoriaApiController {
     }
 
     @PostMapping
-    public Categoria crear(@RequestBody Categoria categoria) {
+    public Categoria crear(@RequestBody @Valid Categoria categoria) {
         return categoriaService.guardar(categoria);
     }
 
     @PutMapping("/{id}")
-    public Categoria actualizar(@PathVariable Long id, @RequestBody Categoria categoria) {
+    public Categoria actualizar(@PathVariable Long id, @RequestBody @Valid Categoria categoria) {
         Categoria existente = categoriaService.obtenerPorId(id);
         existente.setNombre(categoria.getNombre());
         existente.setDescripcion(categoria.getDescripcion());

@@ -4,7 +4,7 @@ import com.leveluparcade.entity.Producto;
 import com.leveluparcade.service.ProductoService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import jakarta.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -28,12 +28,13 @@ public class ProductoApiController {
     }
 
     @PostMapping
-    public Producto crear(@RequestBody Producto producto) {
+    public Producto crear(@RequestBody @Valid Producto producto) {
         return productoService.guardar(producto);
     }
 
     @PutMapping("/{id}")
-    public Producto actualizar(@PathVariable Long id, @RequestBody Producto producto) {
+    public Producto actualizar(@PathVariable Long id, @RequestBody @Valid Producto producto) {
+
         Producto existente = productoService.obtenerPorId(id);
         existente.setNombre(producto.getNombre());
         existente.setSku(producto.getSku());
