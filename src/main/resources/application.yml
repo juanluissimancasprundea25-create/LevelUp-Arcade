@@ -9,9 +9,9 @@ spring:
 
   # --- Datasource (se sobrescribe en application-docker.yml) ---
   datasource:
-    url: jdbc:postgresql://localhost:5432/levelup
-    username: levelup_user
-    password: cambiame_en_local
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:levelup}
+    username: ${DB_USER:levelup_user}
+    password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
 
   # --- JPA / Hibernate ---
@@ -50,4 +50,4 @@ logging:
 
 jwt:
   secret: ${JWT_SECRET}
-  expiration: 86400000
+  expiration: ${JWT_EXPIRATION_MS:86400000}

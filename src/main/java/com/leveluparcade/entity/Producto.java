@@ -7,6 +7,8 @@ import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -39,7 +41,7 @@ public class Producto {
     @NotNull
     @PositiveOrZero
     @Column(nullable = false)
-    private Double precio;
+    private BigDecimal precio;
 
     @NotNull
     @PositiveOrZero
@@ -64,7 +66,7 @@ public class Producto {
     @Column(nullable = false, updatable = false)
     private LocalDateTime fechaAlta;
 
-    @CreationTimestamp
+    @UpdateTimestamp
     @Column(nullable = false)
     private LocalDateTime fechaActualizacion;
 }
