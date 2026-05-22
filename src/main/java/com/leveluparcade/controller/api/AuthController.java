@@ -1,15 +1,13 @@
 package com.leveluparcade.controller.api;
 
-import com.leveluparcade.entity.Usuario;
 import com.leveluparcade.service.AuthService;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/api/auth")
 public class AuthController {
 
     private final AuthService authService;
@@ -19,63 +17,31 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<LoginResponse> login(
-            @RequestBody LoginRequest request) {
+    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest request) {
 
-        Usuario user = authService.login(
+        String token = authService.login(
                 request.getEmail(),
-                request.getPassword());
-
-        LoginResponse response = new LoginResponse(
-                user.getId(),
-                user.getEmail(),
-                user.getNombre(),
-                user.getApellidos(),
-                user.getRol().name()
+                request.getPassword()
         );
 
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(new LoginResponse(token));
     }
 
-    @PostMapping("/forgot-password")
-    public ResponseEntity<String> forgotPassword(
-            @RequestParam String email) {
-
-        authService.sendPasswordResetToken(email);
-
-        return ResponseEntity.ok(
-                "Si el correo existe, se ha enviado un email de recuperación");
-    }
-
-    @PostMapping("/reset-password")
-    public ResponseEntity<String> resetPassword(
-            @RequestParam String token,
-            @RequestParam String password) {
-
-        authService.resetPassword(token, password);
-
-        return ResponseEntity.ok(
-                "Contraseña actualizada correctamente");
-    }
-
+    // DTO LOGIN REQUEST
     @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
     public static class LoginRequest {
-
         private String email;
         private String password;
     }
 
+    // DTO LOGIN RESPONSE (SOLO TOKEN)
     @Data
     @NoArgsConstructor
-    @AllArgsConstructor
     public static class LoginResponse {
+        private String token;
 
-        private Long id;
-        private String email;
-        private String nombre;
-        private String apellidos;
-        private String rol;
+        public LoginResponse(String token) {
+            this.token = token;
+        }
     }
 }
