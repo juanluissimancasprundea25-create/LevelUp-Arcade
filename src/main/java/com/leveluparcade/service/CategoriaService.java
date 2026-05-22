@@ -1,6 +1,7 @@
 package com.leveluparcade.service;
 
 import com.leveluparcade.entity.Categoria;
+import com.leveluparcade.exception.ResourceNotFoundException;
 import com.leveluparcade.repository.CategoriaRepository;
 import org.springframework.stereotype.Service;
 
@@ -19,16 +20,44 @@ public class CategoriaService {
         return categoriaRepository.findAll();
     }
 
+    public Categoria obtenerPorId(Long id) {
+        return categoriaRepository.findById(id)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Categoría no encontrada con id: " + id));
+    }
+
     public Categoria guardar(Categoria categoria) {
+
+        if (categoriaRepository.existsByNombre(categoria.getNombre())) {
+            throw new RuntimeException("Ya existe una categoría con ese nombre");
+        }
+
         return categoriaRepository.save(categoria);
     }
 
-    public Categoria obtenerPorId(Long id) {
-        return categoriaRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Categoría no encontrada"));
+    public Categoria actualizar(Long id, Categoria datos) {
+
+        Categoria categoria = categoriaRepository.findById(id)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Categoría no encontrada con id: " + id));
+
+        if (!categoria.getNombre().equals(datos.getNombre()) &&
+                categoriaRepository.existsByNombre(datos.getNombre())) {
+            throw new RuntimeException("Ya existe una categoría con ese nombre");
+        }
+
+        categoria.setNombre(datos.getNombre());
+        categoria.setDescripcion(datos.getDescripcion());
+
+        return categoriaRepository.save(categoria);
     }
 
     public void eliminar(Long id) {
-        categoriaRepository.deleteById(id);
+
+        Categoria categoria = categoriaRepository.findById(id)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Categoría no encontrada con id: " + id));
+
+        categoriaRepository.delete(categoria);
     }
 }

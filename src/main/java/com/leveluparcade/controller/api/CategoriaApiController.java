@@ -2,9 +2,10 @@ package com.leveluparcade.controller.api;
 
 import com.leveluparcade.entity.Categoria;
 import com.leveluparcade.service.CategoriaService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import jakarta.validation.Valid;
+
 import java.util.List;
 
 @RestController
@@ -33,12 +34,9 @@ public class CategoriaApiController {
     }
 
     @PutMapping("/{id}")
-    public Categoria actualizar(@PathVariable Long id, @RequestBody @Valid Categoria categoria) {
-        Categoria existente = categoriaService.obtenerPorId(id);
-        existente.setNombre(categoria.getNombre());
-        existente.setDescripcion(categoria.getDescripcion());
-        existente.setActiva(categoria.getActiva());
-        return categoriaService.guardar(existente);
+    public Categoria actualizar(@PathVariable Long id,
+                                @RequestBody @Valid Categoria categoria) {
+        return categoriaService.actualizar(id, categoria);
     }
 
     @DeleteMapping("/{id}")
