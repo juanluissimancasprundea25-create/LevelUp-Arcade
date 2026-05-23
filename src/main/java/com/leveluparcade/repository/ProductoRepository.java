@@ -15,4 +15,7 @@ public interface ProductoRepository extends JpaRepository<Producto, Long> {
     List<Producto> findByCategoriaId(Long categoriaId);
 
     boolean existsBySku(String sku);
+
+    /** Cuenta cuantos productos referencian al proveedor indicado. */
+    long countByProveedorId(Long proveedorId);
 }
