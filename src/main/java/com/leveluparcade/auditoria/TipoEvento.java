@@ -20,7 +20,14 @@ public enum TipoEvento {
     // --- Proveedores ---
     PROVEEDOR_CREADO,
     PROVEEDOR_ACTUALIZADO,
-    PROVEEDOR_ELIMINADO
+    PROVEEDOR_ELIMINADO,
 
-    // Anadir aqui: PRODUCTO_*, PEDIDO_*, FACTURA_*, etc.
+    // --- Pedidos ---
+    PEDIDO_CREADO,
+    PEDIDO_PAGADO,
+    PEDIDO_ENVIADO,
+    PEDIDO_ENTREGADO,
+    PEDIDO_CANCELADO
+
+    // Anadir aqui: FACTURA_*, DEVOLUCION_*, etc.
 }
