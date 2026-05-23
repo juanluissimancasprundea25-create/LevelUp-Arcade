@@ -1,4 +1,4 @@
-﻿package com.leveluparcade.security;
+package com.leveluparcade.security;
 
 import com.leveluparcade.entity.Usuario;
 import com.leveluparcade.repository.UsuarioRepository;
