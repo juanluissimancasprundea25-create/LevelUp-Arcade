@@ -1,4 +1,4 @@
-package com.leveluparcade.security;
+﻿package com.leveluparcade.security;
 
 import com.leveluparcade.entity.Usuario;
 import com.leveluparcade.repository.UsuarioRepository;
@@ -28,7 +28,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         return User.builder()
                 .username(usuario.getEmail())
                 .password(usuario.getPasswordHash())
-                .authorities(Collections.singleton(new SimpleGrantedAuthority(usuario.getRol().name())))
+                .authorities(Collections.singleton(new SimpleGrantedAuthority("ROLE_" + usuario.getRol().name())))
                 .build();
     }
 }
