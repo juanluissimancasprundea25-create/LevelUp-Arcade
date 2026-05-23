@@ -1,5 +1,8 @@
 package com.leveluparcade.service.impl;
 
+import com.leveluparcade.auditoria.AuditoriaEvent;
+import com.leveluparcade.auditoria.AuditoriaPublisher;
+import com.leveluparcade.auditoria.TipoEvento;
 import com.leveluparcade.dto.request.ClienteCreateRequest;
 import com.leveluparcade.dto.request.ClienteUpdateRequest;
 import com.leveluparcade.dto.response.ClienteCreadoResponse;
@@ -10,6 +13,7 @@ import com.leveluparcade.entity.Usuario;
 import com.leveluparcade.exception.ResourceNotFoundException;
 import com.leveluparcade.repository.ClienteRepository;
 import com.leveluparcade.repository.UsuarioRepository;
+import com.leveluparcade.security.SecurityHelper;
 import com.leveluparcade.service.ClienteService;
 import com.leveluparcade.util.PasswordGenerator;
 import org.slf4j.Logger;
@@ -26,6 +30,9 @@ import java.util.List;
  * <p>Toda la logica de creacion/actualizacion es transaccional para
  * garantizar consistencia entre Usuario y Cliente (que son entidades
  * separadas con relacion 1:1).
+ *
+ * <p>Cada operacion de escritura publica un evento de auditoria que
+ * persiste {@code AuditoriaListener}.
  */
 @Service
 public class ClienteServiceImpl implements ClienteService {
@@ -35,13 +42,19 @@ public class ClienteServiceImpl implements ClienteService {
     private final ClienteRepository clienteRepository;
     private final UsuarioRepository usuarioRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AuditoriaPublisher auditoria;
+    private final SecurityHelper securityHelper;
 
     public ClienteServiceImpl(ClienteRepository clienteRepository,
                               UsuarioRepository usuarioRepository,
-                              PasswordEncoder passwordEncoder) {
+                              PasswordEncoder passwordEncoder,
+                              AuditoriaPublisher auditoria,
+                              SecurityHelper securityHelper) {
         this.clienteRepository = clienteRepository;
         this.usuarioRepository = usuarioRepository;
         this.passwordEncoder = passwordEncoder;
+        this.auditoria = auditoria;
+        this.securityHelper = securityHelper;
     }
 
     @Override
@@ -75,7 +88,6 @@ public class ClienteServiceImpl implements ClienteService {
     @Transactional
     public ClienteCreadoResponse crear(ClienteCreateRequest req) {
 
-        // 1. Validar que no exista email ni NIF duplicados
         if (usuarioRepository.existsByEmail(req.email())) {
             throw new IllegalArgumentException(
                 "Ya existe un usuario con el email: " + req.email());
@@ -86,11 +98,9 @@ public class ClienteServiceImpl implements ClienteService {
                 "Ya existe un cliente con el NIF: " + req.nif());
         }
 
-        // 2. Generar password temporal y hashearla
         String passwordTemporal = PasswordGenerator.generar();
         String passwordHash = passwordEncoder.encode(passwordTemporal);
 
-        // 3. Construir Usuario (rol CLIENTE, activo)
         Usuario usuario = Usuario.builder()
                 .email(req.email())
                 .passwordHash(passwordHash)
@@ -100,8 +110,6 @@ public class ClienteServiceImpl implements ClienteService {
                 .activo(true)
                 .build();
 
-        // 4. Construir Cliente con el Usuario embebido
-        //    La cascada PERSIST de Cliente -> Usuario hara el insert de ambos
         Cliente cliente = Cliente.builder()
                 .usuario(usuario)
                 .nif(nullSiVacio(req.nif()))
@@ -116,7 +124,11 @@ public class ClienteServiceImpl implements ClienteService {
 
         log.info("Cliente creado: id={}, email={}", guardado.getId(), req.email());
 
-        // 5. Devolver el cliente + password temporal en plano (UNICA vez)
+        auditoria.publish(AuditoriaEvent.entidad(
+            TipoEvento.CLIENTE_CREADO, "Cliente",
+            guardado.getId(), securityHelper.getUsuarioActualId(),
+            "Alta de cliente: " + req.email()));
+
         return new ClienteCreadoResponse(
             ClienteResponse.from(guardado),
             passwordTemporal
@@ -129,7 +141,6 @@ public class ClienteServiceImpl implements ClienteService {
         Cliente cliente = clienteRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Cliente", id));
 
-        // Validar NIF unico si cambia
         if (req.nif() != null && !req.nif().isBlank()
                 && !req.nif().equals(cliente.getNif())
                 && clienteRepository.existsByNif(req.nif())) {
@@ -137,7 +148,6 @@ public class ClienteServiceImpl implements ClienteService {
                 "Ya existe otro cliente con el NIF: " + req.nif());
         }
 
-        // Actualizar Usuario (nombre, apellidos, activo)
         Usuario u = cliente.getUsuario();
         u.setNombre(req.nombre());
         u.setApellidos(req.apellidos());
@@ -145,7 +155,6 @@ public class ClienteServiceImpl implements ClienteService {
             u.setActivo(req.activo());
         }
 
-        // Actualizar Cliente (datos comerciales)
         cliente.setNif(nullSiVacio(req.nif()));
         cliente.setTelefono(nullSiVacio(req.telefono()));
         cliente.setDireccion(nullSiVacio(req.direccion()));
@@ -158,6 +167,11 @@ public class ClienteServiceImpl implements ClienteService {
         Cliente actualizado = clienteRepository.save(cliente);
         log.info("Cliente actualizado: id={}", id);
 
+        auditoria.publish(AuditoriaEvent.entidad(
+            TipoEvento.CLIENTE_ACTUALIZADO, "Cliente",
+            id, securityHelper.getUsuarioActualId(),
+            "Actualizacion de cliente id=" + id));
+
         return ClienteResponse.from(actualizado);
     }
 
@@ -166,13 +180,16 @@ public class ClienteServiceImpl implements ClienteService {
     public void eliminar(Long id) {
         Cliente cliente = clienteRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Cliente", id));
+        String emailEliminado = cliente.getUsuario().getEmail();
         clienteRepository.delete(cliente);
         log.info("Cliente eliminado: id={}", id);
+
+        auditoria.publish(AuditoriaEvent.entidad(
+            TipoEvento.CLIENTE_ELIMINADO, "Cliente",
+            id, securityHelper.getUsuarioActualId(),
+            "Eliminacion de cliente: " + emailEliminado));
     }
 
-    // ---------- helpers ----------
-
-    /** Normaliza strings vacios a null para no guardar "" en BD. */
     private String nullSiVacio(String s) {
         return (s == null || s.isBlank()) ? null : s;
     }

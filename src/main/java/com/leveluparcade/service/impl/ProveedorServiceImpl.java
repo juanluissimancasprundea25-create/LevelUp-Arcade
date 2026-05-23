@@ -1,5 +1,8 @@
 package com.leveluparcade.service.impl;
 
+import com.leveluparcade.auditoria.AuditoriaEvent;
+import com.leveluparcade.auditoria.AuditoriaPublisher;
+import com.leveluparcade.auditoria.TipoEvento;
 import com.leveluparcade.dto.request.ProveedorCreateRequest;
 import com.leveluparcade.dto.request.ProveedorUpdateRequest;
 import com.leveluparcade.dto.response.ProveedorResponse;
@@ -7,6 +10,7 @@ import com.leveluparcade.entity.Proveedor;
 import com.leveluparcade.exception.ResourceNotFoundException;
 import com.leveluparcade.repository.ProductoRepository;
 import com.leveluparcade.repository.ProveedorRepository;
+import com.leveluparcade.security.SecurityHelper;
 import com.leveluparcade.service.ProveedorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +28,9 @@ import java.util.List;
  *
  * <p>A nivel BD existe {@code ON DELETE SET NULL} en la FK
  * productos.proveedor_id como red de seguridad ante DELETEs directos.
+ *
+ * <p>Cada operacion de escritura publica un evento de auditoria que
+ * persiste {@code AuditoriaListener} de forma asincrona al flujo principal.
  */
 @Service
 public class ProveedorServiceImpl implements ProveedorService {
@@ -32,11 +39,17 @@ public class ProveedorServiceImpl implements ProveedorService {
 
     private final ProveedorRepository proveedorRepository;
     private final ProductoRepository productoRepository;
+    private final AuditoriaPublisher auditoria;
+    private final SecurityHelper securityHelper;
 
     public ProveedorServiceImpl(ProveedorRepository proveedorRepository,
-                                ProductoRepository productoRepository) {
+                                ProductoRepository productoRepository,
+                                AuditoriaPublisher auditoria,
+                                SecurityHelper securityHelper) {
         this.proveedorRepository = proveedorRepository;
         this.productoRepository = productoRepository;
+        this.auditoria = auditoria;
+        this.securityHelper = securityHelper;
     }
 
     @Override
@@ -90,6 +103,11 @@ public class ProveedorServiceImpl implements ProveedorService {
         Proveedor guardado = proveedorRepository.save(proveedor);
         log.info("Proveedor creado: id={}, cif={}", guardado.getId(), req.cif());
 
+        auditoria.publish(AuditoriaEvent.entidad(
+            TipoEvento.PROVEEDOR_CREADO, "Proveedor",
+            guardado.getId(), securityHelper.getUsuarioActualId(),
+            "Alta de proveedor: " + req.nombreEmpresa() + " (CIF " + req.cif() + ")"));
+
         return ProveedorResponse.from(guardado);
     }
 
@@ -99,7 +117,6 @@ public class ProveedorServiceImpl implements ProveedorService {
         Proveedor p = proveedorRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Proveedor", id));
 
-        // Validar CIF unico si cambia
         if (!req.cif().equals(p.getCif())
                 && proveedorRepository.existsByCif(req.cif())) {
             throw new IllegalArgumentException(
@@ -123,6 +140,11 @@ public class ProveedorServiceImpl implements ProveedorService {
         Proveedor actualizado = proveedorRepository.save(p);
         log.info("Proveedor actualizado: id={}", id);
 
+        auditoria.publish(AuditoriaEvent.entidad(
+            TipoEvento.PROVEEDOR_ACTUALIZADO, "Proveedor",
+            id, securityHelper.getUsuarioActualId(),
+            "Actualizacion de proveedor id=" + id));
+
         return ProveedorResponse.from(actualizado);
     }
 
@@ -140,8 +162,14 @@ public class ProveedorServiceImpl implements ProveedorService {
                 "Desactivelo o reasigne los productos primero.");
         }
 
+        String nombreEliminado = p.getNombreEmpresa();
         proveedorRepository.delete(p);
         log.info("Proveedor eliminado: id={}", id);
+
+        auditoria.publish(AuditoriaEvent.entidad(
+            TipoEvento.PROVEEDOR_ELIMINADO, "Proveedor",
+            id, securityHelper.getUsuarioActualId(),
+            "Eliminacion de proveedor: " + nombreEliminado));
     }
 
     private String nullSiVacio(String s) {
