@@ -49,3 +49,6 @@ pgadmin_data/
 *.swp
 *.swo
 *~
+# Outputs de pruebas manuales
+*.pdf
+!docs/**/*.pdf
