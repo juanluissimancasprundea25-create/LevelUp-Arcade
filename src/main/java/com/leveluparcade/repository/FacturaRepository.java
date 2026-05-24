@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 public interface FacturaRepository extends JpaRepository<Factura, Long> {
@@ -18,23 +19,26 @@ public interface FacturaRepository extends JpaRepository<Factura, Long> {
 
     Optional<Factura> findByNumeroFactura(String numeroFactura);
 
-    /**
-     * Devuelve el último número secuencial usado en un año concreto.
-     * Sirve para generar el siguiente número de factura.
-     * Usa LIKE sobre numero_factura con el patrón "{prefijo}-{año}-%".
-     */
-    @Query("""
-        SELECT COALESCE(MAX(CAST(SUBSTRING(f.numeroFactura, LENGTH(:prefijoYAnio) + 1) AS int)), 0)
-        FROM Factura f
-        WHERE f.numeroFactura LIKE CONCAT(:prefijoYAnio, '%')
-    """)
-    Integer findUltimoSecuencialPorPrefijoAnio(@Param("prefijoYAnio") String prefijoYAnio);
-
     @Query("""
         SELECT f FROM Factura f
-        WHERE (:clienteId IS NULL OR f.pedido.cliente.id = :clienteId)
-          AND (:desde IS NULL OR f.fechaEmision >= :desde)
-          AND (:hasta IS NULL OR f.fechaEmision <= :hasta)
+        WHERE f.numeroFactura LIKE CONCAT(:prefijoYAnio, '%')
+        ORDER BY f.numeroFactura DESC
+    """)
+    List<Factura> buscarUltimaPorPrefijoAnio(
+        @Param("prefijoYAnio") String prefijoYAnio,
+        Pageable pageable
+    );
+
+    /**
+     * Busqueda con filtros opcionales. Usa CAST sobre los parametros nulos
+     * para que PostgreSQL pueda inferir el tipo cuando se pasa NULL
+     * (evita el error SQLState 42P18).
+     */
+    @Query("""
+        SELECT f FROM Factura f
+        WHERE (CAST(:clienteId AS long) IS NULL OR f.pedido.cliente.id = :clienteId)
+          AND (CAST(:desde AS timestamp) IS NULL OR f.fechaEmision >= :desde)
+          AND (CAST(:hasta AS timestamp) IS NULL OR f.fechaEmision <= :hasta)
     """)
     Page<Factura> buscarConFiltros(
         @Param("clienteId") Long clienteId,
