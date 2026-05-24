@@ -50,3 +50,8 @@ logging:
     root: INFO
     com.leveluparcade: DEBUG
     org.springframework.security: INFO
+
+# --- LevelUp Arcade: configuracion de negocio ---
+leveluparcade:
+  devoluciones:
+    dias-limite: 14
