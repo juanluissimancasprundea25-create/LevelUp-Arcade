@@ -1,33 +1,37 @@
 package com.leveluparcade.auditoria;
 
 /**
- * Tipos de eventos auditables del sistema.
+ * Catalogo de eventos auditables del sistema.
  *
- * <p>Si necesitas anadir nuevos, simplemente extiende este enum. Cada
- * valor se guarda como string en {@code auditoria_log.accion}.
+ * Convencion: {ENTIDAD}_{ACCION}.
+ * Anadir aqui cualquier evento nuevo y publicarlo desde el service.
  */
 public enum TipoEvento {
 
-    // --- Autenticacion ---
+    // === Autenticacion ===
     LOGIN_EXITO,
     LOGIN_FALLIDO,
 
-    // --- Clientes ---
+    // === Clientes ===
     CLIENTE_CREADO,
     CLIENTE_ACTUALIZADO,
     CLIENTE_ELIMINADO,
 
-    // --- Proveedores ---
+    // === Proveedores ===
     PROVEEDOR_CREADO,
     PROVEEDOR_ACTUALIZADO,
     PROVEEDOR_ELIMINADO,
 
-    // --- Pedidos ---
+    // === Pedidos ===
     PEDIDO_CREADO,
     PEDIDO_PAGADO,
     PEDIDO_ENVIADO,
     PEDIDO_ENTREGADO,
-    PEDIDO_CANCELADO
+    PEDIDO_CANCELADO,
 
-    // Anadir aqui: FACTURA_*, DEVOLUCION_*, etc.
+    // === Devoluciones ===
+    DEVOLUCION_SOLICITADA,
+    DEVOLUCION_APROBADA,
+    DEVOLUCION_RECHAZADA,
+    DEVOLUCION_COMPLETADA
 }
