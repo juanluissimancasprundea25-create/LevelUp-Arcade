@@ -6,7 +6,6 @@ package com.leveluparcade.auditoria;
  * Convencion: {ENTIDAD}_{ACCION}.
  * Anadir aqui cualquier evento nuevo y publicarlo desde el service.
  */
-
 public enum TipoEvento {
 
     // === Autenticacion ===
@@ -38,6 +37,10 @@ public enum TipoEvento {
 
     // === Facturas ===
     FACTURA_EMITIDA,
-    FACTURA_DESCARGADA
+    FACTURA_DESCARGADA,
+
+    // === Chat ===
+    MENSAJE_ENVIADO,
+    MENSAJE_LEIDO
 
 }
