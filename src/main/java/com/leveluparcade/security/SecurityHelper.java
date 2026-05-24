@@ -56,4 +56,17 @@ public class SecurityHelper {
                 .map(Cliente::getId)
                 .orElse(null);
     }
+
+    /**
+     * Devuelve true si el usuario autenticado tiene el rol ADMIN.
+     * Comprueba las authorities del SecurityContext (con prefijo ROLE_).
+     */
+    public boolean esAdmin() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated()) {
+            return false;
+        }
+        return auth.getAuthorities().stream()
+                .anyMatch(a -> "ROLE_ADMIN".equals(a.getAuthority()));
+    }
 }
