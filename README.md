@@ -14,31 +14,83 @@ Sistema de gestión de inventario, clientes y proveedores para LevelUp Arcade, c
 
 ## Requisitos
 
-- Java 21 (Temurin recomendado)
-- Docker Desktop
-- Git
-- VS Code o IntelliJ
+- **Docker Desktop** (suficiente para arrancar todo)
+- **Git**
+- Opcional para desarrollo: Java 21 (Temurin), VS Code o IntelliJ
 
 ## Cómo arrancar el proyecto
 
-### Primera vez
+### Primera vez (clonado)
 
 ```bash
 git clone https://github.com/juanluissimancasprundea25-create/LevelUp-Arcade.git
 cd LevelUp-Arcade
 git checkout develop
+```
+
+Copia la plantilla de variables a tu fichero local:
+
+**Linux / Mac:**
+```bash
 cp .env.example .env
 ```
 
-Edita `.env` con tus valores locales (al menos `DB_PASSWORD` y `JWT_SECRET`). Luego:
+**Windows (PowerShell):**
+```powershell
+Copy-Item .env.example .env
+```
+
+Edita `.env` con tus valores locales. Los obligatorios son:
+- `DB_PASSWORD` (cualquier valor para tu entorno local)
+- `JWT_SECRET` (mínimo 32 caracteres aleatorios)
+- `PGADMIN_EMAIL` (usa un dominio real como `.com`, no `.local`)
+
+### Modo 1: Stack completo con Docker (recomendado)
+
+Levanta postgres + app Spring Boot + pgAdmin con un solo comando:
 
 ```bash
 docker compose up --build
 ```
 
+La primera vez tarda varios minutos (descarga JDK, compila JAR). Las siguientes son segundos.
+
 Accesos:
-- App: http://localhost:8080
-- pgAdmin: http://localhost:5050
+- **App**: http://localhost:8080
+- **pgAdmin**: http://localhost:5050 (con `PGADMIN_EMAIL` / `PGADMIN_PASSWORD` del `.env`)
+
+Para parar:
+```bash
+docker compose down
+```
+
+### Modo 2: Desarrollo local (más rápido para iterar)
+
+Solo postgres en docker, app corriendo localmente con Maven Wrapper. Útil cuando estás tocando código y quieres recompilar al vuelo.
+
+**Requisitos extra**: Java 21 instalado localmente.
+
+**Linux / Mac:**
+```bash
+docker compose up -d postgres
+./mvnw spring-boot:run
+```
+
+**Windows (PowerShell):**
+```powershell
+$env:JAVA_HOME = "C:\Program Files\Eclipse Adoptium\jdk-21.0.11.10-hotspot"
+$env:Path = "$env:JAVA_HOME\bin;$env:Path"
+Get-Content .env | ForEach-Object {
+    if ($_ -match '^\s*([^#=]+?)\s*=\s*(.*)$') {
+        Set-Item -Path "Env:$($matches[1].Trim())" -Value $matches[2].Trim()
+    }
+}
+$env:DB_HOST = "localhost"
+docker compose up -d postgres
+.\mvnw spring-boot:run
+```
+
+Puedes guardar este bloque PowerShell como `arranca.ps1` en la raíz (ya está en `.gitignore`).
 
 ### Trabajo diario
 
@@ -82,10 +134,9 @@ Secrets configurados:
 
 1. Ve a Settings → Secrets and variables → Actions → New repository secret
 2. Añade el secret con su valor real
-3. Refer­éncialo en `.github/workflows/ci.yml` con `${{ secrets.NOMBRE_SECRET }}`
+3. Referéncialo en `.github/workflows/ci.yml` con `${{ secrets.NOMBRE_SECRET }}`
 
 ## Estructura del proyecto
-
 src/main/java/com/leveluparcade/
 ├── config/         # Configuración Spring (Security, etc.)
 ├── controller/
@@ -113,8 +164,8 @@ src/main/java/com/leveluparcade/
   - 1 approval de un compañero
   - CI en verde
   - Rama actualizada con develop antes de mergear
-- Mensajes de commit siguen [Conventional Commits](https://www.conventionalcommits.org/):
-  - `feat(modulo): añadir X`
+- Mensajes de commit siguen [Conventional Commits](https://www.conventionalcommits.org/) **sin tildes** (encoding PowerShell):
+  - `feat(modulo): anadir X`
   - `fix(modulo): corregir Y`
   - `docs(modulo): actualizar Z`
   - `refactor`, `test`, `chore`, `ci`
@@ -125,6 +176,36 @@ src/main/java/com/leveluparcade/
 - El **GitHub Project "LevelUp Arcade - Roadmap"** muestra el tablero Kanban (Todo / In Progress / Done).
 - Al abrir un PR, incluye `Closes #N` en la descripción para cerrar automáticamente el issue al mergear.
 
+## Comandos útiles
+
+### Tests
+
+```bash
+./mvnw test                          # todos los tests
+./mvnw test -Dtest=NombreClaseTest   # un solo test
+```
+
+**Windows (PowerShell)**: las comas necesitan comillas:
+```powershell
+.\mvnw test "-Dtest=ChatApiControllerTest,FacturaApiControllerTest"
+```
+
+### Reset completo de BD
+
+```bash
+docker compose down -v   # -v borra el volumen, perdiendo los datos
+docker compose up --build
+```
+
+Flyway volverá a aplicar todas las migraciones desde cero.
+
+### Logs
+
+```bash
+docker compose logs -f app        # logs de la app en tiempo real
+docker compose logs -f postgres   # logs de postgres
+```
+
 ## CI/CD
 
 Cada push y cada PR ejecuta `.github/workflows/ci.yml`:
@@ -134,6 +215,26 @@ Cada push y cada PR ejecuta `.github/workflows/ci.yml`:
 3. Reporta el resultado
 
 Si el CI falla, GitHub bloquea el merge del PR.
+
+## Solución de problemas comunes
+
+### `Could not resolve placeholder 'JWT_SECRET'`
+No has cargado las variables del `.env`. En PowerShell usa el bloque del **Modo 2** o el script `arranca.ps1`.
+
+### pgAdmin sale en `exited with code 1` con error de email
+`PGADMIN_EMAIL` no puede usar dominios reservados como `.local`. Usa `.com`, `.org`, etc.
+
+### `JAVA_HOME is not defined correctly`
+Tienes que apuntar `JAVA_HOME` a tu instalación de JDK 21. En PowerShell:
+```powershell
+$env:JAVA_HOME = "C:\Program Files\Eclipse Adoptium\jdk-21.0.11.10-hotspot"
+```
+
+### Tests fallan en PowerShell con comas
+Las comas en `-Dtest=A,B` requieren comillas en PowerShell:
+```powershell
+.\mvnw test "-Dtest=A,B"
+```
 
 ## Equipo
 
