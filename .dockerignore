@@ -1,0 +1,15 @@
+target/
+.git/
+.github/
+.idea/
+.vscode/
+*.iml
+.env
+arranca.ps1
+docs/
+README.md
+*.md
+.gitignore
+.gitattributes
+HELP.md
+.mvn/wrapper/maven-wrapper.jar
