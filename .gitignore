@@ -52,3 +52,6 @@ pgadmin_data/
 # Outputs de pruebas manuales
 *.pdf
 !docs/**/*.pdf
+
+arranca.ps1
+rranca.ps1
