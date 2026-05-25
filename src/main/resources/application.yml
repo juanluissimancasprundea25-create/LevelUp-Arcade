@@ -63,3 +63,9 @@ leveluparcade:
       cif: "B12345678"
       direccion: "Calle Falsa 123, 28001 Madrid, España"
       email: "facturacion@leveluparcade.local"
+openrouter:
+  api-key: ${OPENROUTER_API_KEY:}
+  model: ${OPENROUTER_MODEL:openai/gpt-4o-mini}
+  base-url: https://openrouter.ai/api/v1
+  timeout-ms: 30000
+  max-tokens: 500
