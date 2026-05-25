@@ -69,13 +69,12 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), req);
     }
 
-
     @ExceptionHandler(IllegalStateException.class)
     public ResponseEntity<Map<String, Object>> handleIllegalState(
             IllegalStateException ex, HttpServletRequest req) {
         return buildResponse(HttpStatus.CONFLICT, ex.getMessage(), req);
     }
-    
+
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<Map<String, Object>> handleAccessDenied(
             AccessDeniedException ex, HttpServletRequest req) {
@@ -87,6 +86,19 @@ public class GlobalExceptionHandler {
             Exception ex, HttpServletRequest req) {
         return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR,
                 "Error interno: " + ex.getMessage(), req);
+    }
+
+    @ExceptionHandler(com.leveluparcade.llm.LlmException.class)
+    public ResponseEntity<Map<String, Object>> handleLlm(
+            com.leveluparcade.llm.LlmException ex) {
+
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("timestamp", LocalDateTime.now().toString());
+        body.put("status", HttpStatus.SERVICE_UNAVAILABLE.value());
+        body.put("error", "Servicio de IA no disponible");
+        body.put("message", ex.getMessage());
+
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(body);
     }
 
     // ---------- helpers ----------
