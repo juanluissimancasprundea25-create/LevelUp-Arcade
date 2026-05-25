@@ -1,34 +1,37 @@
 package com.leveluparcade.service;
 
-import com.leveluparcade.entity.Categoria;
-import com.leveluparcade.repository.CategoriaRepository;
-import org.springframework.stereotype.Service;
+import com.leveluparcade.dto.request.CategoriaCreateRequest;
+import com.leveluparcade.dto.request.CategoriaUpdateRequest;
+import com.leveluparcade.dto.response.CategoriaResponse;
 
 import java.util.List;
 
-@Service
-public class CategoriaService {
+/**
+ * Operaciones de gestion de categorias desde el panel admin.
+ */
+public interface CategoriaService {
 
-    private final CategoriaRepository categoriaRepository;
+    List<CategoriaResponse> listarTodas();
 
-    public CategoriaService(CategoriaRepository categoriaRepository) {
-        this.categoriaRepository = categoriaRepository;
-    }
+    List<CategoriaResponse> buscarPorTexto(String texto);
 
-    public List<Categoria> listarTodas() {
-        return categoriaRepository.findAll();
-    }
+    CategoriaResponse obtenerPorId(Long id);
 
-    public Categoria guardar(Categoria categoria) {
-        return categoriaRepository.save(categoria);
-    }
+    /**
+     * Crea una nueva categoria.
+     * @throws IllegalArgumentException si el nombre ya existe
+     */
+    CategoriaResponse crear(CategoriaCreateRequest request);
 
-    public Categoria obtenerPorId(Long id) {
-        return categoriaRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Categoría no encontrada"));
-    }
+    /**
+     * Actualiza una categoria existente. Permite renombrarla si el nuevo
+     * nombre no esta ocupado.
+     */
+    CategoriaResponse actualizar(Long id, CategoriaUpdateRequest request);
 
-    public void eliminar(Long id) {
-        categoriaRepository.deleteById(id);
-    }
+    /**
+     * Elimina una categoria.
+     * @throws IllegalStateException si tiene productos asociados
+     */
+    void eliminar(Long id);
 }
