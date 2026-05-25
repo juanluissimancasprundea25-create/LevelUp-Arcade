@@ -5,6 +5,17 @@
 spring:
   application:
     name: LevelUp Arcade
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
 
   # --- Datasource (perfil por defecto: desarrollo local) ---
   datasource:
@@ -69,3 +80,9 @@ openrouter:
   base-url: https://openrouter.ai/api/v1
   timeout-ms: 30000
   max-tokens: 500
+
+password-reset:
+  token-expiration-hours: 1
+  base-url: ${APP_BASE_URL:http://localhost:8080}
+  from-email: ${MAIL_USERNAME:noreply@leveluparcade.local}
+  from-name: LevelUp Arcade
