@@ -22,6 +22,17 @@ public enum TipoEvento {
     PROVEEDOR_ACTUALIZADO,
     PROVEEDOR_ELIMINADO,
 
+    // === Categorias ===
+    CATEGORIA_CREADA,
+    CATEGORIA_ACTUALIZADA,
+    CATEGORIA_ELIMINADA,
+
+    // === Productos ===
+    PRODUCTO_CREADO,
+    PRODUCTO_ACTUALIZADO,
+    PRODUCTO_ELIMINADO,
+    PRODUCTO_STOCK_AJUSTADO,
+
     // === Pedidos ===
     PEDIDO_CREADO,
     PEDIDO_PAGADO,

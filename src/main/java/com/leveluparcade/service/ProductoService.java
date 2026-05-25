@@ -1,34 +1,52 @@
 package com.leveluparcade.service;
 
-import com.leveluparcade.entity.Producto;
-import com.leveluparcade.repository.ProductoRepository;
-import org.springframework.stereotype.Service;
+import com.leveluparcade.dto.request.AjusteStockRequest;
+import com.leveluparcade.dto.request.ProductoCreateRequest;
+import com.leveluparcade.dto.request.ProductoUpdateRequest;
+import com.leveluparcade.dto.response.ProductoResponse;
 
 import java.util.List;
 
-@Service
-public class ProductoService {
+/**
+ * Operaciones de gestion de productos desde el panel admin.
+ */
+public interface ProductoService {
 
-    private final ProductoRepository productoRepository;
+    List<ProductoResponse> listarTodos();
 
-    public ProductoService(ProductoRepository productoRepository) {
-        this.productoRepository = productoRepository;
-    }
+    List<ProductoResponse> buscarPorTexto(String texto);
 
-    public List<Producto> listarTodos() {
-        return productoRepository.findAll();
-    }
+    List<ProductoResponse> listarPorCategoria(Long categoriaId);
 
-    public Producto guardar(Producto producto) {
-        return productoRepository.save(producto);
-    }
+    List<ProductoResponse> listarPorProveedor(Long proveedorId);
 
-    public Producto obtenerPorId(Long id) {
-        return productoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
-    }
+    List<ProductoResponse> listarBajoStock();
 
-    public void eliminar(Long id) {
-        productoRepository.deleteById(id);
-    }
+    ProductoResponse obtenerPorId(Long id);
+
+    /**
+     * Crea un nuevo producto.
+     * @throws IllegalArgumentException si el SKU ya existe
+     * @throws com.leveluparcade.exception.ResourceNotFoundException
+     *         si la categoria o el proveedor referenciado no existe
+     */
+    ProductoResponse crear(ProductoCreateRequest request);
+
+    /**
+     * Actualiza un producto existente.
+     */
+    ProductoResponse actualizar(Long id, ProductoUpdateRequest request);
+
+    /**
+     * Ajusta manualmente el stock (entrada / salida).
+     * Una cantidad positiva incrementa, negativa decrementa.
+     * @throws IllegalStateException si el ajuste deja el stock en negativo
+     */
+    ProductoResponse ajustarStock(Long id, AjusteStockRequest request);
+
+    /**
+     * Elimina un producto.
+     * @throws IllegalStateException si tiene lineas de pedido asociadas
+     */
+    void eliminar(Long id);
 }
