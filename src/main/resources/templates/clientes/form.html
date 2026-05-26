@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head(${titulo})}"></head>
+<body class="hold-transition sidebar-mini layout-fixed">
+
+<div class="wrapper">
+    <div th:replace="~{fragments/header :: header}"></div>
+    <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+
+    <div class="content-wrapper">
+        <section class="content-header">
+            <div class="container-fluid">
+                <div class="row mb-2">
+                    <div class="col-sm-6"><h1 th:text="${tituloSeccion}">Cliente</h1></div>
+                    <div class="col-sm-6">
+                        <ol class="breadcrumb float-sm-right">
+                            <li class="breadcrumb-item"><a th:href="@{/dashboard}">Inicio</a></li>
+                            <li class="breadcrumb-item"><a th:href="@{/clientes}">Clientes</a></li>
+                            <li class="breadcrumb-item active" th:text="${modoEdicion} ? 'Editar' : 'Nuevo'">Nuevo</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="content">
+            <div class="container-fluid">
+
+                <form th:action="${modoEdicion} ? @{/clientes/{id}(id=${clienteId})} : @{/clientes}"
+                      method="post"
+                      th:object="${cliente}">
+
+                    <div th:if="${#fields.hasGlobalErrors()}" class="alert alert-danger">
+                        <i class="icon fas fa-exclamation-triangle mr-1"></i>
+                        <ul class="mb-0">
+                            <li th:each="err : ${#fields.globalErrors()}" th:text="${err}">Error</li>
+                        </ul>
+                    </div>
+
+                    <div class="card card-levelup">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-user mr-1"></i>
+                                <span th:text="${modoEdicion} ? 'Editar datos del cliente' : 'Nuevo cliente'">Nuevo</span>
+                            </h3>
+                        </div>
+
+                        <div class="card-body">
+
+                            <div class="form-group" th:unless="${modoEdicion}">
+                                <label>Email <span class="text-danger">*</span></label>
+                                <input type="email" th:field="*{email}" class="form-control"
+                                       th:classappend="${#fields.hasErrors('email')} ? 'is-invalid'">
+                                <div class="invalid-feedback" th:if="${#fields.hasErrors('email')}"
+                                     th:errors="*{email}"></div>
+                                <small class="form-text text-muted">
+                                    El cliente usara este email para iniciar sesion.
+                                </small>
+                            </div>
+
+                            <div class="form-group" th:if="${modoEdicion}">
+                                <label>Email</label>
+                                <input type="email" class="form-control" th:value="${emailCliente}" disabled>
+                                <small class="form-text text-muted">
+                                    El email no se puede modificar.
+                                </small>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 form-group">
+                                    <label>Nombre <span class="text-danger">*</span></label>
+                                    <input type="text" th:field="*{nombre}" class="form-control"
+                                           th:classappend="${#fields.hasErrors('nombre')} ? 'is-invalid'">
+                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('nombre')}"
+                                         th:errors="*{nombre}"></div>
+                                </div>
+                                <div class="col-md-6 form-group">
+                                    <label>Apellidos</label>
+                                    <input type="text" th:field="*{apellidos}" class="form-control"
+                                           th:classappend="${#fields.hasErrors('apellidos')} ? 'is-invalid'">
+                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('apellidos')}"
+                                         th:errors="*{apellidos}"></div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-4 form-group">
+                                    <label>NIF</label>
+                                    <input type="text" th:field="*{nif}" class="form-control"
+                                           placeholder="12345678A"
+                                           th:classappend="${#fields.hasErrors('nif')} ? 'is-invalid'">
+                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('nif')}"
+                                         th:errors="*{nif}"></div>
+                                </div>
+                                <div class="col-md-4 form-group">
+                                    <label>Telefono</label>
+                                    <input type="text" th:field="*{telefono}" class="form-control"
+                                           placeholder="+34 600 000 000"
+                                           th:classappend="${#fields.hasErrors('telefono')} ? 'is-invalid'">
+                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('telefono')}"
+                                         th:errors="*{telefono}"></div>
+                                </div>
+                                <div class="col-md-4 form-group" th:if="${modoEdicion}">
+                                    <label>Estado</label>
+                                    <select th:field="*{activo}" class="form-control">
+                                        <option th:value="true">Activo</option>
+                                        <option th:value="false">Inactivo</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Direccion</label>
+                                <input type="text" th:field="*{direccion}" class="form-control"
+                                       placeholder="Calle, numero, piso...">
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-5 form-group">
+                                    <label>Ciudad</label>
+                                    <input type="text" th:field="*{ciudad}" class="form-control">
+                                </div>
+                                <div class="col-md-3 form-group">
+                                    <label>Codigo postal</label>
+                                    <input type="text" th:field="*{codigoPostal}" class="form-control"
+                                           th:classappend="${#fields.hasErrors('codigoPostal')} ? 'is-invalid'">
+                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('codigoPostal')}"
+                                         th:errors="*{codigoPostal}"></div>
+                                </div>
+                                <div class="col-md-4 form-group">
+                                    <label>Pais</label>
+                                    <input type="text" th:field="*{pais}" class="form-control">
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <div class="card-footer">
+                            <button type="submit" class="btn btn-levelup">
+                                <i class="fas fa-save mr-1"></i>
+                                <span th:text="${modoEdicion} ? 'Guardar cambios' : 'Crear cliente'">Guardar</span>
+                            </button>
+                            <a th:href="@{/clientes}" class="btn btn-secondary">
+                                <i class="fas fa-times mr-1"></i> Cancelar
+                            </a>
+                        </div>
+                    </div>
+                </form>
+
+            </div>
+        </section>
+    </div>
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
+</div>
+
+<div th:replace="~{fragments/scripts :: scripts}"></div>
+</body>
+</html>
