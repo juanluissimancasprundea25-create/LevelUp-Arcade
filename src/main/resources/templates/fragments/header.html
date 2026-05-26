@@ -11,18 +11,20 @@
         </li>
     </ul>
 
-    <!-- Derecha: usuario -->
+    <!-- Derecha: usuario y logout -->
     <ul class="navbar-nav ml-auto">
         <li class="nav-item">
-            <a class="nav-link" href="#" role="button">
-                <i class="fas fa-user"></i>
-                <span class="ml-1">Admin</span>
-            </a>
+            <span class="nav-link">
+                <i class="fas fa-user mr-1"></i>
+                <span sec:authentication="name">Admin</span>
+            </span>
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="#" role="button" title="Cerrar sesion">
-                <i class="fas fa-sign-out-alt"></i>
-            </a>
+            <form th:action="@{/logout}" method="post" class="form-inline">
+                <button type="submit" class="btn btn-link nav-link" title="Cerrar sesion">
+                    <i class="fas fa-sign-out-alt"></i>
+                </button>
+            </form>
         </li>
     </ul>
 </nav>
