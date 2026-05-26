@@ -1,0 +1,26 @@
+# ============================================================
+# Configuracion SOLO para tests
+# Se activa cuando el perfil es "test" (@ActiveProfiles("test"))
+# Sobrescribe valores del application.yml con defaults seguros
+# para que los tests no necesiten un .env ni variables reales
+# ============================================================
+
+jwt:
+  secret: dGVzdF9zZWNyZXRfa2V5X29ubHlfZm9yX2p1bml0X3Rlc3RzX25vdF9mb3JfcHJvZHVjdGlvbg==
+  expiration-ms: 3600000
+
+# El test contextLoads no toca BD, pero JPA valida el esquema al arrancar.
+# Desactivamos Flyway y ddl-auto para que no necesite Postgres real.
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: none
+  flyway:
+    enabled: false
+
+# Silenciamos logs ruidosos en tests
+logging:
+  level:
+    root: WARN
+    com.leveluparcade: WARN
+    org.hibernate: WARN
