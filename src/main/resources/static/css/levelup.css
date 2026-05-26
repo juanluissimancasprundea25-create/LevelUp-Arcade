@@ -1,0 +1,63 @@
+/* ============================================================
+   LevelUp Arcade - Estilos propios
+   Sobreescribe colores de AdminLTE para identidad propia
+   ============================================================ */
+
+:root {
+    --levelup-purple: #7f77dd;
+    --levelup-purple-dark: #5d54c4;
+    --levelup-green: #5dcaa5;
+    --levelup-bg-dark: #1a1a2e;
+    --levelup-bg-card: #16213e;
+}
+
+/* Navbar morado custom */
+.navbar-purple {
+    background-color: var(--levelup-purple);
+    color: #fff;
+}
+.navbar-purple .nav-link,
+.navbar-purple .nav-link i {
+    color: #fff !important;
+}
+.navbar-purple .nav-link:hover {
+    background-color: var(--levelup-purple-dark);
+}
+
+/* Sidebar custom */
+.sidebar-dark-purple {
+    background-color: #2d2a5e;
+}
+.sidebar-dark-purple .nav-sidebar > .nav-item > .nav-link.active {
+    background-color: var(--levelup-purple);
+    color: #fff;
+}
+.sidebar-dark-purple .brand-link {
+    background-color: #232050;
+    color: #fff;
+}
+
+/* Encabezados del menu lateral */
+.nav-header {
+    color: var(--levelup-green) !important;
+    font-weight: 600;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+}
+
+/* Tarjetas */
+.card-levelup {
+    border-top: 3px solid var(--levelup-purple);
+}
+
+/* Boton primario en color del proyecto */
+.btn-levelup {
+    background-color: var(--levelup-purple);
+    border-color: var(--levelup-purple);
+    color: #fff;
+}
+.btn-levelup:hover {
+    background-color: var(--levelup-purple-dark);
+    border-color: var(--levelup-purple-dark);
+    color: #fff;
+}

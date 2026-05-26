@@ -1,75 +1,42 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <title th:text="${titulo}">LevelUp Arcade</title>
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-            background: #1a1a2e;
-            color: #eaeaea;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            margin: 0;
-        }
-        .container {
-            text-align: center;
-            padding: 3rem;
-            background: #16213e;
-            border-radius: 16px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-            max-width: 600px;
-        }
-        h1 {
-            font-size: 2.5rem;
-            margin-bottom: 0.5rem;
-            background: linear-gradient(90deg, #7f77dd, #5dcaa5);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        p {
-            font-size: 1.1rem;
-            color: #b4b2a9;
-            margin-bottom: 2rem;
-        }
-        .status {
-            display: inline-block;
-            padding: 0.5rem 1rem;
-            background: #1d9e75;
-            color: white;
-            border-radius: 999px;
-            font-weight: 500;
-            font-size: 0.9rem;
-        }
-        .stack {
-            margin-top: 2rem;
-            font-size: 0.85rem;
-            color: #888780;
-        }
-        .stack span {
-            display: inline-block;
-            margin: 0.25rem;
-            padding: 0.25rem 0.75rem;
-            background: rgba(127, 119, 221, 0.15);
-            border: 1px solid rgba(127, 119, 221, 0.3);
-            border-radius: 4px;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1 th:text="${titulo}">LevelUp Arcade</h1>
-        <p th:text="${mensaje}">Cargando...</p>
-        <div class="status">✓ Sistema operativo</div>
-        <div class="stack">
-            <span>Spring Boot 3.5</span>
-            <span>Java 21</span>
-            <span>PostgreSQL 16</span>
-            <span>Thymeleaf</span>
-            <span>Docker</span>
+<head th:replace="~{fragments/head :: head('Bienvenido')}"></head>
+<body class="hold-transition">
+
+<div class="wrapper d-flex align-items-center justify-content-center" style="min-height:100vh; background: linear-gradient(135deg, #1a1a2e 0%, #2d2a5e 100%);">
+
+    <div class="card card-levelup shadow-lg" style="max-width: 540px; width: 90%;">
+        <div class="card-body text-center p-5">
+
+            <h1 class="display-5 mb-3" style="background: linear-gradient(90deg, #7f77dd, #5dcaa5); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 700;">
+                <span th:text="${titulo}">LevelUp Arcade</span>
+            </h1>
+
+            <p class="lead text-muted mb-4" th:text="${mensaje}">Cargando...</p>
+
+            <span class="badge badge-success badge-pill px-3 py-2 mb-4">
+                <i class="fas fa-check-circle mr-1"></i> Sistema operativo
+            </span>
+
+            <div class="mt-4">
+                <a th:href="@{/login}" class="btn btn-levelup btn-lg px-4">
+                    <i class="fas fa-sign-in-alt mr-2"></i> Acceder al panel
+                </a>
+            </div>
+
+            <hr class="my-4">
+
+            <div>
+                <span class="badge badge-light mx-1 py-2 px-2">Spring Boot 3.5</span>
+                <span class="badge badge-light mx-1 py-2 px-2">Java 21</span>
+                <span class="badge badge-light mx-1 py-2 px-2">PostgreSQL 16</span>
+                <span class="badge badge-light mx-1 py-2 px-2">Thymeleaf</span>
+                <span class="badge badge-light mx-1 py-2 px-2">Docker</span>
+            </div>
         </div>
     </div>
+</div>
+
+<div th:replace="~{fragments/scripts :: scripts}"></div>
 </body>
 </html>
