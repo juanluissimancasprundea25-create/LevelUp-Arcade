@@ -1,7 +1,11 @@
 # ============================================================
 # CI - Continuous Integration
 # Se ejecuta en cada push y en cada pull request
-# Compila el código y ejecuta los tests JUnit
+# Compila el codigo y ejecuta los tests JUnit con el perfil "test"
+#
+# El perfil "test" (src/test/resources/application-test.yml) provee
+# valores por defecto para JWT_SECRET, desactiva Flyway y JPA validate,
+# por lo que no necesitamos BD real ni secretos de GitHub para el CI.
 # ============================================================
 
 name: CI
@@ -13,6 +17,8 @@ on:
       - develop
       - 'feature/**'
       - 'fix/**'
+      - 'chore/**'
+      - 'docs/**'
   pull_request:
     branches:
       - main
@@ -23,24 +29,8 @@ jobs:
     name: Build & Test
     runs-on: ubuntu-latest
 
-    # PostgreSQL temporal para que los tests puedan conectarse
-    services:
-      postgres:
-        image: postgres:16-alpine
-        env:
-          POSTGRES_DB: levelup_test
-          POSTGRES_USER: levelup_test_user
-          POSTGRES_PASSWORD: ${{ secrets.DB_PASSWORD_CI }}
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 5s
-          --health-timeout 5s
-          --health-retries 10
-
     steps:
-      - name: Checkout código
+      - name: Checkout codigo
         uses: actions/checkout@v4
 
       - name: Configurar Java 21 (Temurin)
@@ -50,32 +40,23 @@ jobs:
           java-version: '21'
           cache: 'maven'
 
-      - name: Verificar versión de Java
+      - name: Verificar version de Java
         run: java -version
 
-      - name: Dar permisos de ejecución a mvnw
+      - name: Dar permisos de ejecucion a mvnw
         run: chmod +x ./mvnw
 
       - name: Compilar proyecto
         run: ./mvnw -B compile
 
       - name: Ejecutar tests
-        env:
-          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/levelup_test
-          SPRING_DATASOURCE_USERNAME: levelup_test_user
-          SPRING_DATASOURCE_PASSWORD: ${{ secrets.DB_PASSWORD_CI }}
-          JWT_SECRET: ${{ secrets.JWT_SECRET }}
-          JWT_EXPIRATION_MS: 86400000
-          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
-          OPENROUTER_MODEL: meta-llama/llama-3.2-3b-instruct:free
-          MAIL_HOST: smtp.gmail.com
-          MAIL_PORT: 587
-          MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
-          MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
-          RECAPTCHA_SITE_KEY: ${{ secrets.RECAPTCHA_SITE_KEY }}
-          RECAPTCHA_SECRET: ${{ secrets.RECAPTCHA_SECRET }}
         run: ./mvnw -B test
 
-      - name: Resumen
+      - name: Publicar resultados de los tests
         if: always()
-        run: echo "Workflow completado. Revisa los resultados de los tests."
+        uses: dorny/test-reporter@v1
+        with:
+          name: JUnit Tests
+          path: 'target/surefire-reports/*.xml'
+          reporter: java-junit
+          fail-on-error: false
