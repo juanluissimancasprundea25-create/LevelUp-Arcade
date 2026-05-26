@@ -13,10 +13,14 @@
         <div class="card-body">
             <p class="login-box-msg">Inicia sesion para continuar</p>
 
-            <!-- Form placeholder. La logica real se conecta en el Bloque B (form-login Spring Security). -->
-            <form action="#" method="post">
+            <div th:if="${loginError}" class="alert alert-danger" role="alert">
+                <i class="fas fa-exclamation-triangle mr-2"></i>
+                <span th:text="${loginError}">Error</span>
+            </div>
+
+            <form th:action="@{/login}" method="post">
                 <div class="input-group mb-3">
-                    <input type="email" name="email" class="form-control" placeholder="Email" required>
+                    <input type="email" name="email" class="form-control" placeholder="Email" required autofocus>
                     <div class="input-group-append">
                         <div class="input-group-text">
                             <span class="fas fa-envelope"></span>
@@ -35,8 +39,8 @@
 
                 <div class="row">
                     <div class="col-12">
-                        <button type="submit" class="btn btn-levelup btn-block" disabled>
-                            <i class="fas fa-sign-in-alt mr-2"></i> Entrar (pendiente)
+                        <button type="submit" class="btn btn-levelup btn-block">
+                            <i class="fas fa-sign-in-alt mr-2"></i> Entrar
                         </button>
                     </div>
                 </div>
