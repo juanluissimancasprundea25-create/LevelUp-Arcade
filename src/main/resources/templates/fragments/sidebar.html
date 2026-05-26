@@ -18,16 +18,16 @@
                         <i class="nav-icon fas fa-tachometer-alt"></i>
                         <p>Dashboard</p>
                     </a>
-                </li>
-
-                <li class="nav-header">GESTION</li>
-
-                <li class="nav-item">
-                    <a th:href="@{/clientes}" class="nav-link">
-                        <i class="nav-icon fas fa-users"></i>
-                        <p>Clientes</p>
-                    </a>
-                </li>
+                    </li>
+                    
+                    <li class="nav-header">GESTION</li>
+                    
+                    <li class="nav-item">
+                        <a th:href="@{/clientes}" th:classappend="${seccionActiva == 'clientes'} ? 'active'" class="nav-link">
+                            <i class="nav-icon fas fa-users"></i>
+                            <p>Clientes</p>
+                        </a>
+                    </li>
                 <li class="nav-item">
                     <a th:href="@{/proveedores}" class="nav-link">
                         <i class="nav-icon fas fa-truck"></i>
