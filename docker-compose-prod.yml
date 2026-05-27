@@ -72,6 +72,26 @@ services:
     networks:
       - levelup-net-prod
 
+  backup:
+    build: ./scripts/backup
+    container_name: levelup-backup-prod
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      PGPASSWORD: ${DB_PASSWORD}
+      BACKUP_DIR: /backups
+      RETENTION_DAYS: 30
+    volumes:
+      - ./backups:/backups
+    networks:
+      - levelup-net-prod
+
 volumes:
   postgres_data_prod:
     name: levelup_postgres_data_prod
