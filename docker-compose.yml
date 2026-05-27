@@ -46,23 +46,6 @@ services:
     networks:
       - levelup-net
 
-  pgadmin:
-    image: dpage/pgadmin4:latest
-    container_name: levelup-pgadmin
-    restart: unless-stopped
-    environment:
-      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
-      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
-      PGADMIN_CONFIG_SERVER_MODE: 'False'
-    ports:
-      - "5050:80"
-    depends_on:
-      - postgres
-    networks:
-      - levelup-net
-    volumes:
-      - pgadmin_data:/var/lib/pgadmin
-
   backup:
     build: ./scripts/backup
     container_name: levelup-backup
@@ -86,7 +69,6 @@ services:
 volumes:
   postgres_data:
     name: levelup_postgres_data
-  pgadmin_data:
 
 networks:
   levelup-net:

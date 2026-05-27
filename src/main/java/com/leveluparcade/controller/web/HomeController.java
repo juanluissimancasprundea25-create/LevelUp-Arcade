@@ -70,14 +70,9 @@ public class HomeController {
 
     /** Pagina de login. Spring Security gestiona el POST. */
     @GetMapping("/admin/login")
-    public String login(
-            @RequestParam(value = "error", required = false) String error,
-            Model model) {
-        if (error != null) {
-            model.addAttribute("loginError",
-                    "Email o contrasena incorrectos.");
-        }
-        return "login";
+    public String adminLoginRedirect() {
+        // Compatibilidad: si alguien viene a /admin/login lo mandamos al login publico
+        return "redirect:/login";
     }
 
     /**

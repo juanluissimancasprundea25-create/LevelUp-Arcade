@@ -1,6 +1,8 @@
 package com.leveluparcade.config;
 
 import com.leveluparcade.security.JwtFilter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -9,45 +11,24 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-/**
- * Configuracion de seguridad con DOS cadenas independientes:
- *
- *  1) apiSecurityFilterChain  (@Order(1)) -> /api/** -> JWT + STATELESS
- *     Para clientes API (mobile, integraciones, tests JWT).
- *
- *  2) adminSecurityFilterChain (@Order(2)) -> /admin/** -> form-login + sesion + CSRF
- *     Para el panel web AdminLTE (solo ROLE_ADMIN).
- *
- * <p>Las rutas publicas (landing /, recursos estaticos, /facturas/verificar/**,
- * y la futura tienda cliente en raiz) caen fuera de ambas cadenas y son
- * accesibles sin login.
- *
- * <p>IMPORTANTE: el orden importa. Spring evalua las cadenas por @Order ascendente.
- * Si una peticion encaja con el securityMatcher de la primera, las siguientes
- * no se evaluan.
- *
- * <p>Cuando se anada el login de cliente (PR siguiente), se introducira una
- * tercera cadena @Order(3) con securityMatcher para /cuenta/** o similar.
- */
 @Configuration
 @EnableMethodSecurity
 public class SecurityConfig {
 
+    private static final Logger log = LoggerFactory.getLogger(SecurityConfig.class);
     private final JwtFilter jwtFilter;
 
     public SecurityConfig(JwtFilter jwtFilter) {
         this.jwtFilter = jwtFilter;
     }
 
-    /**
-     * Cadena 1: API REST con JWT (STATELESS).
-     * Solo aplica a /api/** y deja /api/auth/** publico para login JWT.
-     */
+    /** Cadena 1: API REST con JWT. */
     @Bean
     @Order(1)
     public SecurityFilterChain apiSecurityFilterChain(HttpSecurity http) throws Exception {
@@ -59,71 +40,108 @@ public class SecurityConfig {
                 .requestMatchers("/api/facturas/verificar/**").permitAll()
                 .anyRequest().authenticated()
             )
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
-
         return http.build();
     }
 
-    /**
-     * Cadena 2: panel admin con form-login. Solo aplica a /admin/**.
-     * Todo lo que esta bajo /admin/** requiere ROLE_ADMIN, excepto la propia
-     * pagina de login (/admin/login).
-     */
+    /** Cadena 2: solo para PROTEGER /admin/** (ya logueado).
+     *  No tiene formulario propio. El login se hace en /login (cadena 3). */
     @Bean
     @Order(2)
     public SecurityFilterChain adminSecurityFilterChain(HttpSecurity http) throws Exception {
         http
             .securityMatcher("/admin/**")
+            .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/admin/login").permitAll()
                 .anyRequest().hasRole("ADMIN")
-            )
-            .formLogin(form -> form
-                .loginPage("/admin/login")
-                .loginProcessingUrl("/admin/login")
-                .usernameParameter("email")
-                .passwordParameter("password")
-                .defaultSuccessUrl("/admin/dashboard", true)
-                .failureUrl("/admin/login?error")
-                .permitAll()
             )
             .logout(logout -> logout
                 .logoutUrl("/admin/logout")
                 .logoutSuccessUrl("/?logout")
                 .invalidateHttpSession(true)
-                .deleteCookies("JSESSIONID")
+                .deleteCookies("JSESSIONID_ADMIN", "JSESSIONID_CLIENTE")
                 .permitAll()
             )
-            .sessionManagement(session -> session
-                .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
-                .maximumSessions(1)
+            // Si un usuario no admin entra a /admin/**, lo mandamos al login publico
+            .exceptionHandling(ex -> ex
+                .accessDeniedHandler((req, res, e) ->
+                        res.sendRedirect(req.getContextPath() + "/login?error"))
             );
-
-        // CSRF queda ACTIVADO por defecto para form-login.
         return http.build();
     }
 
     /**
-     * Cadena 3: rutas publicas.
+     * Cadena 3: LOGIN UNICO PUBLICO.
      *
-     * <p>Cubre la landing /, recursos estaticos, /facturas/verificar/** (QR),
-     * /error, y CUALQUIER otra ruta no cubierta por las cadenas anteriores.
-     * Esto deja preparado el terreno para que la futura tienda cliente
-     * (catalogo, registro, etc) viva en la raiz sin necesitar login.
+     * <p>Un solo formulario /login. Spring detecta el rol y redirige:
+     * <ul>
+     *   <li>ROLE_ADMIN -> /admin/dashboard</li>
+     *   <li>ROLE_CLIENTE -> /cuenta</li>
+     *   <li>otro -> /</li>
+     * </ul>
+     *
+     * <p>Esta cadena tambien protege /cuenta/** (solo CLIENTE).
      */
     @Bean
     @Order(3)
+    public SecurityFilterChain authSecurityFilterChain(HttpSecurity http) throws Exception {
+        http
+            .securityMatcher("/login", "/login/**", "/registro", "/registro/**", "/logout", "/cuenta/**")
+            .csrf(csrf -> csrf.disable())
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/login", "/login/**", "/registro", "/registro/**").permitAll()
+                .requestMatchers("/cuenta/**").hasRole("CLIENTE")
+                .anyRequest().authenticated()
+            )
+            .formLogin(form -> form
+                .loginPage("/login")
+                .loginProcessingUrl("/login")
+                .usernameParameter("email")
+                .passwordParameter("password")
+                .successHandler((req, res, auth) -> {
+                    String rol = auth.getAuthorities().stream()
+                            .map(GrantedAuthority::getAuthority)
+                            .findFirst()
+                            .orElse("");
+                    log.info(">>> LOGIN OK: user={} rol={}", auth.getName(), rol);
+                    String destino;
+                    if ("ROLE_ADMIN".equals(rol)) {
+                        destino = "/admin/dashboard";
+                    } else if ("ROLE_CLIENTE".equals(rol)) {
+                        destino = "/cuenta";
+                    } else {
+                        destino = "/";
+                    }
+                    res.sendRedirect(req.getContextPath() + destino);
+                })
+                .failureHandler((req, res, ex) -> {
+                    log.warn(">>> LOGIN FALLO: {}", ex.getMessage());
+                    res.sendRedirect(req.getContextPath() + "/login?error");
+                })
+                .permitAll()
+            )
+            .logout(logout -> logout
+                .logoutUrl("/logout")
+                .logoutSuccessUrl("/?logout")
+                .invalidateHttpSession(true)
+                .deleteCookies("JSESSIONID_ADMIN", "JSESSIONID_CLIENTE")
+                .permitAll()
+            )
+            .exceptionHandling(ex -> ex
+                .accessDeniedHandler((req, res, e) ->
+                        res.sendRedirect(req.getContextPath() + "/login"))
+            );
+        return http.build();
+    }
+
+    /** Cadena 4: publico. */
+    @Bean
+    @Order(4)
     public SecurityFilterChain publicSecurityFilterChain(HttpSecurity http) throws Exception {
         http
-            .authorizeHttpRequests(auth -> auth
-                .anyRequest().permitAll()
-            )
-            // CSRF desactivado en publico porque aun no hay formularios aqui.
-            // Cuando se anada registro de cliente / carrito, se evaluara reactivarlo
-            // solo para esas rutas, o moverlas a una cadena propia con CSRF on.
+            .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
             .csrf(csrf -> csrf.disable());
-
         return http.build();
     }
 
@@ -133,7 +151,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
-        return authConfig.getAuthenticationManager();
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration cfg) throws Exception {
+        return cfg.getAuthenticationManager();
     }
 }

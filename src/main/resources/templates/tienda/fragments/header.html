@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<body>
+
+<nav th:fragment="header" class="navbar navbar-expand-lg tienda-navbar shadow-sm">
+    <div class="container">
+
+        <!-- Logo / marca -->
+        <a class="navbar-brand tienda-brand" th:href="@{/}">
+            <i class="fas fa-gamepad mr-2"></i>
+            <strong>LevelUp</strong> Arcade
+        </a>
+
+        <button class="navbar-toggler" type="button" data-toggle="collapse"
+                data-target="#tiendaNav" aria-controls="tiendaNav" aria-expanded="false">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="tiendaNav">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/}">
+                        <i class="fas fa-home mr-1"></i> Inicio
+                    </a>
+                </li>
+            </ul>
+
+            <ul class="navbar-nav ml-auto">
+
+                <!-- USUARIO NO LOGUEADO -->
+                <li class="nav-item" sec:authorize="!isAuthenticated()">
+                    <a class="nav-link" th:href="@{/login}">
+                        <i class="fas fa-sign-in-alt mr-1"></i> Entrar
+                    </a>
+                </li>
+                <li class="nav-item" sec:authorize="!isAuthenticated()">
+                    <a class="nav-link btn-registrar ml-2" th:href="@{/registro}">
+                        Crear cuenta
+                    </a>
+                </li>
+
+                <!-- USUARIO LOGUEADO COMO CLIENTE -->
+                <li class="nav-item dropdown" sec:authorize="hasRole('CLIENTE')">
+                    <a class="nav-link dropdown-toggle" href="#" id="userMenu" data-toggle="dropdown">
+                        <i class="fas fa-user-circle mr-1"></i>
+                        <span sec:authentication="name">Cliente</span>
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-right">
+                        <a class="dropdown-item" th:href="@{/cuenta}">
+                            <i class="fas fa-user mr-2"></i> Mi cuenta
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <form th:action="@{/logout}" method="post" class="px-3 py-1">
+                            <button type="submit" class="btn btn-link p-0 text-danger">
+                                <i class="fas fa-sign-out-alt mr-2"></i> Cerrar sesion
+                            </button>
+                        </form>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+</body>
+</html>
