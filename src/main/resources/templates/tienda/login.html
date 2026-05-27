@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{tienda/fragments/head :: head('Iniciar sesion')}"></head>
+<body>
+
+<div th:replace="~{tienda/fragments/header :: header}"></div>
+
+<main class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+
+            <div class="card card-auth shadow">
+                <div class="card-body p-4">
+
+                    <h2 class="text-center mb-4 tienda-titulo">
+                        <i class="fas fa-sign-in-alt mr-2"></i>Iniciar sesion
+                    </h2>
+
+                    <div th:if="${loginError}" class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle mr-2"></i>
+                        <span th:text="${loginError}">Error</span>
+                    </div>
+                    <div th:if="${param.error}" class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle mr-2"></i>
+                        Email o contrasena incorrectos.
+                    </div>
+                    <div th:if="${logoutMsg}" class="alert alert-info">
+                        <i class="fas fa-info-circle mr-2"></i>
+                        <span th:text="${logoutMsg}">Sesion cerrada</span>
+                    </div>
+                    <div th:if="${param.logout}" class="alert alert-info">
+                        <i class="fas fa-info-circle mr-2"></i>
+                        Has cerrado sesion correctamente.
+                    </div>
+                    <div th:if="${registradoMsg}" class="alert alert-success">
+                        <i class="fas fa-check-circle mr-2"></i>
+                        <span th:text="${registradoMsg}">Cuenta creada</span>
+                    </div>
+
+                    <form th:action="@{/login}" method="post">
+                        <div class="form-group">
+                            <label for="email">
+                                <i class="fas fa-envelope mr-1 text-muted"></i> Email
+                            </label>
+                            <input type="email" id="email" name="email"
+                                   class="form-control form-control-lg"
+                                   placeholder="tu@email.com" required autofocus>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="password">
+                                <i class="fas fa-lock mr-1 text-muted"></i> Contrasena
+                            </label>
+                            <input type="password" id="password" name="password"
+                                   class="form-control form-control-lg"
+                                   placeholder="Tu contrasena" required>
+                        </div>
+
+                        <button type="submit" class="btn btn-tienda btn-block btn-lg">
+                            Entrar
+                        </button>
+                    </form>
+
+                    <hr class="my-4">
+
+                    <p class="text-center mb-0">
+                        Aun no tienes cuenta?
+                        <a th:href="@{/registro}" class="font-weight-bold">Crea una</a>
+                    </p>
+                </div>
+            </div>
+
+            <p class="text-center mt-3">
+                <a th:href="@{/}" class="text-muted">
+                    <i class="fas fa-arrow-left mr-1"></i> Volver a la tienda
+                </a>
+            </p>
+
+        </div>
+    </div>
+</main>
+
+<div th:replace="~{tienda/fragments/footer :: footer}"></div>
+<div th:replace="~{tienda/fragments/scripts :: scripts}"></div>
+</body>
+</html>

@@ -4,12 +4,12 @@
 # ============================================================
 FROM postgres:16-alpine
 
-# Copiamos los scripts y les damos permisos de ejecucion
+# Copiamos los scripts
 COPY backup.sh /scripts/backup.sh
 COPY entrypoint.sh /scripts/entrypoint.sh
-RUN chmod +x /scripts/backup.sh /scripts/entrypoint.sh
 
-# El contenedor no necesita postgres-server, solo el cliente (ya incluido).
-# No exponemos puertos, no es un servicio de red.
+# FIX: convertir CRLF (Windows) a LF (Unix) y dar permisos de ejecucion
+RUN sed -i 's/\r$//' /scripts/backup.sh /scripts/entrypoint.sh && \
+    chmod +x /scripts/backup.sh /scripts/entrypoint.sh
 
 ENTRYPOINT ["/scripts/entrypoint.sh"]

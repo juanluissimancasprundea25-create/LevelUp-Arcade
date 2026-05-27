@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{tienda/fragments/head :: head('Crear cuenta')}"></head>
+<body>
+
+<div th:replace="~{tienda/fragments/header :: header}"></div>
+
+<main class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+
+            <div class="card card-auth shadow">
+                <div class="card-body p-4">
+
+                    <h2 class="text-center mb-4 tienda-titulo">
+                        <i class="fas fa-user-plus mr-2"></i>Crear cuenta
+                    </h2>
+
+                    <form th:action="@{/registro}" th:object="${registro}" method="post" id="registroForm">
+
+                        
+
+                        <!-- Errores globales (dentro del form para que #fields funcione) -->
+                        <div th:if="${#fields.hasGlobalErrors()}" class="alert alert-danger">
+                            <ul class="mb-0">
+                                <li th:each="err : ${#fields.globalErrors()}" th:text="${err}">Error</li>
+                            </ul>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="nombre">Nombre *</label>
+                                <input type="text" id="nombre" th:field="*{nombre}"
+                                       class="form-control"
+                                       th:classappend="${#fields.hasErrors('nombre')} ? 'is-invalid'"
+                                       maxlength="100" required>
+                                <div class="invalid-feedback" th:errors="*{nombre}">Error</div>
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="apellidos">Apellidos</label>
+                                <input type="text" id="apellidos" th:field="*{apellidos}"
+                                       class="form-control"
+                                       th:classappend="${#fields.hasErrors('apellidos')} ? 'is-invalid'"
+                                       maxlength="150">
+                                <div class="invalid-feedback" th:errors="*{apellidos}">Error</div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="email">Email *</label>
+                            <input type="email" id="email" th:field="*{email}"
+                                   class="form-control"
+                                   th:classappend="${#fields.hasErrors('email')} ? 'is-invalid'"
+                                   required>
+                            <div class="invalid-feedback" th:errors="*{email}">Error</div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="password">Contrasena *</label>
+                                <input type="password" id="password" th:field="*{password}"
+                                       class="form-control"
+                                       th:classappend="${#fields.hasErrors('password')} ? 'is-invalid'"
+                                       minlength="8" required>
+                                <div class="invalid-feedback" th:errors="*{password}">Error</div>
+                                <small class="form-text text-muted">
+                                    Minimo 8 caracteres, con al menos una letra y un numero.
+                                </small>
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="passwordConfirmacion">Repite la contrasena *</label>
+                                <input type="password" id="passwordConfirmacion"
+                                       th:field="*{passwordConfirmacion}"
+                                       class="form-control"
+                                       th:classappend="${#fields.hasErrors('passwordConfirmacion')} ? 'is-invalid'"
+                                       required>
+                                <div class="invalid-feedback" th:errors="*{passwordConfirmacion}">Error</div>
+                            </div>
+                        </div>
+
+                        <div class="form-check mb-3">
+                            <input type="checkbox" id="aceptaPrivacidad"
+                                   th:field="*{aceptaPrivacidad}"
+                                   class="form-check-input"
+                                   th:classappend="${#fields.hasErrors('aceptaPrivacidad')} ? 'is-invalid'">
+                            <label class="form-check-label" for="aceptaPrivacidad">
+                                Acepto la politica de privacidad y el tratamiento de mis datos
+                                para la gestion de mi cuenta y mis pedidos. *
+                            </label>
+                            <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('aceptaPrivacidad')}"
+                                 th:errors="*{aceptaPrivacidad}">Error</div>
+                        </div>
+
+                        <!-- Campo oculto para reCAPTCHA token -->
+                        <input type="hidden" id="recaptchaToken" th:field="*{recaptchaToken}">
+
+                        <button type="submit" class="btn btn-tienda btn-block btn-lg">
+                            Crear mi cuenta
+                        </button>
+                    </form>
+
+                    <hr class="my-4">
+
+                    <p class="text-center mb-0">
+                        Ya tienes cuenta?
+                        <a th:href="@{/login}" class="font-weight-bold">Inicia sesion</a>
+                    </p>
+                </div>
+            </div>
+
+            <p class="text-center mt-3">
+                <a th:href="@{/}" class="text-muted">
+                    <i class="fas fa-arrow-left mr-1"></i> Volver a la tienda
+                </a>
+            </p>
+
+        </div>
+    </div>
+</main>
+
+<div th:replace="~{tienda/fragments/footer :: footer}"></div>
+<div th:replace="~{tienda/fragments/scripts :: scripts}"></div>
+
+<!-- reCAPTCHA v3: solo se carga si hay site key configurada -->
+<th:block th:if="${recaptchaSiteKey != null and !recaptchaSiteKey.isEmpty() and !recaptchaSiteKey.startsWith('clave-')}">
+    <script th:src="'https://www.google.com/recaptcha/api.js?render=' + ${recaptchaSiteKey}"></script>
+    <script th:inline="javascript">
+        const SITE_KEY = /*[[${recaptchaSiteKey}]]*/ '';
+        document.getElementById('registroForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            grecaptcha.ready(function() {
+                grecaptcha.execute(SITE_KEY, {action: 'registro'}).then(function(token) {
+                    document.getElementById('recaptchaToken').value = token;
+                    e.target.submit();
+                });
+            });
+        });
+    </script>
+</th:block>
+
+</body>
+</html>

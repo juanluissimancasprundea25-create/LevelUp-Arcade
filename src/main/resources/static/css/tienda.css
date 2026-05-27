@@ -1,0 +1,107 @@
+/* ============================================================
+   LevelUp Arcade - Estilos de la TIENDA (cara publica)
+   Reutiliza variables --levelup-* definidas en levelup.css
+   ============================================================ */
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background-color: #f8f9fc;
+    color: #2c2c54;
+}
+
+/* --- Navbar tienda --- */
+.tienda-navbar {
+    background: #fff;
+    border-bottom: 3px solid var(--levelup-purple);
+}
+.tienda-brand {
+    background: linear-gradient(90deg, var(--levelup-purple), var(--levelup-green));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-size: 1.4rem;
+    font-weight: 700;
+}
+.tienda-brand i {
+    -webkit-text-fill-color: var(--levelup-purple);
+}
+.tienda-navbar .nav-link {
+    color: #4a4a6a !important;
+    font-weight: 500;
+    padding: 0.5rem 1rem !important;
+}
+.tienda-navbar .nav-link:hover {
+    color: var(--levelup-purple) !important;
+}
+.btn-registrar {
+    background: var(--levelup-purple);
+    color: #fff !important;
+    border-radius: 24px;
+    padding: 0.5rem 1.25rem !important;
+}
+.btn-registrar:hover {
+    background: var(--levelup-purple-dark);
+}
+
+/* --- Titulos --- */
+.tienda-titulo {
+    background: linear-gradient(90deg, var(--levelup-purple), var(--levelup-green));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 700;
+}
+
+/* --- Boton principal --- */
+.btn-tienda {
+    background: linear-gradient(135deg, var(--levelup-purple) 0%, var(--levelup-purple-dark) 100%);
+    color: #fff;
+    border: none;
+    font-weight: 600;
+    transition: transform .15s ease;
+}
+.btn-tienda:hover {
+    color: #fff;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(127, 119, 221, 0.4);
+}
+
+/* --- Cards auth y cuenta --- */
+.card-auth {
+    border: none;
+    border-radius: 12px;
+}
+.card-cuenta {
+    border: none;
+    border-radius: 12px;
+    transition: transform .15s ease, box-shadow .15s ease;
+}
+.card-cuenta:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0,0,0,.08);
+}
+
+/* --- Hero de la home --- */
+.hero {
+    background: linear-gradient(135deg, #1a1a2e 0%, #2d2a5e 100%);
+    color: #fff;
+    padding: 5rem 0;
+}
+.hero h1 {
+    background: linear-gradient(90deg, #b8b0ff, #82e2c2);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 800;
+    font-size: 3rem;
+}
+.hero p.lead {
+    font-size: 1.25rem;
+    opacity: 0.9;
+}
+
+/* --- Footer --- */
+.tienda-footer {
+    background: #2d2a5e;
+    color: #fff;
+}
+.tienda-footer p {
+    margin: 0;
+}

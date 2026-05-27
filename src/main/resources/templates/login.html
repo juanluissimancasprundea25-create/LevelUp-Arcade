@@ -9,16 +9,30 @@
             <h3 class="m-0" style="background: linear-gradient(90deg, #7f77dd, #5dcaa5); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 700;">
                 LevelUp Arcade
             </h3>
+            <small class="text-muted">Panel de administracion</small>
         </div>
         <div class="card-body">
             <p class="login-box-msg">Inicia sesion para continuar</p>
 
+            <div th:if="${param.error}" class="alert alert-danger" role="alert">
+                <i class="fas fa-exclamation-triangle mr-2"></i>
+                Email o contrasena incorrectos
+            </div>
+            <div th:if="${param.logout}" class="alert alert-info" role="alert">
+                <i class="fas fa-info-circle mr-2"></i>
+                Has cerrado sesion correctamente
+            </div>
             <div th:if="${loginError}" class="alert alert-danger" role="alert">
                 <i class="fas fa-exclamation-triangle mr-2"></i>
                 <span th:text="${loginError}">Error</span>
             </div>
 
-            <form th:action="@{/admin/login}" method="post">
+            <!-- FIX: th:action ahora apunta a /admin/login (cadena admin) -->
+            <form th:action="@{/admin/auth}" method="post">
+
+                <!-- FIX: token CSRF explicito. Thymeleaf no lo anade solo si no usa th:object -->
+                
+
                 <div class="input-group mb-3">
                     <input type="email" name="email" class="form-control" placeholder="Email" required autofocus>
                     <div class="input-group-append">

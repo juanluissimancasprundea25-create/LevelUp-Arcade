@@ -1,42 +1,45 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments/head :: head('Bienvenido')}"></head>
-<body class="hold-transition">
+<head th:replace="~{tienda/fragments/head :: head('Inicio')}"></head>
+<body>
 
-<div class="wrapper d-flex align-items-center justify-content-center" style="min-height:100vh; background: linear-gradient(135deg, #1a1a2e 0%, #2d2a5e 100%);">
+<div th:replace="~{tienda/fragments/header :: header}"></div>
 
-    <div class="card card-levelup shadow-lg" style="max-width: 540px; width: 90%;">
-        <div class="card-body text-center p-5">
+<!-- Hero -->
+<section class="hero">
+    <div class="container text-center">
+        <h1 class="mb-3">Bienvenido a LevelUp Arcade</h1>
+        <p class="lead mb-4">
+            Tu tienda especializada en videojuegos, consolas y merchandising gamer
+        </p>
+        <a th:href="@{/registro}" class="btn btn-light btn-lg px-4 mr-2">
+            <i class="fas fa-user-plus mr-2"></i> Crear cuenta gratis
+        </a>
+    </div>
+</section>
 
-            <h1 class="display-5 mb-3" style="background: linear-gradient(90deg, #7f77dd, #5dcaa5); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 700;">
-                <span th:text="${titulo}">LevelUp Arcade</span>
-            </h1>
-
-            <p class="lead text-muted mb-4" th:text="${mensaje}">Cargando...</p>
-
-            <span class="badge badge-success badge-pill px-3 py-2 mb-4">
-                <i class="fas fa-check-circle mr-1"></i> Sistema operativo
-            </span>
-
-            <div class="mt-4">
-                <a th:href="@{/admin/login}" class="btn btn-levelup btn-lg px-4">
-                    <i class="fas fa-sign-in-alt mr-2"></i> Acceder al panel
-                </a>
-            </div>
-
-            <hr class="my-4">
-
-            <div>
-                <span class="badge badge-light mx-1 py-2 px-2">Spring Boot 3.5</span>
-                <span class="badge badge-light mx-1 py-2 px-2">Java 21</span>
-                <span class="badge badge-light mx-1 py-2 px-2">PostgreSQL 16</span>
-                <span class="badge badge-light mx-1 py-2 px-2">Thymeleaf</span>
-                <span class="badge badge-light mx-1 py-2 px-2">Docker</span>
-            </div>
+<!-- Features -->
+<section class="container my-5">
+    <div class="row text-center">
+        <div class="col-md-4 mb-4">
+            <i class="fas fa-shipping-fast fa-3x mb-3" style="color: var(--levelup-purple);"></i>
+            <h4>Envio rapido</h4>
+            <p class="text-muted">Recibe tus pedidos en 24-48h</p>
+        </div>
+        <div class="col-md-4 mb-4">
+            <i class="fas fa-shield-alt fa-3x mb-3" style="color: var(--levelup-green);"></i>
+            <h4>Pago seguro</h4>
+            <p class="text-muted">Tus datos protegidos con HTTPS</p>
+        </div>
+        <div class="col-md-4 mb-4">
+            <i class="fas fa-headset fa-3x mb-3" style="color: var(--levelup-purple);"></i>
+            <h4>Atencion 24/7</h4>
+            <p class="text-muted">Chatea con nosotros cuando quieras</p>
         </div>
     </div>
-</div>
+</section>
 
-<div th:replace="~{fragments/scripts :: scripts}"></div>
+<div th:replace="~{tienda/fragments/footer :: footer}"></div>
+<div th:replace="~{tienda/fragments/scripts :: scripts}"></div>
 </body>
 </html>

@@ -60,7 +60,8 @@ logging:
   level:
     root: INFO
     com.leveluparcade: DEBUG
-    org.springframework.security: INFO
+    org.springframework.security: DEBUG
+    org.springframework.security.web.FilterChainProxy: TRACE
 
 # --- LevelUp Arcade: configuracion de negocio ---
 leveluparcade:
@@ -81,6 +82,10 @@ openrouter:
   timeout-ms: 30000
   max-tokens: 500
 
+recaptcha:
+  site-key: ${RECAPTCHA_SITE_KEY:}
+  secret: ${RECAPTCHA_SECRET:}
+  
 password-reset:
   token-expiration-hours: 1
   base-url: ${APP_BASE_URL:http://localhost:8080}

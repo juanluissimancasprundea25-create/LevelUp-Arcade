@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <body>
 <nav th:fragment="header" class="main-header navbar navbar-expand navbar-dark navbar-purple">
     <!-- Toggle del sidebar -->
@@ -20,7 +21,8 @@
             </span>
         </li>
         <li class="nav-item">
-            <form th:action="@{/admin/logout}" method="post" class="form-inline">
+            <form th:action="@{/logout}" method="post" class="form-inline">
+                
                 <button type="submit" class="btn btn-link nav-link" title="Cerrar sesion">
                     <i class="fas fa-sign-out-alt"></i>
                 </button>
