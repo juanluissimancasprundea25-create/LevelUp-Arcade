@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Pedidos')}"></head>
+<body class="hold-transition sidebar-mini layout-fixed">
+<div class="wrapper">
+
+  <nav th:replace="~{fragments/header :: header}"></nav>
+  <aside th:replace="~{fragments/sidebar :: sidebar}"></aside>
+
+  <div class="content-wrapper">
+    <section class="content-header">
+      <div class="container-fluid">
+        <h1>Pedidos</h1>
+      </div>
+    </section>
+
+    <section class="content">
+      <div class="container-fluid">
+
+        <div th:if="${flashOk}" class="alert alert-success alert-dismissible">
+          <button type="button" class="close" data-dismiss="alert">&times;</button>
+          <span th:text="${flashOk}"></span>
+        </div>
+        <div th:if="${flashError}" class="alert alert-danger alert-dismissible">
+          <button type="button" class="close" data-dismiss="alert">&times;</button>
+          <span th:text="${flashError}"></span>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <form th:action="@{/pedidos}" method="get" class="form-inline">
+              <label class="mr-2">Filtrar por estado:</label>
+              <select name="estado" class="form-control mr-2"
+                      onchange="this.form.submit()">
+                <option value="">Todos</option>
+                <option th:each="e : ${estados}"
+                        th:value="${e}"
+                        th:text="${e}"
+                        th:selected="${estadoFiltro != null and estadoFiltro.name() == e.name()}"></option>
+              </select>
+              <a th:if="${estadoFiltro != null}" th:href="@{/pedidos}"
+                 class="btn btn-link">Limpiar</a>
+            </form>
+          </div>
+
+          <div class="card-body table-responsive p-0">
+            <table class="table table-hover text-nowrap">
+              <thead>
+              <tr>
+                <th>ID</th>
+                <th>Fecha</th>
+                <th>Cliente</th>
+                <th>Lineas</th>
+                <th class="text-right">Total</th>
+                <th>Metodo pago</th>
+                <th>Estado</th>
+                <th class="text-right">Acciones</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr th:if="${pedidos.isEmpty()}">
+                <td colspan="8" class="text-center text-muted py-4">
+                  No hay pedidos que mostrar.
+                </td>
+              </tr>
+              <tr th:each="p : ${pedidos}">
+                <td>
+                  <a th:href="@{/pedidos/{id}(id=${p.id})}"
+                     th:text="'#' + ${p.id}"></a>
+                </td>
+                <td th:text="${p.fechaPedido != null ? #temporals.format(p.fechaPedido, 'dd/MM/yyyy HH:mm') : '-'}"></td>
+                <td>
+                  <span th:text="${p.clienteNombreCompleto}"></span><br>
+                  <small class="text-muted" th:text="${p.clienteEmail}"></small>
+                </td>
+                <td th:text="${p.lineas.size()}"></td>
+                <td class="text-right">
+                  <strong th:text="${#numbers.formatDecimal(p.total, 1, 2)} + ' EUR'"></strong>
+                </td>
+                <td th:text="${p.metodoPago ?: '-'}"></td>
+                <td>
+                  <span th:switch="${p.estado.name()}">
+                    <span th:case="'PENDIENTE'" class="badge badge-warning">PENDIENTE</span>
+                    <span th:case="'PAGADO'" class="badge badge-info">PAGADO</span>
+                    <span th:case="'ENVIADO'" class="badge badge-primary">ENVIADO</span>
+                    <span th:case="'ENTREGADO'" class="badge badge-success">ENTREGADO</span>
+                    <span th:case="'CANCELADO'" class="badge badge-secondary">CANCELADO</span>
+                  </span>
+                </td>
+                <td class="text-right">
+                  <a th:href="@{/pedidos/{id}(id=${p.id})}"
+                     class="btn btn-sm btn-info" title="Ver">
+                    <i class="fas fa-eye"></i>
+                  </a>
+                </td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </section>
+  </div>
+
+  <footer th:replace="~{fragments/footer :: footer}"></footer>
+</div>
+<th:block th:replace="~{fragments/scripts :: scripts}"></th:block>
+</body>
+</html>
