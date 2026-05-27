@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Proveedor ' + ${proveedor.nombreEmpresa})}"></head>
+<body class="hold-transition sidebar-mini layout-fixed">
+<div class="wrapper">
+
+  <nav th:replace="~{fragments/header :: header}"></nav>
+  <aside th:replace="~{fragments/sidebar :: sidebar}"></aside>
+
+  <div class="content-wrapper">
+    <section class="content-header">
+      <div class="container-fluid">
+        <div class="row mb-2">
+          <div class="col-sm-8">
+            <h1 th:text="${proveedor.nombreEmpresa}"></h1>
+          </div>
+          <div class="col-sm-4 text-right">
+            <a th:href="@{/proveedores}" class="btn btn-default">
+              <i class="fas fa-arrow-left"></i> Volver
+            </a>
+            <a th:href="@{/proveedores/{id}/editar(id=${proveedor.id})}"
+               class="btn btn-warning">
+              <i class="fas fa-edit"></i> Editar
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="content">
+      <div class="container-fluid">
+
+        <div th:if="${flashOk}" class="alert alert-success alert-dismissible">
+          <button type="button" class="close" data-dismiss="alert">&times;</button>
+          <span th:text="${flashOk}"></span>
+        </div>
+        <div th:if="${flashError}" class="alert alert-danger alert-dismissible">
+          <button type="button" class="close" data-dismiss="alert">&times;</button>
+          <span th:text="${flashError}"></span>
+        </div>
+
+        <div class="row">
+          <div class="col-md-8">
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">Datos del proveedor</h3>
+              </div>
+              <div class="card-body">
+                <dl class="row">
+                  <dt class="col-sm-4">ID</dt>
+                  <dd class="col-sm-8" th:text="${proveedor.id}"></dd>
+
+                  <dt class="col-sm-4">Empresa</dt>
+                  <dd class="col-sm-8" th:text="${proveedor.nombreEmpresa}"></dd>
+
+                  <dt class="col-sm-4">CIF</dt>
+                  <dd class="col-sm-8" th:text="${proveedor.cif}"></dd>
+
+                  <dt class="col-sm-4">Email</dt>
+                  <dd class="col-sm-8" th:text="${proveedor.emailContacto ?: '-'}"></dd>
+
+                  <dt class="col-sm-4">Telefono</dt>
+                  <dd class="col-sm-8" th:text="${proveedor.telefono ?: '-'}"></dd>
+
+                  <dt class="col-sm-4">Direccion</dt>
+                  <dd class="col-sm-8" th:text="${proveedor.direccion ?: '-'}"></dd>
+
+                  <dt class="col-sm-4">Ciudad</dt>
+                  <dd class="col-sm-8" th:text="${proveedor.ciudad ?: '-'}"></dd>
+
+                  <dt class="col-sm-4">Codigo postal</dt>
+                  <dd class="col-sm-8" th:text="${proveedor.codigoPostal ?: '-'}"></dd>
+
+                  <dt class="col-sm-4">Pais</dt>
+                  <dd class="col-sm-8" th:text="${proveedor.pais ?: '-'}"></dd>
+
+                  <dt class="col-sm-4">Estado</dt>
+                  <dd class="col-sm-8">
+                    <span th:if="${proveedor.activo}" class="badge badge-success">Activo</span>
+                    <span th:unless="${proveedor.activo}" class="badge badge-secondary">Inactivo</span>
+                  </dd>
+
+                  <dt class="col-sm-4">Alta</dt>
+                  <dd class="col-sm-8"
+                      th:text="${proveedor.fechaAlta != null ? #temporals.format(proveedor.fechaAlta, 'dd/MM/yyyy HH:mm') : '-'}"></dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-4">
+            <div class="card card-danger">
+              <div class="card-header">
+                <h3 class="card-title">Zona peligrosa</h3>
+              </div>
+              <div class="card-body">
+                <p class="text-muted small">
+                  Si el proveedor tiene productos asociados, no podra eliminarse.
+                  Desactivelo o reasigne los productos primero.
+                </p>
+                <form th:action="@{/proveedores/{id}/eliminar(id=${proveedor.id})}"
+                      method="post"
+                      onsubmit="return confirm('Eliminar este proveedor? Esta accion no se puede deshacer.');">
+                  <button type="submit" class="btn btn-danger btn-block">
+                    <i class="fas fa-trash"></i> Eliminar proveedor
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+  </div>
+
+  <footer th:replace="~{fragments/footer :: footer}"></footer>
+</div>
+<th:block th:replace="~{fragments/scripts :: scripts}"></th:block>
+</body>
+</html>
