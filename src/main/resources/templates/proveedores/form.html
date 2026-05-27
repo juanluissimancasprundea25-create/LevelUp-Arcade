@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head(${modoEdicion} ? 'Editar proveedor' : 'Nuevo proveedor')}"></head>
+<body class="hold-transition sidebar-mini layout-fixed">
+<div class="wrapper">
+
+  <nav th:replace="~{fragments/header :: header}"></nav>
+  <aside th:replace="~{fragments/sidebar :: sidebar}"></aside>
+
+  <div class="content-wrapper">
+    <section class="content-header">
+      <div class="container-fluid">
+        <h1 th:if="${!modoEdicion}">Nuevo proveedor</h1>
+        <h1 th:if="${modoEdicion}">
+          Editar proveedor <small th:text="${nombreOriginal}"></small>
+        </h1>
+      </div>
+    </section>
+
+    <section class="content">
+      <div class="container-fluid">
+        <div class="card card-primary">
+          <div class="card-header">
+            <h3 class="card-title">Datos del proveedor</h3>
+          </div>
+
+          <form th:action="${modoEdicion} ? @{/proveedores/{id}(id=${proveedorId})} : @{/proveedores}"
+                th:object="${proveedorForm}" method="post">
+
+            <div class="card-body">
+
+              <div th:if="${#fields.hasGlobalErrors()}" class="alert alert-danger">
+                <ul class="mb-0">
+                  <li th:each="err : ${#fields.globalErrors()}" th:text="${err}"></li>
+                </ul>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group col-md-8">
+                  <label>Nombre de la empresa *</label>
+                  <input type="text" th:field="*{nombreEmpresa}" class="form-control"
+                         th:classappend="${#fields.hasErrors('nombreEmpresa')} ? 'is-invalid'"/>
+                  <small class="invalid-feedback" th:if="${#fields.hasErrors('nombreEmpresa')}"
+                         th:errors="*{nombreEmpresa}"></small>
+                </div>
+                <div class="form-group col-md-4">
+                  <label>CIF *</label>
+                  <input type="text" th:field="*{cif}" class="form-control"
+                         th:classappend="${#fields.hasErrors('cif')} ? 'is-invalid'"
+                         placeholder="A12345678"/>
+                  <small class="invalid-feedback" th:if="${#fields.hasErrors('cif')}"
+                         th:errors="*{cif}"></small>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group col-md-6">
+                  <label>Email de contacto</label>
+                  <input type="email" th:field="*{emailContacto}" class="form-control"
+                         th:classappend="${#fields.hasErrors('emailContacto')} ? 'is-invalid'"/>
+                  <small class="invalid-feedback" th:if="${#fields.hasErrors('emailContacto')}"
+                         th:errors="*{emailContacto}"></small>
+                </div>
+                <div class="form-group col-md-6">
+                  <label>Telefono</label>
+                  <input type="text" th:field="*{telefono}" class="form-control"
+                         th:classappend="${#fields.hasErrors('telefono')} ? 'is-invalid'"/>
+                  <small class="invalid-feedback" th:if="${#fields.hasErrors('telefono')}"
+                         th:errors="*{telefono}"></small>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label>Direccion</label>
+                <input type="text" th:field="*{direccion}" class="form-control"/>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group col-md-5">
+                  <label>Ciudad</label>
+                  <input type="text" th:field="*{ciudad}" class="form-control"/>
+                </div>
+                <div class="form-group col-md-3">
+                  <label>Codigo postal</label>
+                  <input type="text" th:field="*{codigoPostal}" class="form-control"
+                         th:classappend="${#fields.hasErrors('codigoPostal')} ? 'is-invalid'"/>
+                  <small class="invalid-feedback" th:if="${#fields.hasErrors('codigoPostal')}"
+                         th:errors="*{codigoPostal}"></small>
+                </div>
+                <div class="form-group col-md-4">
+                  <label>Pais</label>
+                  <input type="text" th:field="*{pais}" class="form-control"
+                         placeholder="Espana"/>
+                </div>
+              </div>
+
+              <div class="form-group" th:if="${modoEdicion}">
+                <div class="custom-control custom-switch">
+                  <input type="checkbox" class="custom-control-input" id="activo"
+                         th:field="*{activo}"/>
+                  <label class="custom-control-label" for="activo">Proveedor activo</label>
+                </div>
+              </div>
+
+            </div>
+
+            <div class="card-footer">
+              <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i>
+                <span th:text="${modoEdicion} ? 'Guardar cambios' : 'Crear proveedor'"></span>
+              </button>
+              <a th:href="@{/proveedores}" class="btn btn-default">Cancelar</a>
+            </div>
+
+          </form>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <footer th:replace="~{fragments/footer :: footer}"></footer>
+</div>
+<th:block th:replace="~{fragments/scripts :: scripts}"></th:block>
+</body>
+</html>
