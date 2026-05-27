@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Producto ' + ${producto.nombre})}"></head>
+<body class="hold-transition sidebar-mini layout-fixed">
+<div class="wrapper">
+
+  <nav th:replace="~{fragments/header :: header}"></nav>
+  <aside th:replace="~{fragments/sidebar :: sidebar}"></aside>
+
+  <div class="content-wrapper">
+    <section class="content-header">
+      <div class="container-fluid">
+        <div class="row mb-2">
+          <div class="col-sm-8">
+            <h1>
+              <span th:text="${producto.nombre}"></span>
+              <span th:if="${producto.activo}" class="badge badge-success ml-2">Activo</span>
+              <span th:unless="${producto.activo}" class="badge badge-secondary ml-2">Inactivo</span>
+            </h1>
+          </div>
+          <div class="col-sm-4 text-right">
+            <a th:href="@{/productos}" class="btn btn-default">
+              <i class="fas fa-arrow-left"></i> Volver
+            </a>
+            <a th:href="@{/productos/{id}/editar(id=${producto.id})}"
+               class="btn btn-warning">
+              <i class="fas fa-edit"></i> Editar
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="content">
+      <div class="container-fluid">
+
+        <div th:if="${flashOk}" class="alert alert-success alert-dismissible">
+          <button type="button" class="close" data-dismiss="alert">&times;</button>
+          <span th:text="${flashOk}"></span>
+        </div>
+        <div th:if="${flashError}" class="alert alert-danger alert-dismissible">
+          <button type="button" class="close" data-dismiss="alert">&times;</button>
+          <span th:text="${flashError}"></span>
+        </div>
+
+        <div class="row">
+
+          <div class="col-md-8">
+            <div class="card">
+              <div class="card-header"><h3 class="card-title">Datos del producto</h3></div>
+              <div class="card-body">
+                <dl class="row">
+                  <dt class="col-sm-4">SKU</dt>
+                  <dd class="col-sm-8"><code th:text="${producto.sku}"></code></dd>
+
+                  <dt class="col-sm-4">Nombre</dt>
+                  <dd class="col-sm-8" th:text="${producto.nombre}"></dd>
+
+                  <dt class="col-sm-4">Descripcion</dt>
+                  <dd class="col-sm-8"
+                      th:text="${producto.descripcion ?: '-'}"
+                      style="white-space: pre-wrap;"></dd>
+
+                  <dt class="col-sm-4">Precio</dt>
+                  <dd class="col-sm-8">
+                    <strong th:text="${#numbers.formatDecimal(producto.precio, 1, 2)} + ' EUR'"></strong>
+                  </dd>
+
+                  <dt class="col-sm-4">Stock</dt>
+                  <dd class="col-sm-8">
+                    <span th:text="${producto.stock}"
+                          th:classappend="${producto.stock != null and producto.stockMinimo != null and producto.stock <= producto.stockMinimo} ? 'badge badge-danger' : ''"></span>
+                    <small class="text-muted"
+                           th:text="'(minimo: ' + ${producto.stockMinimo} + ')'"></small>
+                    <span th:if="${producto.stock != null and producto.stockMinimo != null and producto.stock <= producto.stockMinimo}"
+                          class="text-danger ml-2">
+                      <i class="fas fa-exclamation-triangle"></i> Bajo stock
+                    </span>
+                  </dd>
+
+                  <dt class="col-sm-4">Categoria</dt>
+                  <dd class="col-sm-8"
+                      th:text="${producto.categoria != null ? producto.categoria.nombre : '-'}"></dd>
+
+                  <dt class="col-sm-4">Proveedor</dt>
+                  <dd class="col-sm-8">
+                    <a th:if="${producto.proveedor != null}"
+                       th:href="@{/proveedores/{id}(id=${producto.proveedor.id})}"
+                       th:text="${producto.proveedor.nombreEmpresa}"></a>
+                    <span th:unless="${producto.proveedor != null}">-</span>
+                  </dd>
+
+                  <dt class="col-sm-4">Alta</dt>
+                  <dd class="col-sm-8"
+                      th:text="${producto.fechaAlta != null ? #temporals.format(producto.fechaAlta, 'dd/MM/yyyy HH:mm') : '-'}"></dd>
+
+                  <dt class="col-sm-4">Ultima actualizacion</dt>
+                  <dd class="col-sm-8"
+                      th:text="${producto.fechaActualizacion != null ? #temporals.format(producto.fechaActualizacion, 'dd/MM/yyyy HH:mm') : '-'}"></dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-4">
+
+            <!-- Imagen si existe -->
+            <div th:if="${producto.imagenUrl != null and !producto.imagenUrl.isBlank()}"
+                 class="card">
+              <div class="card-header"><h3 class="card-title">Imagen</h3></div>
+              <div class="card-body text-center">
+                <img th:src="${producto.imagenUrl}" alt="Imagen del producto"
+                     class="img-fluid"
+                     style="max-height: 200px; object-fit: contain;"/>
+              </div>
+            </div>
+
+            <!-- Zona peligrosa -->
+            <div class="card card-danger">
+              <div class="card-header"><h3 class="card-title">Zona peligrosa</h3></div>
+              <div class="card-body">
+                <p class="text-muted small">
+                  Si el producto tiene pedidos asociados, no podra eliminarse.
+                  Desactivelo en su lugar editandolo.
+                </p>
+                <form th:action="@{/productos/{id}/eliminar(id=${producto.id})}"
+                      method="post"
+                      onsubmit="return confirm('Eliminar este producto? Esta accion no se puede deshacer.');">
+                  <button type="submit" class="btn btn-danger btn-block">
+                    <i class="fas fa-trash"></i> Eliminar producto
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+  </div>
+
+  <footer th:replace="~{fragments/footer :: footer}"></footer>
+</div>
+<th:block th:replace="~{fragments/scripts :: scripts}"></th:block>
+</body>
+</html>

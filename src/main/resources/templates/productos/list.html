@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Productos')}"></head>
+<body class="hold-transition sidebar-mini layout-fixed">
+<div class="wrapper">
+
+  <nav th:replace="~{fragments/header :: header}"></nav>
+  <aside th:replace="~{fragments/sidebar :: sidebar}"></aside>
+
+  <div class="content-wrapper">
+    <section class="content-header">
+      <div class="container-fluid">
+        <div class="row mb-2">
+          <div class="col-sm-6"><h1>Productos</h1></div>
+          <div class="col-sm-6 text-right">
+            <a th:href="@{/productos/nuevo}" class="btn btn-primary">
+              <i class="fas fa-plus"></i> Nuevo producto
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="content">
+      <div class="container-fluid">
+
+        <div th:if="${flashOk}" class="alert alert-success alert-dismissible">
+          <button type="button" class="close" data-dismiss="alert">&times;</button>
+          <span th:text="${flashOk}"></span>
+        </div>
+        <div th:if="${flashError}" class="alert alert-danger alert-dismissible">
+          <button type="button" class="close" data-dismiss="alert">&times;</button>
+          <span th:text="${flashError}"></span>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <form th:action="@{/productos}" method="get" class="form-inline">
+              <div class="input-group mr-2" style="width: 280px;">
+                <input type="text" name="q" th:value="${q}" class="form-control"
+                       placeholder="Buscar por nombre, SKU, descripcion..."/>
+                <div class="input-group-append">
+                  <button class="btn btn-default" type="submit">
+                    <i class="fas fa-search"></i>
+                  </button>
+                </div>
+              </div>
+
+              <label class="mr-2">Categoria:</label>
+              <select name="categoriaId" class="form-control mr-2"
+                      onchange="this.form.submit()">
+                <option value="">Todas</option>
+                <option th:each="c : ${categorias}"
+                        th:value="${c.id}"
+                        th:text="${c.nombre}"
+                        th:selected="${categoriaIdFiltro != null and categoriaIdFiltro == c.id}"></option>
+              </select>
+
+              <div class="form-check ml-2">
+                <input type="checkbox" name="bajoStock" value="true" class="form-check-input"
+                       id="bajoStock"
+                       th:checked="${bajoStockFiltro != null and bajoStockFiltro}"
+                       onchange="this.form.submit()"/>
+                <label class="form-check-label" for="bajoStock">
+                  Solo bajo stock
+                </label>
+              </div>
+
+              <a th:if="${q != null and !q.isEmpty() or categoriaIdFiltro != null or bajoStockFiltro != null}"
+                 th:href="@{/productos}" class="btn btn-link ml-2">Limpiar</a>
+            </form>
+          </div>
+
+          <div class="card-body table-responsive p-0">
+            <table class="table table-hover text-nowrap">
+              <thead>
+              <tr>
+                <th>SKU</th>
+                <th>Nombre</th>
+                <th>Categoria</th>
+                <th>Proveedor</th>
+                <th class="text-right">Precio</th>
+                <th class="text-right">Stock</th>
+                <th>Estado</th>
+                <th class="text-right">Acciones</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr th:if="${productos.isEmpty()}">
+                <td colspan="8" class="text-center text-muted py-4">
+                  No hay productos que mostrar.
+                </td>
+              </tr>
+              <tr th:each="p : ${productos}">
+                <td><code th:text="${p.sku}"></code></td>
+                <td>
+                  <a th:href="@{/productos/{id}(id=${p.id})}"
+                     th:text="${p.nombre}"></a>
+                </td>
+                <td th:text="${p.categoria != null ? p.categoria.nombre : '-'}"></td>
+                <td th:text="${p.proveedor != null ? p.proveedor.nombreEmpresa : '-'}"></td>
+                <td class="text-right">
+                  <strong th:text="${#numbers.formatDecimal(p.precio, 1, 2)} + ' EUR'"></strong>
+                </td>
+                <td class="text-right">
+                  <span th:text="${p.stock}"
+                        th:classappend="${p.stock != null and p.stockMinimo != null and p.stock <= p.stockMinimo} ? 'badge badge-danger' : ''"></span>
+                  <small class="text-muted"
+                         th:text="'/ min ' + ${p.stockMinimo}"></small>
+                </td>
+                <td>
+                  <span th:if="${p.activo}" class="badge badge-success">Activo</span>
+                  <span th:unless="${p.activo}" class="badge badge-secondary">Inactivo</span>
+                </td>
+                <td class="text-right">
+                  <a th:href="@{/productos/{id}(id=${p.id})}"
+                     class="btn btn-sm btn-info" title="Ver">
+                    <i class="fas fa-eye"></i>
+                  </a>
+                  <a th:href="@{/productos/{id}/editar(id=${p.id})}"
+                     class="btn btn-sm btn-warning" title="Editar">
+                    <i class="fas fa-edit"></i>
+                  </a>
+                </td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </section>
+  </div>
+
+  <footer th:replace="~{fragments/footer :: footer}"></footer>
+</div>
+<th:block th:replace="~{fragments/scripts :: scripts}"></th:block>
+</body>
+</html>
