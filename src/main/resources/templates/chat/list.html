@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Chat')}"></head>
+<body class="hold-transition sidebar-mini layout-fixed">
+<div class="wrapper">
+
+  <nav th:replace="~{fragments/header :: header}"></nav>
+  <aside th:replace="~{fragments/sidebar :: sidebar}"></aside>
+
+  <div class="content-wrapper">
+    <section class="content-header">
+      <div class="container-fluid">
+        <h1>Chat con clientes</h1>
+      </div>
+    </section>
+
+    <section class="content">
+      <div class="container-fluid">
+
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Conversaciones</h3>
+            <span class="float-right text-muted small">
+              Los clientes inician la conversacion desde su frontend.
+              Aqui solo aparecen los que ya han escrito.
+            </span>
+          </div>
+
+          <div class="card-body p-0">
+            <ul class="users-list clearfix p-3"
+                th:if="${!conversaciones.isEmpty()}"
+                style="list-style: none; margin: 0;">
+
+              <li th:each="c : ${conversaciones}"
+                  style="display: block; margin-bottom: 0.5rem;">
+                <a th:href="@{/chat/{id}(id=${c.clienteUsuarioId})}"
+                   class="d-flex align-items-center p-3 rounded"
+                   style="background: #f8f9fa; text-decoration: none; color: inherit;">
+
+                  <div class="mr-3"
+                       style="width: 50px; height: 50px; border-radius: 50%;
+                              background: #7f77dd; color: white;
+                              display: flex; align-items: center; justify-content: center;
+                              font-size: 1.5rem;">
+                    <i class="fas fa-user"></i>
+                  </div>
+
+                  <div class="flex-grow-1">
+                    <div class="d-flex justify-content-between">
+                      <strong th:text="${c.clienteNombre ?: 'Usuario ' + c.clienteUsuarioId}"></strong>
+                      <small class="text-muted"
+                             th:if="${c.fechaUltimoMensaje != null}"
+                             th:text="${#temporals.format(c.fechaUltimoMensaje, 'dd/MM/yyyy HH:mm')}"></small>
+                    </div>
+                    <div class="text-muted small text-truncate"
+                         style="max-width: 600px;"
+                         th:text="${c.ultimoMensaje ?: '(sin mensajes)'}"></div>
+                  </div>
+
+                  <div class="ml-3" th:if="${c.noLeidos > 0}">
+                    <span class="badge badge-danger badge-pill"
+                          th:text="${c.noLeidos}"></span>
+                  </div>
+                </a>
+              </li>
+
+            </ul>
+
+            <div th:if="${conversaciones.isEmpty()}"
+                 class="text-center text-muted py-5">
+              <i class="fas fa-comments fa-3x mb-3" style="opacity: 0.3;"></i>
+              <p>No hay conversaciones todavia.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+  </div>
+
+  <footer th:replace="~{fragments/footer :: footer}"></footer>
+</div>
+<th:block th:replace="~{fragments/scripts :: scripts}"></th:block>
+</body>
+</html>

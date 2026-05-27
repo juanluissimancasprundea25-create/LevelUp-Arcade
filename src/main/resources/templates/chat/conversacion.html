@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/head :: head('Chat con ' + ${clienteNombre})}"></head>
+<body class="hold-transition sidebar-mini layout-fixed">
+<div class="wrapper">
+
+  <nav th:replace="~{fragments/header :: header}"></nav>
+  <aside th:replace="~{fragments/sidebar :: sidebar}"></aside>
+
+  <div class="content-wrapper">
+    <section class="content-header">
+      <div class="container-fluid">
+        <div class="row mb-2">
+          <div class="col-sm-8">
+            <h1>
+              <i class="fas fa-comments"></i>
+              <span th:text="${clienteNombre}"></span>
+              <small class="text-muted" th:text="'(ID ' + ${clienteUsuarioId} + ')'"></small>
+            </h1>
+          </div>
+          <div class="col-sm-4 text-right">
+            <a th:href="@{/chat}" class="btn btn-default">
+              <i class="fas fa-arrow-left"></i> Volver al listado
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="content">
+      <div class="container-fluid">
+
+        <div th:if="${flashError}" class="alert alert-danger alert-dismissible">
+          <button type="button" class="close" data-dismiss="alert">&times;</button>
+          <span th:text="${flashError}"></span>
+        </div>
+
+        <div class="card direct-chat direct-chat-primary">
+          <div class="card-header">
+            <h3 class="card-title">Conversacion</h3>
+            <div class="card-tools">
+              <span class="badge badge-primary" th:text="${pagina.totalElements} + ' mensajes'"></span>
+              <button type="button" class="btn btn-tool" id="btnRefresh"
+                      title="Refrescar manualmente">
+                <i class="fas fa-sync-alt"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="card-body" id="chatBody"
+               style="max-height: 500px; overflow-y: auto; background: #f4f6f9;">
+
+            <div th:if="${mensajes.isEmpty()}"
+                 class="text-center text-muted py-5">
+              <i class="fas fa-comment-slash fa-2x mb-2" style="opacity: 0.3;"></i>
+              <p>No hay mensajes en esta conversacion.</p>
+            </div>
+
+            <div th:each="m : ${mensajes}" class="mb-3">
+
+              <!-- Mensaje del cliente (recibido) -->
+              <div th:if="${m.remitenteId == clienteUsuarioId}"
+                   class="d-flex justify-content-start">
+                <div style="max-width: 70%; background: white; padding: 0.75rem 1rem;
+                            border-radius: 0 12px 12px 12px;
+                            box-shadow: 0 1px 2px rgba(0,0,0,0.1);">
+                  <div class="text-muted small mb-1">
+                    <strong th:text="${m.remitenteNombre}"></strong>
+                    <span th:text="${#temporals.format(m.fechaEnvio, 'dd/MM HH:mm')}"></span>
+                  </div>
+                  <div th:text="${m.contenido}" style="white-space: pre-wrap;"></div>
+                </div>
+              </div>
+
+              <!-- Mensaje del admin (enviado) -->
+              <div th:unless="${m.remitenteId == clienteUsuarioId}"
+                   class="d-flex justify-content-end">
+                <div style="max-width: 70%; background: #7f77dd; color: white;
+                            padding: 0.75rem 1rem;
+                            border-radius: 12px 0 12px 12px;
+                            box-shadow: 0 1px 2px rgba(0,0,0,0.1);">
+                  <div class="small mb-1" style="opacity: 0.85;">
+                    <strong th:text="${m.remitenteNombre}"></strong>
+                    <span th:text="${#temporals.format(m.fechaEnvio, 'dd/MM HH:mm')}"></span>
+                    <span th:if="${m.leido}" title="Leido"
+                          style="margin-left: 0.5rem;">
+                      <i class="fas fa-check-double"></i>
+                    </span>
+                    <span th:unless="${m.leido}" title="Enviado"
+                          style="margin-left: 0.5rem;">
+                      <i class="fas fa-check"></i>
+                    </span>
+                  </div>
+                  <div th:text="${m.contenido}" style="white-space: pre-wrap;"></div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <div class="card-footer">
+            <form th:action="@{/chat/{id}(id=${clienteUsuarioId})}" method="post">
+              <div class="input-group">
+                <textarea name="contenido" class="form-control" rows="2"
+                          placeholder="Escribe tu respuesta..."
+                          required maxlength="4000"></textarea>
+                <span class="input-group-append">
+                  <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-paper-plane"></i> Enviar
+                  </button>
+                </span>
+              </div>
+            </form>
+          </div>
+        </div>
+
+      </div>
+    </section>
+  </div>
+
+  <footer th:replace="~{fragments/footer :: footer}"></footer>
+</div>
+<th:block th:replace="~{fragments/scripts :: scripts}"></th:block>
+
+<script>
+  // Auto-scroll al fondo al cargar
+  (function() {
+    var chatBody = document.getElementById('chatBody');
+    if (chatBody) {
+      chatBody.scrollTop = chatBody.scrollHeight;
+    }
+  })();
+
+  // Polling cada 15 segundos: recarga la pagina si la pestana esta activa
+  var pollingInterval = setInterval(function() {
+    if (!document.hidden) {
+      window.location.reload();
+    }
+  }, 15000);
+
+  // Refresh manual con el boton de la cabecera
+  document.getElementById('btnRefresh').addEventListener('click', function() {
+    window.location.reload();
+  });
+</script>
+</body>
+</html>
