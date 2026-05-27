@@ -1,127 +1,287 @@
 <!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments/head :: head(${titulo})}"></head>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/head :: head('Dashboard')}"></head>
 <body class="hold-transition sidebar-mini layout-fixed">
-
 <div class="wrapper">
 
-    <!-- Navbar -->
-    <div th:replace="~{fragments/header :: header}"></div>
+  <nav th:replace="~{fragments/header :: header}"></nav>
+  <aside th:replace="~{fragments/sidebar :: sidebar}"></aside>
 
-    <!-- Sidebar -->
-    <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+  <div class="content-wrapper">
+    <section class="content-header">
+      <div class="container-fluid">
+        <div class="row mb-2">
+          <div class="col-sm-6">
+            <h1><i class="fas fa-tachometer-alt"></i> Dashboard</h1>
+          </div>
+          <div class="col-sm-6 text-right">
+            <span class="text-muted">
+              Bienvenido, <strong sec:authentication="name">usuario</strong>
+            </span>
+          </div>
+        </div>
+      </div>
+    </section>
 
-    <!-- Contenido -->
-    <div class="content-wrapper">
-        <section class="content-header">
-            <div class="container-fluid">
-                <div class="row mb-2">
-                    <div class="col-sm-6">
-                        <h1>Dashboard</h1>
-                    </div>
-                    <div class="col-sm-6">
-                        <ol class="breadcrumb float-sm-right">
-                            <li class="breadcrumb-item active">Inicio</li>
-                        </ol>
-                    </div>
-                </div>
+    <section class="content">
+      <div class="container-fluid">
+
+        <!-- ====== FILA 1: KPIs principales ====== -->
+        <div class="row">
+
+          <div class="col-lg-3 col-6">
+            <div class="small-box bg-info">
+              <div class="inner">
+                <h3 th:text="${kpis.totalClientes}">0</h3>
+                <p>Clientes</p>
+              </div>
+              <div class="icon"><i class="fas fa-users"></i></div>
+              <a th:href="@{/clientes}" class="small-box-footer">
+                Gestionar <i class="fas fa-arrow-circle-right"></i>
+              </a>
             </div>
-        </section>
+          </div>
 
-        <section class="content">
-            <div class="container-fluid">
-
-                <div class="alert alert-success">
-                    <h5><i class="icon fas fa-check"></i> Sesion iniciada</h5>
-                    Bienvenido, <strong th:text="${usuarioActual}">admin</strong>. Sistema operativo.
-                </div>
-
-                <!-- KPIs placeholder, se conectan a APIs reales en otro PR -->
-                <div class="row">
-                    <div class="col-lg-3 col-6">
-                        <div class="small-box bg-info">
-                            <div class="inner">
-                                <h3>--</h3>
-                                <p>Clientes</p>
-                            </div>
-                            <div class="icon">
-                                <i class="fas fa-users"></i>
-                            </div>
-                            <a th:href="@{/clientes}" class="small-box-footer">
-                                Ver mas <i class="fas fa-arrow-circle-right"></i>
-                            </a>
-                        </div>
-                    </div>
-
-                    <div class="col-lg-3 col-6">
-                        <div class="small-box bg-success">
-                            <div class="inner">
-                                <h3>--</h3>
-                                <p>Pedidos</p>
-                            </div>
-                            <div class="icon">
-                                <i class="fas fa-shopping-cart"></i>
-                            </div>
-                            <a th:href="@{/pedidos}" class="small-box-footer">
-                                Ver mas <i class="fas fa-arrow-circle-right"></i>
-                            </a>
-                        </div>
-                    </div>
-
-                    <div class="col-lg-3 col-6">
-                        <div class="small-box bg-warning">
-                            <div class="inner">
-                                <h3>--</h3>
-                                <p>Facturas</p>
-                            </div>
-                            <div class="icon">
-                                <i class="fas fa-file-invoice"></i>
-                            </div>
-                            <a th:href="@{/facturas}" class="small-box-footer">
-                                Ver mas <i class="fas fa-arrow-circle-right"></i>
-                            </a>
-                        </div>
-                    </div>
-
-                    <div class="col-lg-3 col-6">
-                        <div class="small-box bg-danger">
-                            <div class="inner">
-                                <h3>--</h3>
-                                <p>Devoluciones</p>
-                            </div>
-                            <div class="icon">
-                                <i class="fas fa-undo"></i>
-                            </div>
-                            <a th:href="@{/devoluciones}" class="small-box-footer">
-                                Ver mas <i class="fas fa-arrow-circle-right"></i>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="card card-levelup">
-                    <div class="card-header">
-                        <h3 class="card-title">Bienvenido al panel</h3>
-                    </div>
-                    <div class="card-body">
-                        <p>Desde aqui puedes gestionar todos los modulos del sistema LevelUp Arcade.
-                        Selecciona una opcion del menu lateral para empezar.</p>
-                        <p class="text-muted mb-0">
-                            <i class="fas fa-info-circle mr-1"></i>
-                            Las metricas y vistas CRUD se conectaran en los siguientes PRs.
-                        </p>
-                    </div>
-                </div>
-
+          <div class="col-lg-3 col-6">
+            <div class="small-box bg-warning">
+              <div class="inner">
+                <h3 th:text="${kpis.totalProveedores}">0</h3>
+                <p>Proveedores</p>
+              </div>
+              <div class="icon"><i class="fas fa-truck"></i></div>
+              <a th:href="@{/proveedores}" class="small-box-footer">
+                Gestionar <i class="fas fa-arrow-circle-right"></i>
+              </a>
             </div>
-        </section>
-    </div>
+          </div>
 
-    <!-- Footer -->
-    <div th:replace="~{fragments/footer :: footer}"></div>
+          <div class="col-lg-3 col-6">
+            <div class="small-box bg-success">
+              <div class="inner">
+                <h3 th:text="${kpis.totalProductos}">0</h3>
+                <p>Productos
+                  <span th:if="${kpis.productosBajoStock > 0}"
+                        class="badge badge-light ml-1"
+                        th:text="${kpis.productosBajoStock} + ' bajo stock'"></span>
+                </p>
+              </div>
+              <div class="icon"><i class="fas fa-gamepad"></i></div>
+              <a th:href="@{/productos}" class="small-box-footer">
+                Gestionar <i class="fas fa-arrow-circle-right"></i>
+              </a>
+            </div>
+          </div>
 
+          <div class="col-lg-3 col-6">
+            <div class="small-box" style="background: #7f77dd; color: white;">
+              <div class="inner">
+                <h3 th:text="${#numbers.formatDecimal(kpis.totalFacturado, 1, 2)} + ' EUR'">0 EUR</h3>
+                <p>Total facturado</p>
+              </div>
+              <div class="icon"><i class="fas fa-file-invoice-dollar"></i></div>
+              <a th:href="@{/facturas}" class="small-box-footer"
+                 style="color: rgba(255,255,255,0.8);">
+                Ver facturas <i class="fas fa-arrow-circle-right"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- ====== FILA 2: Pedidos por estado ====== -->
+        <div class="row">
+          <div class="col-12">
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">
+                  <i class="fas fa-shopping-cart"></i> Pedidos por estado
+                </h3>
+                <div class="card-tools">
+                  <a th:href="@{/pedidos}" class="btn btn-sm btn-default">
+                    Ver todos <i class="fas fa-arrow-right"></i>
+                  </a>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="row text-center">
+
+                  <div class="col-md col-6">
+                    <a th:href="@{/pedidos(estado='PENDIENTE')}"
+                       style="text-decoration: none; color: inherit;">
+                      <div class="description-block">
+                        <h2 class="text-warning"
+                            th:text="${kpis.pedidosPendientes}">0</h2>
+                        <span class="description-text">PENDIENTES</span>
+                      </div>
+                    </a>
+                  </div>
+
+                  <div class="col-md col-6">
+                    <a th:href="@{/pedidos(estado='PAGADO')}"
+                       style="text-decoration: none; color: inherit;">
+                      <div class="description-block">
+                        <h2 class="text-info"
+                            th:text="${kpis.pedidosPagados}">0</h2>
+                        <span class="description-text">PAGADOS</span>
+                      </div>
+                    </a>
+                  </div>
+
+                  <div class="col-md col-6">
+                    <a th:href="@{/pedidos(estado='ENVIADO')}"
+                       style="text-decoration: none; color: inherit;">
+                      <div class="description-block">
+                        <h2 class="text-primary"
+                            th:text="${kpis.pedidosEnviados}">0</h2>
+                        <span class="description-text">ENVIADOS</span>
+                      </div>
+                    </a>
+                  </div>
+
+                  <div class="col-md col-6">
+                    <a th:href="@{/pedidos(estado='ENTREGADO')}"
+                       style="text-decoration: none; color: inherit;">
+                      <div class="description-block">
+                        <h2 class="text-success"
+                            th:text="${kpis.pedidosEntregados}">0</h2>
+                        <span class="description-text">ENTREGADOS</span>
+                      </div>
+                    </a>
+                  </div>
+
+                  <div class="col-md col-6">
+                    <a th:href="@{/pedidos(estado='CANCELADO')}"
+                       style="text-decoration: none; color: inherit;">
+                      <div class="description-block">
+                        <h2 class="text-muted"
+                            th:text="${kpis.pedidosCancelados}">0</h2>
+                        <span class="description-text">CANCELADOS</span>
+                      </div>
+                    </a>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ====== FILA 3: Alertas + Ultimos pedidos ====== -->
+        <div class="row">
+
+          <!-- Alertas / Atencion -->
+          <div class="col-md-4">
+            <div class="card">
+              <div class="card-header bg-warning">
+                <h3 class="card-title">
+                  <i class="fas fa-exclamation-triangle"></i> Necesita atencion
+                </h3>
+              </div>
+              <div class="card-body p-0">
+                <ul class="list-group list-group-flush">
+
+                  <li class="list-group-item d-flex justify-content-between">
+                    <span><i class="fas fa-undo text-warning"></i>
+                      Devoluciones solicitadas</span>
+                    <a th:href="@{/devoluciones(estado='SOLICITADA')}"
+                       class="badge badge-warning"
+                       th:text="${kpis.devolucionesSolicitadas}">0</a>
+                  </li>
+
+                  <li class="list-group-item d-flex justify-content-between">
+                    <span><i class="fas fa-check text-info"></i>
+                      Devoluciones aprobadas (pendientes reembolso)</span>
+                    <a th:href="@{/devoluciones(estado='APROBADA')}"
+                       class="badge badge-info"
+                       th:text="${kpis.devolucionesAprobadas}">0</a>
+                  </li>
+
+                  <li class="list-group-item d-flex justify-content-between">
+                    <span><i class="fas fa-comments text-primary"></i>
+                      Mensajes sin leer</span>
+                    <a th:href="@{/chat}"
+                       class="badge badge-primary"
+                       th:text="${kpis.mensajesSinLeer}">0</a>
+                  </li>
+
+                  <li class="list-group-item d-flex justify-content-between">
+                    <span><i class="fas fa-box text-danger"></i>
+                      Productos bajo stock</span>
+                    <a th:href="@{/productos}"
+                       class="badge badge-danger"
+                       th:text="${kpis.productosBajoStock}">0</a>
+                  </li>
+
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- Ultimos pedidos -->
+          <div class="col-md-8">
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">
+                  <i class="fas fa-history"></i> Ultimos pedidos
+                </h3>
+                <div class="card-tools">
+                  <a th:href="@{/pedidos}" class="btn btn-sm btn-default">
+                    Ver todos
+                  </a>
+                </div>
+              </div>
+              <div class="card-body table-responsive p-0">
+                <table class="table table-hover">
+                  <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Cliente</th>
+                    <th>Fecha</th>
+                    <th class="text-right">Total</th>
+                    <th>Estado</th>
+                  </tr>
+                  </thead>
+                  <tbody>
+                  <tr th:if="${ultimosPedidos.isEmpty()}">
+                    <td colspan="5" class="text-center text-muted py-3">
+                      No hay pedidos todavia.
+                    </td>
+                  </tr>
+                  <tr th:each="p : ${ultimosPedidos}">
+                    <td>
+                      <a th:href="@{/pedidos/{id}(id=${p.id})}"
+                         th:text="'#' + ${p.id}"></a>
+                    </td>
+                    <td th:text="${p.clienteNombreCompleto}"></td>
+                    <td class="text-muted small"
+                        th:text="${p.fechaPedido != null ? #temporals.format(p.fechaPedido, 'dd/MM HH:mm') : '-'}"></td>
+                    <td class="text-right">
+                      <strong th:text="${#numbers.formatDecimal(p.total, 1, 2)} + ' EUR'"></strong>
+                    </td>
+                    <td>
+                      <span th:switch="${p.estado.name()}">
+                        <span th:case="'PENDIENTE'" class="badge badge-warning">PENDIENTE</span>
+                        <span th:case="'PAGADO'" class="badge badge-info">PAGADO</span>
+                        <span th:case="'ENVIADO'" class="badge badge-primary">ENVIADO</span>
+                        <span th:case="'ENTREGADO'" class="badge badge-success">ENTREGADO</span>
+                        <span th:case="'CANCELADO'" class="badge badge-secondary">CANCELADO</span>
+                      </span>
+                    </td>
+                  </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+  </div>
+
+  <footer th:replace="~{fragments/footer :: footer}"></footer>
 </div>
-
-<div th:replace="~{fragments/scripts :: scripts}"></div>
+<th:block th:replace="~{fragments/scripts :: scripts}"></th:block>
 </body>
 </html>

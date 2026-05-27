@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head(${modoEdicion} ? 'Editar producto' : 'Nuevo producto')}"></head>
+<body class="hold-transition sidebar-mini layout-fixed">
+<div class="wrapper">
+
+  <nav th:replace="~{fragments/header :: header}"></nav>
+  <aside th:replace="~{fragments/sidebar :: sidebar}"></aside>
+
+  <div class="content-wrapper">
+    <section class="content-header">
+      <div class="container-fluid">
+        <h1 th:if="${!modoEdicion}">Nuevo producto</h1>
+        <h1 th:if="${modoEdicion}">
+          Editar producto <small th:text="${nombreOriginal}"></small>
+        </h1>
+      </div>
+    </section>
+
+    <section class="content">
+      <div class="container-fluid">
+        <div class="card card-primary">
+          <div class="card-header">
+            <h3 class="card-title">Datos del producto</h3>
+          </div>
+
+          <form th:action="${modoEdicion} ? @{/productos/{id}(id=${productoId})} : @{/productos}"
+                th:object="${productoForm}" method="post">
+
+            <div class="card-body">
+
+              <div class="form-row">
+                <div class="form-group col-md-4">
+                  <label>SKU *</label>
+                  <input type="text" th:field="*{sku}" class="form-control"
+                         th:classappend="${#fields.hasErrors('sku')} ? 'is-invalid'"
+                         placeholder="ej. SNES-001"/>
+                  <small class="invalid-feedback" th:if="${#fields.hasErrors('sku')}"
+                         th:errors="*{sku}"></small>
+                </div>
+                <div class="form-group col-md-8">
+                  <label>Nombre *</label>
+                  <input type="text" th:field="*{nombre}" class="form-control"
+                         th:classappend="${#fields.hasErrors('nombre')} ? 'is-invalid'"/>
+                  <small class="invalid-feedback" th:if="${#fields.hasErrors('nombre')}"
+                         th:errors="*{nombre}"></small>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label>Descripcion</label>
+                <textarea th:field="*{descripcion}" class="form-control" rows="3"
+                          placeholder="Descripcion del producto (opcional)"></textarea>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group col-md-4">
+                  <label>Precio (EUR) *</label>
+                  <input type="number" step="0.01" min="0" th:field="*{precio}"
+                         class="form-control"
+                         th:classappend="${#fields.hasErrors('precio')} ? 'is-invalid'"/>
+                  <small class="invalid-feedback" th:if="${#fields.hasErrors('precio')}"
+                         th:errors="*{precio}"></small>
+                </div>
+                <div class="form-group col-md-4">
+                  <label>Stock *</label>
+                  <input type="number" min="0" th:field="*{stock}" class="form-control"
+                         th:classappend="${#fields.hasErrors('stock')} ? 'is-invalid'"/>
+                  <small class="invalid-feedback" th:if="${#fields.hasErrors('stock')}"
+                         th:errors="*{stock}"></small>
+                </div>
+                <div class="form-group col-md-4">
+                  <label>Stock minimo *</label>
+                  <input type="number" min="0" th:field="*{stockMinimo}" class="form-control"
+                         th:classappend="${#fields.hasErrors('stockMinimo')} ? 'is-invalid'"/>
+                  <small class="text-muted">Aviso de bajo stock por debajo de este valor.</small>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group col-md-6">
+                  <label>Categoria</label>
+                  <select name="categoriaIdForm" class="form-control">
+                    <option value="">-- Sin categoria --</option>
+                    <option th:each="c : ${categorias}"
+                            th:value="${c.id}"
+                            th:text="${c.nombre}"
+                            th:selected="${productoForm.categoria != null and productoForm.categoria.id == c.id}"></option>
+                  </select>
+                </div>
+                <div class="form-group col-md-6">
+                  <label>Proveedor</label>
+                  <select name="proveedorIdForm" class="form-control">
+                    <option value="">-- Sin proveedor --</option>
+                    <option th:each="p : ${proveedores}"
+                            th:value="${p.id}"
+                            th:text="${p.nombreEmpresa}"
+                            th:selected="${productoForm.proveedor != null and productoForm.proveedor.id == p.id}"></option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label>URL de imagen</label>
+                <input type="text" th:field="*{imagenUrl}" class="form-control"
+                       placeholder="https://..."/>
+                <small class="text-muted">URL externa a la imagen del producto (opcional).</small>
+              </div>
+
+              <div class="form-group">
+                <div class="custom-control custom-switch">
+                  <input type="checkbox" class="custom-control-input" id="activo"
+                         th:field="*{activo}"/>
+                  <label class="custom-control-label" for="activo">Producto activo</label>
+                </div>
+              </div>
+
+            </div>
+
+            <div class="card-footer">
+              <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i>
+                <span th:text="${modoEdicion} ? 'Guardar cambios' : 'Crear producto'"></span>
+              </button>
+              <a th:href="@{/productos}" class="btn btn-default">Cancelar</a>
+            </div>
+
+          </form>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <footer th:replace="~{fragments/footer :: footer}"></footer>
+</div>
+<th:block th:replace="~{fragments/scripts :: scripts}"></th:block>
+</body>
+</html>
