@@ -55,3 +55,8 @@ pgadmin_data/
 
 arranca.ps1
 rranca.ps1
+
+# === PR #18: produccion ===
+.env.prod
+nginx/certs/*.pem
+nginx/certs/*.key

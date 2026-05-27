@@ -1,0 +1,50 @@
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+
+  thymeleaf:
+    cache: true
+
+server:
+  forward-headers-strategy: native
+
+  servlet:
+    session:
+      cookie:
+        secure: true
+        http-only: true
+        same-site: lax
+      timeout: 30m
+
+  error:
+    include-message: never
+    include-stacktrace: never
+
+logging:
+  level:
+    root: WARN
+    com.leveluparcade: INFO
+    org.springframework.security: WARN
+    org.hibernate.SQL: WARN
+  file:
+    name: /tmp/levelup-arcade.log
+
+leveluparcade:
+  facturas:
+    url-verificacion-base: ${FACTURAS_URL_VERIFICACION_BASE:https://localhost/api/facturas/verificar}

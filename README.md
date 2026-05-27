@@ -236,6 +236,74 @@ Las comas en `-Dtest=A,B` requieren comillas en PowerShell:
 .\mvnw test "-Dtest=A,B"
 ```
 
+## Despliegue en producción
+
+El proyecto incluye un stack de producción separado con **Nginx + HTTPS + perfil `prod`**:
+
+```
+[ Cliente ] --HTTPS--> [ Nginx (443) ] --HTTP interno--> [ App Spring Boot (8080) ] --> [ Postgres ]
+```
+
+Ficheros clave:
+- `docker-compose-prod.yml` — stack de prod (no expone Postgres ni la app, solo nginx)
+- `nginx/Dockerfile` y `nginx/conf.d/levelup.conf.template` — reverse proxy
+- `src/main/resources/application-prod.yml` — Thymeleaf cacheado, cookies seguras, HikariCP
+- `.env.prod.example` — plantilla de variables
+
+### Opción A: Demo local con certificado autofirmado
+
+Pensado para defensa del proyecto, pruebas internas o capturas para la memoria.
+
+**1. Copia y edita las variables**
+
+```bash
+cp .env.prod.example .env.prod
+```
+
+**2. Genera el certificado autofirmado**
+
+Linux / Mac:
+```bash
+bash nginx/scripts/generar-cert-autofirmado.sh
+```
+
+Windows (PowerShell):
+```powershell
+.\nginx\scripts\generar-cert-autofirmado.ps1
+```
+
+**3. Levanta el stack de prod**
+
+```bash
+docker compose -f docker-compose-prod.yml --env-file .env.prod up -d --build
+```
+
+**4. Accede**
+
+- App: https://localhost (acepta el aviso "no seguro" del navegador, es normal en autofirmado)
+- Healthcheck nginx: https://localhost/healthz
+- 8080 ya no es accesible desde host: solo se llega vía nginx
+
+Para parar:
+```bash
+docker compose -f docker-compose-prod.yml --env-file .env.prod down
+```
+
+### Opción B: VPS con dominio real y Let's Encrypt
+
+Cuando tengas un dominio apuntando a un VPS, configura `SERVER_NAME=tudominio.com` y `APP_BASE_URL=https://tudominio.com` en `.env.prod`, levanta el stack, y pide el certificado a Let's Encrypt con el servicio `certbot` que ya está incluido en `docker-compose-prod.yml`.
+
+### Seguridad activada en prod
+
+- **HTTPS obligatorio**: nginx redirige 80 → 443.
+- **HSTS** (1 año): el navegador recordará usar HTTPS aunque escribas `http://`.
+- **Cabeceras endurecidas**: `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Content-Security-Policy`.
+- **Cookie de sesión** con `Secure + HttpOnly + SameSite=Lax`.
+- **Postgres no expuesto** al host (solo red interna Docker).
+- **App no expuesta** directamente (solo nginx hace proxy).
+- **Logs en WARN**, errores sin stacktrace al cliente.
+- **Pool HikariCP** dimensionado (20 conexiones max).
+
 ## Equipo
 
 - **Iván López Flash** — Productos, categorías, autenticación, IA
