@@ -68,8 +68,10 @@ public class SecurityConfig {
     public SecurityFilterChain webSecurityFilterChain(HttpSecurity http) throws Exception {
         http
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/login", "/error", "/favicon.ico").permitAll()
-                .requestMatchers("/css/**", "/js/**", "/images/**", "/webjars/**", "/adminlte/**", "/fragments/**").permitAll()
+                .requestMatchers("/", "/login", "/error", "/css/**", "/js/**",
+                 "/images/**", "/webjars/**", "/adminlte/**",
+                 "/fragments/**", "/favicon.ico",
+                 "/facturas/verificar/**").permitAll()
                 .anyRequest().hasRole("ADMIN")
             )
             .formLogin(form -> form
