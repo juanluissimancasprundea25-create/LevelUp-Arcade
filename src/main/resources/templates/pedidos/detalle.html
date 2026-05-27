@@ -1,208 +1,245 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
+
 <head th:replace="~{fragments/head :: head('Pedido #' + ${pedido.id})}"></head>
+
 <body class="hold-transition sidebar-mini layout-fixed">
-<div class="wrapper">
+    <div class="wrapper">
 
-  <nav th:replace="~{fragments/header :: header}"></nav>
-  <aside th:replace="~{fragments/sidebar :: sidebar}"></aside>
+        <nav th:replace="~{fragments/header :: header}"></nav>
+        <aside th:replace="~{fragments/sidebar :: sidebar}"></aside>
 
-  <div class="content-wrapper">
-    <section class="content-header">
-      <div class="container-fluid">
-        <div class="row mb-2">
-          <div class="col-sm-8">
-            <h1>
-              Pedido <span th:text="'#' + ${pedido.id}"></span>
-              <span th:switch="${pedido.estado.name()}" class="ml-2">
-                <span th:case="'PENDIENTE'" class="badge badge-warning">PENDIENTE</span>
-                <span th:case="'PAGADO'" class="badge badge-info">PAGADO</span>
-                <span th:case="'ENVIADO'" class="badge badge-primary">ENVIADO</span>
-                <span th:case="'ENTREGADO'" class="badge badge-success">ENTREGADO</span>
-                <span th:case="'CANCELADO'" class="badge badge-secondary">CANCELADO</span>
-              </span>
-            </h1>
-          </div>
-          <div class="col-sm-4 text-right">
-            <a th:href="@{/pedidos}" class="btn btn-default">
-              <i class="fas fa-arrow-left"></i> Volver
-            </a>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="content">
-      <div class="container-fluid">
-
-        <div th:if="${flashOk}" class="alert alert-success alert-dismissible">
-          <button type="button" class="close" data-dismiss="alert">&times;</button>
-          <span th:text="${flashOk}"></span>
-        </div>
-        <div th:if="${flashError}" class="alert alert-danger alert-dismissible">
-          <button type="button" class="close" data-dismiss="alert">&times;</button>
-          <span th:text="${flashError}"></span>
-        </div>
-
-        <div class="row">
-
-          <!-- Datos generales + lineas -->
-          <div class="col-md-8">
-            <div class="card">
-              <div class="card-header"><h3 class="card-title">Datos del pedido</h3></div>
-              <div class="card-body">
-                <dl class="row">
-                  <dt class="col-sm-4">ID</dt>
-                  <dd class="col-sm-8" th:text="'#' + ${pedido.id}"></dd>
-
-                  <dt class="col-sm-4">Fecha</dt>
-                  <dd class="col-sm-8"
-                      th:text="${pedido.fechaPedido != null ? #temporals.format(pedido.fechaPedido, 'dd/MM/yyyy HH:mm') : '-'}"></dd>
-
-                  <dt class="col-sm-4">Cliente</dt>
-                  <dd class="col-sm-8">
-                    <a th:href="@{/clientes/{id}(id=${pedido.clienteId})}"
-                       th:text="${pedido.clienteNombreCompleto}"></a><br>
-                    <small class="text-muted" th:text="${pedido.clienteEmail}"></small>
-                  </dd>
-
-                  <dt class="col-sm-4">Direccion de envio</dt>
-                  <dd class="col-sm-8" th:text="${pedido.direccionEnvio ?: '-'}"></dd>
-
-                  <dt class="col-sm-4">Metodo de pago</dt>
-                  <dd class="col-sm-8" th:text="${pedido.metodoPago ?: '-'}"></dd>
-                </dl>
-              </div>
-            </div>
-
-            <div class="card">
-              <div class="card-header"><h3 class="card-title">Lineas del pedido</h3></div>
-              <div class="card-body table-responsive p-0">
-                <table class="table table-striped">
-                  <thead>
-                  <tr>
-                    <th>SKU</th>
-                    <th>Producto</th>
-                    <th class="text-right">Cantidad</th>
-                    <th class="text-right">Precio unit.</th>
-                    <th class="text-right">Subtotal</th>
-                  </tr>
-                  </thead>
-                  <tbody>
-                  <tr th:each="l : ${pedido.lineas}">
-                    <td th:text="${l.productoSku}"></td>
-                    <td th:text="${l.productoNombre}"></td>
-                    <td class="text-right" th:text="${l.cantidad}"></td>
-                    <td class="text-right"
-                        th:text="${#numbers.formatDecimal(l.precioUnitario, 1, 2)} + ' EUR'"></td>
-                    <td class="text-right"
-                        th:text="${#numbers.formatDecimal(l.subtotal, 1, 2)} + ' EUR'"></td>
-                  </tr>
-                  </tbody>
-                  <tfoot>
-                  <tr>
-                    <th colspan="4" class="text-right">TOTAL</th>
-                    <th class="text-right"
-                        th:text="${#numbers.formatDecimal(pedido.total, 1, 2)} + ' EUR'"></th>
-                  </tr>
-                  </tfoot>
-                </table>
-              </div>
-            </div>
-          </div>
-
-          <!-- Acciones segun estado -->
-          <div class="col-md-4">
-
-            <!-- PAGAR (solo desde PENDIENTE) -->
-            <div th:if="${pedido.estado.name() == 'PENDIENTE'}" class="card card-info">
-              <div class="card-header"><h3 class="card-title">Marcar como pagado</h3></div>
-              <form th:action="@{/pedidos/{id}/pagar(id=${pedido.id})}" method="post">
-                <div class="card-body">
-                  <div class="form-group">
-                    <label>Metodo de pago</label>
-                    <select name="metodoPago" class="form-control" required>
-                      <option th:each="m : ${metodosPago}"
-                              th:value="${m}" th:text="${m}"></option>
-                    </select>
-                  </div>
-                  <p class="text-muted small mb-0">
-                    Al marcar como pagado se descontara el stock de los productos.
-                  </p>
+        <div class="content-wrapper">
+            <section class="content-header">
+                <div class="container-fluid">
+                    <div class="row mb-2">
+                        <div class="col-sm-8">
+                            <h1>
+                                Pedido <span th:text="'#' + ${pedido.id}"></span>
+                                <span th:switch="${pedido.estado.name()}" class="ml-2">
+                                    <span th:case="'PENDIENTE'" class="badge badge-warning">PENDIENTE</span>
+                                    <span th:case="'PAGADO'" class="badge badge-info">PAGADO</span>
+                                    <span th:case="'ENVIADO'" class="badge badge-primary">ENVIADO</span>
+                                    <span th:case="'ENTREGADO'" class="badge badge-success">ENTREGADO</span>
+                                    <span th:case="'CANCELADO'" class="badge badge-secondary">CANCELADO</span>
+                                </span>
+                            </h1>
+                        </div>
+                        <div class="col-sm-4 text-right">
+                            <a th:href="@{/pedidos}" class="btn btn-default">
+                                <i class="fas fa-arrow-left"></i> Volver
+                            </a>
+                        </div>
+                    </div>
                 </div>
-                <div class="card-footer">
-                  <button type="submit" class="btn btn-info btn-block">
-                    <i class="fas fa-credit-card"></i> Confirmar pago
-                  </button>
+            </section>
+
+            <section class="content">
+                <div class="container-fluid">
+
+                    <div th:if="${flashOk}" class="alert alert-success alert-dismissible">
+                        <button type="button" class="close" data-dismiss="alert">&times;</button>
+                        <span th:text="${flashOk}"></span>
+                    </div>
+                    <div th:if="${flashError}" class="alert alert-danger alert-dismissible">
+                        <button type="button" class="close" data-dismiss="alert">&times;</button>
+                        <span th:text="${flashError}"></span>
+                    </div>
+
+                    <div class="row">
+
+                        <!-- Datos generales + lineas -->
+                        <div class="col-md-8">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title">Datos del pedido</h3>
+                                </div>
+                                <div class="card-body">
+                                    <dl class="row">
+                                        <dt class="col-sm-4">ID</dt>
+                                        <dd class="col-sm-8" th:text="'#' + ${pedido.id}"></dd>
+
+                                        <dt class="col-sm-4">Fecha</dt>
+                                        <dd class="col-sm-8"
+                                            th:text="${pedido.fechaPedido != null ? #temporals.format(pedido.fechaPedido, 'dd/MM/yyyy HH:mm') : '-'}">
+                                        </dd>
+
+                                        <dt class="col-sm-4">Cliente</dt>
+                                        <dd class="col-sm-8">
+                                            <a th:href="@{/clientes/{id}(id=${pedido.clienteId})}"
+                                                th:text="${pedido.clienteNombreCompleto}"></a><br>
+                                            <small class="text-muted" th:text="${pedido.clienteEmail}"></small>
+                                        </dd>
+
+                                        <dt class="col-sm-4">Direccion de envio</dt>
+                                        <dd class="col-sm-8" th:text="${pedido.direccionEnvio ?: '-'}"></dd>
+
+                                        <dt class="col-sm-4">Metodo de pago</dt>
+                                        <dd class="col-sm-8" th:text="${pedido.metodoPago ?: '-'}"></dd>
+                                    </dl>
+                                </div>
+                            </div>
+
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title">Lineas del pedido</h3>
+                                </div>
+                                <div class="card-body table-responsive p-0">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>SKU</th>
+                                                <th>Producto</th>
+                                                <th class="text-right">Cantidad</th>
+                                                <th class="text-right">Precio unit.</th>
+                                                <th class="text-right">Subtotal</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr th:each="l : ${pedido.lineas}">
+                                                <td th:text="${l.productoSku}"></td>
+                                                <td th:text="${l.productoNombre}"></td>
+                                                <td class="text-right" th:text="${l.cantidad}"></td>
+                                                <td class="text-right"
+                                                    th:text="${#numbers.formatDecimal(l.precioUnitario, 1, 2)} + ' EUR'">
+                                                </td>
+                                                <td class="text-right"
+                                                    th:text="${#numbers.formatDecimal(l.subtotal, 1, 2)} + ' EUR'"></td>
+                                            </tr>
+                                        </tbody>
+                                        <tfoot>
+                                            <tr>
+                                                <th colspan="4" class="text-right">TOTAL</th>
+                                                <th class="text-right"
+                                                    th:text="${#numbers.formatDecimal(pedido.total, 1, 2)} + ' EUR'">
+                                                </th>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Acciones segun estado -->
+                        <div class="col-md-4">
+
+                            <!-- PAGAR (solo desde PENDIENTE) -->
+                            <div th:if="${pedido.estado.name() == 'PENDIENTE'}" class="card card-info">
+                                <div class="card-header">
+                                    <h3 class="card-title">Marcar como pagado</h3>
+                                </div>
+                                <form th:action="@{/pedidos/{id}/pagar(id=${pedido.id})}" method="post">
+                                    <div class="card-body">
+                                        <div class="form-group">
+                                            <label>Metodo de pago</label>
+                                            <select name="metodoPago" class="form-control" required>
+                                                <option th:each="m : ${metodosPago}" th:value="${m}" th:text="${m}">
+                                                </option>
+                                            </select>
+                                        </div>
+                                        <p class="text-muted small mb-0">
+                                            Al marcar como pagado se descontara el stock de los productos.
+                                        </p>
+                                    </div>
+                                    <div class="card-footer">
+                                        <button type="submit" class="btn btn-info btn-block">
+                                            <i class="fas fa-credit-card"></i> Confirmar pago
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+
+                            <!-- ENVIAR (solo desde PAGADO) -->
+                            <div th:if="${pedido.estado.name() == 'PAGADO'}" class="card card-primary">
+                                <div class="card-header">
+                                    <h3 class="card-title">Enviar pedido</h3>
+                                </div>
+                                <div class="card-body">
+                                    <p class="text-muted small">
+                                        Marca el pedido como enviado al cliente.
+                                    </p>
+                                    <form th:action="@{/pedidos/{id}/enviar(id=${pedido.id})}" method="post">
+                                        <button type="submit" class="btn btn-primary btn-block">
+                                            <i class="fas fa-truck"></i> Marcar como enviado
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+
+                            <!-- ENTREGAR (solo desde ENVIADO) -->
+                            <div th:if="${pedido.estado.name() == 'ENVIADO'}" class="card card-success">
+                                <div class="card-header">
+                                    <h3 class="card-title">Entregar pedido</h3>
+                                </div>
+                                <div class="card-body">
+                                    <p class="text-muted small">
+                                        Confirma la entrega al cliente.
+                                    </p>
+                                    <form th:action="@{/pedidos/{id}/entregar(id=${pedido.id})}" method="post">
+                                        <button type="submit" class="btn btn-success btn-block">
+                                            <i class="fas fa-check-double"></i> Marcar como entregado
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+
+                            <!-- CANCELAR (PENDIENTE o PAGADO) -->
+                            <div th:if="${pedido.estado.name() == 'PENDIENTE' or pedido.estado.name() == 'PAGADO'}"
+                                class="card card-danger">
+                                <div class="card-header">
+                                    <h3 class="card-title">Cancelar pedido</h3>
+                                </div>
+                                <div class="card-body">
+                                    <p class="text-muted small">
+                                        Si el pedido estaba PAGADO se restaurara el stock automaticamente.
+                                    </p>
+                                    <form th:action="@{/pedidos/{id}/cancelar(id=${pedido.id})}" method="post"
+                                        onsubmit="return confirm('Cancelar este pedido? Esta accion no se puede deshacer.');">
+                                        <button type="submit" class="btn btn-danger btn-block">
+                                            <i class="fas fa-ban"></i> Cancelar pedido
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+
+                            <!-- EMITIR FACTURA (desde PAGADO, ENVIADO o ENTREGADO) -->
+                            <div th:if="${pedido.estado.name() == 'PAGADO' or pedido.estado.name() == 'ENVIADO' or pedido.estado.name() == 'ENTREGADO'}"
+                                class="card card-secondary">
+                                <div class="card-header">
+                                    <h3 class="card-title">Factura</h3>
+                                </div>
+                                <div class="card-body">
+                                    <p class="text-muted small">
+                                        Emite la factura para este pedido. Si ya existe una factura, se devolvera
+                                        la misma (idempotente).
+                                    </p>
+                                    <form th:action="@{/facturas/emitir/{id}(id=${pedido.id})}" method="post">
+                                        <button type="submit" class="btn btn-secondary btn-block">
+                                            <i class="fas fa-file-invoice-dollar"></i> Emitir factura
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+
+                            <!-- Estado terminal -->
+                            <div th:if="${pedido.estado.name() == 'ENTREGADO' or pedido.estado.name() == 'CANCELADO'}"
+                                class="card">
+                                <div class="card-body text-center text-muted">
+                                    <i class="fas fa-info-circle"></i>
+                                    Este pedido esta en un estado final. No hay acciones disponibles.
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
                 </div>
-              </form>
-            </div>
-
-            <!-- ENVIAR (solo desde PAGADO) -->
-            <div th:if="${pedido.estado.name() == 'PAGADO'}" class="card card-primary">
-              <div class="card-header"><h3 class="card-title">Enviar pedido</h3></div>
-              <div class="card-body">
-                <p class="text-muted small">
-                  Marca el pedido como enviado al cliente.
-                </p>
-                <form th:action="@{/pedidos/{id}/enviar(id=${pedido.id})}" method="post">
-                  <button type="submit" class="btn btn-primary btn-block">
-                    <i class="fas fa-truck"></i> Marcar como enviado
-                  </button>
-                </form>
-              </div>
-            </div>
-
-            <!-- ENTREGAR (solo desde ENVIADO) -->
-            <div th:if="${pedido.estado.name() == 'ENVIADO'}" class="card card-success">
-              <div class="card-header"><h3 class="card-title">Entregar pedido</h3></div>
-              <div class="card-body">
-                <p class="text-muted small">
-                  Confirma la entrega al cliente.
-                </p>
-                <form th:action="@{/pedidos/{id}/entregar(id=${pedido.id})}" method="post">
-                  <button type="submit" class="btn btn-success btn-block">
-                    <i class="fas fa-check-double"></i> Marcar como entregado
-                  </button>
-                </form>
-              </div>
-            </div>
-
-            <!-- CANCELAR (PENDIENTE o PAGADO) -->
-            <div th:if="${pedido.estado.name() == 'PENDIENTE' or pedido.estado.name() == 'PAGADO'}"
-                 class="card card-danger">
-              <div class="card-header"><h3 class="card-title">Cancelar pedido</h3></div>
-              <div class="card-body">
-                <p class="text-muted small">
-                  Si el pedido estaba PAGADO se restaurara el stock automaticamente.
-                </p>
-                <form th:action="@{/pedidos/{id}/cancelar(id=${pedido.id})}" method="post"
-                      onsubmit="return confirm('Cancelar este pedido? Esta accion no se puede deshacer.');">
-                  <button type="submit" class="btn btn-danger btn-block">
-                    <i class="fas fa-ban"></i> Cancelar pedido
-                  </button>
-                </form>
-              </div>
-            </div>
-
-            <!-- Estado terminal -->
-            <div th:if="${pedido.estado.name() == 'ENTREGADO' or pedido.estado.name() == 'CANCELADO'}"
-                 class="card">
-              <div class="card-body text-center text-muted">
-                <i class="fas fa-info-circle"></i>
-                Este pedido esta en un estado final. No hay acciones disponibles.
-              </div>
-            </div>
-
-          </div>
+            </section>
         </div>
 
-      </div>
-    </section>
-  </div>
-
-  <footer th:replace="~{fragments/footer :: footer}"></footer>
-</div>
-<th:block th:replace="~{fragments/scripts :: scripts}"></th:block>
+        <footer th:replace="~{fragments/footer :: footer}"></footer>
+    </div>
+    <th:block th:replace="~{fragments/scripts :: scripts}"></th:block>
 </body>
+
 </html>
