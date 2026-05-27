@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Devolucion #' + ${devolucion.id})}"></head>
+<body class="hold-transition sidebar-mini layout-fixed">
+<div class="wrapper">
+
+  <nav th:replace="~{fragments/header :: header}"></nav>
+  <aside th:replace="~{fragments/sidebar :: sidebar}"></aside>
+
+  <div class="content-wrapper">
+    <section class="content-header">
+      <div class="container-fluid">
+        <div class="row mb-2">
+          <div class="col-sm-8">
+            <h1>
+              Devolucion <span th:text="'#' + ${devolucion.id}"></span>
+              <span th:switch="${devolucion.estado.name()}" class="ml-2">
+                <span th:case="'SOLICITADA'" class="badge badge-warning">SOLICITADA</span>
+                <span th:case="'APROBADA'" class="badge badge-info">APROBADA</span>
+                <span th:case="'RECHAZADA'" class="badge badge-secondary">RECHAZADA</span>
+                <span th:case="'COMPLETADA'" class="badge badge-success">COMPLETADA</span>
+              </span>
+            </h1>
+          </div>
+          <div class="col-sm-4 text-right">
+            <a th:href="@{/devoluciones}" class="btn btn-default">
+              <i class="fas fa-arrow-left"></i> Volver
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="content">
+      <div class="container-fluid">
+
+        <div th:if="${flashOk}" class="alert alert-success alert-dismissible">
+          <button type="button" class="close" data-dismiss="alert">&times;</button>
+          <span th:text="${flashOk}"></span>
+        </div>
+        <div th:if="${flashError}" class="alert alert-danger alert-dismissible">
+          <button type="button" class="close" data-dismiss="alert">&times;</button>
+          <span th:text="${flashError}"></span>
+        </div>
+
+        <div class="row">
+          <div class="col-md-8">
+
+            <div class="card">
+              <div class="card-header"><h3 class="card-title">Datos de la devolucion</h3></div>
+              <div class="card-body">
+                <dl class="row">
+                  <dt class="col-sm-4">ID</dt>
+                  <dd class="col-sm-8" th:text="'#' + ${devolucion.id}"></dd>
+
+                  <dt class="col-sm-4">Fecha solicitud</dt>
+                  <dd class="col-sm-8"
+                      th:text="${devolucion.fechaSolicitud != null ? #temporals.format(devolucion.fechaSolicitud, 'dd/MM/yyyy HH:mm') : '-'}"></dd>
+
+                  <dt class="col-sm-4">Pedido asociado</dt>
+                  <dd class="col-sm-8">
+                    <a th:href="@{/pedidos/{id}(id=${devolucion.pedidoId})}"
+                       th:text="'#' + ${devolucion.pedidoId}"></a>
+                  </dd>
+
+                  <dt class="col-sm-4">Cliente</dt>
+                  <dd class="col-sm-8">
+                    <a th:href="@{/clientes/{id}(id=${devolucion.clienteId})}"
+                       th:text="'ID ' + ${devolucion.clienteId}"></a>
+                  </dd>
+
+                  <dt class="col-sm-4">Motivo</dt>
+                  <dd class="col-sm-8" th:text="${devolucion.motivo}"></dd>
+
+                  <dt class="col-sm-4">Importe devuelto</dt>
+                  <dd class="col-sm-8">
+                    <span th:if="${devolucion.importeDevuelto != null}"
+                          th:text="${#numbers.formatDecimal(devolucion.importeDevuelto, 1, 2)} + ' EUR'"></span>
+                    <span th:unless="${devolucion.importeDevuelto != null}"
+                          class="text-muted">Pendiente de aprobacion</span>
+                  </dd>
+
+                  <dt class="col-sm-4">Observaciones admin</dt>
+                  <dd class="col-sm-8" th:text="${devolucion.observacionesAdmin ?: '-'}"></dd>
+                </dl>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header"><h3 class="card-title">Lineas devueltas</h3></div>
+              <div class="card-body table-responsive p-0">
+                <table class="table table-striped">
+                  <thead>
+                  <tr>
+                    <th>Producto</th>
+                    <th class="text-right">Cantidad</th>
+                    <th class="text-right">Precio unit.</th>
+                    <th class="text-right">Subtotal</th>
+                  </tr>
+                  </thead>
+                  <tbody>
+                  <tr th:each="l : ${devolucion.lineas}">
+                    <td th:text="${l.productoNombre}"></td>
+                    <td class="text-right" th:text="${l.cantidad}"></td>
+                    <td class="text-right"
+                        th:text="${#numbers.formatDecimal(l.precioUnitario, 1, 2)} + ' EUR'"></td>
+                    <td class="text-right"
+                        th:text="${#numbers.formatDecimal(l.subtotal, 1, 2)} + ' EUR'"></td>
+                  </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Acciones segun estado -->
+          <div class="col-md-4">
+
+            <!-- APROBAR + RECHAZAR (solo desde SOLICITADA) -->
+            <div th:if="${devolucion.estado.name() == 'SOLICITADA'}" class="card card-info">
+              <div class="card-header"><h3 class="card-title">Aprobar devolucion</h3></div>
+              <div class="card-body">
+                <p class="text-muted small">
+                  Al aprobar se restaurara el stock de los productos y se calculara
+                  el importe a reembolsar.
+                </p>
+                <form th:action="@{/devoluciones/{id}/aprobar(id=${devolucion.id})}"
+                      method="post">
+                  <button type="submit" class="btn btn-info btn-block">
+                    <i class="fas fa-check"></i> Aprobar
+                  </button>
+                </form>
+              </div>
+            </div>
+
+            <div th:if="${devolucion.estado.name() == 'SOLICITADA'}" class="card card-danger">
+              <div class="card-header"><h3 class="card-title">Rechazar devolucion</h3></div>
+              <form th:action="@{/devoluciones/{id}/rechazar(id=${devolucion.id})}"
+                    method="post">
+                <div class="card-body">
+                  <div class="form-group">
+                    <label>Motivo del rechazo *</label>
+                    <textarea name="motivoRechazo" class="form-control" rows="3"
+                              required maxlength="500"
+                              placeholder="Explica al cliente por que se rechaza"></textarea>
+                  </div>
+                </div>
+                <div class="card-footer">
+                  <button type="submit" class="btn btn-danger btn-block">
+                    <i class="fas fa-times"></i> Rechazar
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            <!-- COMPLETAR (solo desde APROBADA) -->
+            <div th:if="${devolucion.estado.name() == 'APROBADA'}" class="card card-success">
+              <div class="card-header"><h3 class="card-title">Completar devolucion</h3></div>
+              <div class="card-body">
+                <p class="text-muted small">
+                  Marca la devolucion como completada tras realizar el reembolso
+                  al cliente (fuera del sistema).
+                </p>
+                <form th:action="@{/devoluciones/{id}/completar(id=${devolucion.id})}"
+                      method="post">
+                  <button type="submit" class="btn btn-success btn-block">
+                    <i class="fas fa-check-double"></i> Marcar como completada
+                  </button>
+                </form>
+              </div>
+            </div>
+
+            <!-- Estado terminal -->
+            <div th:if="${devolucion.estado.name() == 'RECHAZADA' or devolucion.estado.name() == 'COMPLETADA'}"
+                 class="card">
+              <div class="card-body text-center text-muted">
+                <i class="fas fa-info-circle"></i>
+                Esta devolucion esta en un estado final. No hay acciones disponibles.
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </section>
+  </div>
+
+  <footer th:replace="~{fragments/footer :: footer}"></footer>
+</div>
+<th:block th:replace="~{fragments/scripts :: scripts}"></th:block>
+</body>
+</html>
