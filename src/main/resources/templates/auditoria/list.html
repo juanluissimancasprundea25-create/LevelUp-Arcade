@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Auditoria')}"></head>
+<body class="hold-transition sidebar-mini layout-fixed">
+<div class="wrapper">
+
+  <nav th:replace="~{fragments/header :: header}"></nav>
+  <aside th:replace="~{fragments/sidebar :: sidebar}"></aside>
+
+  <div class="content-wrapper">
+    <section class="content-header">
+      <div class="container-fluid">
+        <div class="row mb-2">
+          <div class="col-sm-8">
+            <h1>
+              <i class="fas fa-history"></i> Auditoria
+            </h1>
+          </div>
+          <div class="col-sm-4 text-right">
+            <span class="badge badge-info"
+                  th:text="${pagina.totalElements} + ' eventos totales'"></span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="content">
+      <div class="container-fluid">
+
+        <div class="card">
+          <div class="card-header">
+            <form th:action="@{/auditoria}" method="get" class="form-inline">
+              <label class="mr-2">Usuario ID:</label>
+              <input type="number" name="usuarioId" th:value="${usuarioIdFiltro}"
+                     class="form-control mr-3" style="width: 100px;"/>
+
+              <label class="mr-2">Accion:</label>
+              <input type="text" name="accion" th:value="${accionFiltro}"
+                     class="form-control mr-3" style="width: 180px;"
+                     placeholder="ej. CLIENTE_CREADO"/>
+
+              <label class="mr-2">Entidad:</label>
+              <input type="text" name="entidad" th:value="${entidadFiltro}"
+                     class="form-control mr-3" style="width: 140px;"
+                     placeholder="ej. Cliente"/>
+
+              <button type="submit" class="btn btn-default">
+                <i class="fas fa-filter"></i> Filtrar
+              </button>
+              <a th:if="${usuarioIdFiltro != null or accionFiltro != null or entidadFiltro != null}"
+                 th:href="@{/auditoria}" class="btn btn-link ml-2">Limpiar</a>
+              <span class="ml-auto text-muted small">
+                Solo se aplica el primer filtro relleno.
+              </span>
+            </form>
+          </div>
+
+          <div class="card-body table-responsive p-0">
+            <table class="table table-hover table-striped text-nowrap">
+              <thead>
+              <tr>
+                <th>ID</th>
+                <th>Fecha</th>
+                <th>Usuario</th>
+                <th>Accion</th>
+                <th>Entidad</th>
+                <th>Entidad ID</th>
+                <th>Descripcion</th>
+                <th>IP</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr th:if="${logs.isEmpty()}">
+                <td colspan="8" class="text-center text-muted py-4">
+                  No hay eventos que mostrar con los filtros actuales.
+                </td>
+              </tr>
+              <tr th:each="l : ${logs}">
+                <td th:text="${l.id}" class="text-muted small"></td>
+                <td th:text="${l.fecha != null ? #temporals.format(l.fecha, 'dd/MM/yyyy HH:mm:ss') : '-'}"
+                    class="text-muted small"></td>
+                <td>
+                  <span th:if="${l.usuarioId != null}"
+                        th:text="'#' + ${l.usuarioId}"></span>
+                  <span th:if="${l.usuarioId == null}"
+                        class="text-muted">sistema</span>
+                </td>
+                <td>
+                  <code th:text="${l.accion}"
+                        th:classappend="${#strings.contains(l.accion, 'ELIMINADO')
+                                       or #strings.contains(l.accion, 'CANCELADO')
+                                       or #strings.contains(l.accion, 'RECHAZADA')
+                                       or #strings.contains(l.accion, 'FALLIDO')}
+                                       ? 'text-danger' : ''"></code>
+                </td>
+                <td>
+                  <span th:text="${l.entidad ?: '-'}"
+                        class="badge badge-light"></span>
+                </td>
+                <td>
+                  <span th:if="${l.entidadId != null}"
+                        th:text="'#' + ${l.entidadId}"></span>
+                  <span th:if="${l.entidadId == null}"
+                        class="text-muted">-</span>
+                </td>
+                <td style="max-width: 400px; white-space: normal;"
+                    th:text="${l.descripcion ?: '-'}"></td>
+                <td class="text-muted small" th:text="${l.ipOrigen ?: '-'}"></td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Paginacion -->
+          <div class="card-footer clearfix" th:if="${pagina.totalPages > 1}">
+            <ul class="pagination pagination-sm m-0 float-right">
+              <li class="page-item" th:classappend="${pagina.first} ? 'disabled'">
+                <a class="page-link"
+                   th:href="@{/auditoria(page=0, usuarioId=${usuarioIdFiltro}, accion=${accionFiltro}, entidad=${entidadFiltro})}">««</a>
+              </li>
+              <li class="page-item" th:classappend="${pagina.first} ? 'disabled'">
+                <a class="page-link"
+                   th:href="@{/auditoria(page=${pagina.number - 1}, usuarioId=${usuarioIdFiltro}, accion=${accionFiltro}, entidad=${entidadFiltro})}">«</a>
+              </li>
+              <li class="page-item disabled">
+                <span class="page-link"
+                      th:text="'Pag. ' + (${pagina.number + 1}) + ' / ' + ${pagina.totalPages}"></span>
+              </li>
+              <li class="page-item" th:classappend="${pagina.last} ? 'disabled'">
+                <a class="page-link"
+                   th:href="@{/auditoria(page=${pagina.number + 1}, usuarioId=${usuarioIdFiltro}, accion=${accionFiltro}, entidad=${entidadFiltro})}">»</a>
+              </li>
+              <li class="page-item" th:classappend="${pagina.last} ? 'disabled'">
+                <a class="page-link"
+                   th:href="@{/auditoria(page=${pagina.totalPages - 1}, usuarioId=${usuarioIdFiltro}, accion=${accionFiltro}, entidad=${entidadFiltro})}">»»</a>
+              </li>
+            </ul>
+            <div class="float-left text-muted small">
+              Mostrando <span th:text="${pagina.numberOfElements}"></span> de
+              <span th:text="${pagina.totalElements}"></span> eventos
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+  </div>
+
+  <footer th:replace="~{fragments/footer :: footer}"></footer>
+</div>
+<th:block th:replace="~{fragments/scripts :: scripts}"></th:block>
+</body>
+</html>
