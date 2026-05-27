@@ -60,3 +60,7 @@ arranca.ps1
 .env.prod
 nginx/certs/*.pem
 nginx/certs/*.key
+
+# === PR #19: backups ===
+backups/
+!backups/.gitkeep

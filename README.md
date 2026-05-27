@@ -199,6 +199,37 @@ docker compose up --build
 
 Flyway volverá a aplicar todas las migraciones desde cero.
 
+### Backups automáticos
+
+El servicio `backup` (incluido en ambos `docker-compose`) hace un dump comprimido de Postgres cada 24h y conserva los últimos 7 días (30 en prod).
+
+Los backups se guardan en la carpeta `backups/` de la raíz del proyecto.
+
+```bash
+# Ver los backups generados
+ls -lh backups/
+
+# Forzar un backup manual (sin esperar al ciclo de 24h)
+docker exec levelup-backup /scripts/backup.sh
+
+# Ver logs del servicio
+docker compose logs -f backup
+```
+
+**Restaurar un backup** (sobrescribe la BD actual):
+
+Linux/Mac:
+```bash
+bash scripts/backup/restaurar.sh backups/levelup_levelup_20260527_030000.sql.gz
+```
+
+Windows (PowerShell):
+```powershell
+.\scripts\backup\restaurar.ps1 backups\levelup_levelup_20260527_030000.sql.gz
+```
+
+Más detalles en [`scripts/backup/README.md`](scripts/backup/README.md).
+
 ### Logs
 
 ```bash
