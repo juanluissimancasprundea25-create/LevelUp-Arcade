@@ -3,7 +3,7 @@
 <body>
 <aside th:fragment="sidebar" class="main-sidebar sidebar-dark-purple elevation-4">
     <!-- Logo -->
-    <a th:href="@{/dashboard}" class="brand-link text-center">
+    <a th:href="@{/admin/dashboard}" class="brand-link text-center">
         <span class="brand-text font-weight-light">
             <strong>LevelUp</strong> Arcade
         </span>
@@ -14,7 +14,7 @@
             <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu">
 
                 <li class="nav-item">
-                    <a th:href="@{/dashboard}" class="nav-link"
+                    <a th:href="@{/admin/dashboard}" class="nav-link"
                        th:classappend="${seccionActiva == 'dashboard'} ? 'active'">
                         <i class="nav-icon fas fa-tachometer-alt"></i>
                         <p>Dashboard</p>
@@ -24,21 +24,21 @@
                 <li class="nav-header">GESTION</li>
 
                 <li class="nav-item">
-                    <a th:href="@{/clientes}" class="nav-link"
+                    <a th:href="@{/admin/clientes}" class="nav-link"
                        th:classappend="${seccionActiva == 'clientes'} ? 'active'">
                         <i class="nav-icon fas fa-users"></i>
                         <p>Clientes</p>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a th:href="@{/proveedores}" class="nav-link"
+                    <a th:href="@{/admin/proveedores}" class="nav-link"
                        th:classappend="${seccionActiva == 'proveedores'} ? 'active'">
                         <i class="nav-icon fas fa-truck"></i>
                         <p>Proveedores</p>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a th:href="@{/productos}" class="nav-link"
+                    <a th:href="@{/admin/productos}" class="nav-link"
                        th:classappend="${seccionActiva == 'productos'} ? 'active'">
                         <i class="nav-icon fas fa-gamepad"></i>
                         <p>Productos</p>
@@ -48,21 +48,21 @@
                 <li class="nav-header">VENTAS</li>
 
                 <li class="nav-item">
-                    <a th:href="@{/pedidos}" class="nav-link"
+                    <a th:href="@{/admin/pedidos}" class="nav-link"
                        th:classappend="${seccionActiva == 'pedidos'} ? 'active'">
                         <i class="nav-icon fas fa-shopping-cart"></i>
                         <p>Pedidos</p>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a th:href="@{/facturas}" class="nav-link"
+                    <a th:href="@{/admin/facturas}" class="nav-link"
                        th:classappend="${seccionActiva == 'facturas'} ? 'active'">
                         <i class="nav-icon fas fa-file-invoice"></i>
                         <p>Facturas</p>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a th:href="@{/devoluciones}" class="nav-link"
+                    <a th:href="@{/admin/devoluciones}" class="nav-link"
                        th:classappend="${seccionActiva == 'devoluciones'} ? 'active'">
                         <i class="nav-icon fas fa-undo"></i>
                         <p>Devoluciones</p>
@@ -72,7 +72,7 @@
                 <li class="nav-header">COMUNICACION</li>
 
                 <li class="nav-item">
-                    <a th:href="@{/chat}" class="nav-link"
+                    <a th:href="@{/admin/chat}" class="nav-link"
                        th:classappend="${seccionActiva == 'chat'} ? 'active'">
                         <i class="nav-icon fas fa-comments"></i>
                         <p>Chat</p>
@@ -82,7 +82,7 @@
                 <li class="nav-header">ADMINISTRACION</li>
 
                 <li class="nav-item">
-                    <a th:href="@{/auditoria}" class="nav-link"
+                    <a th:href="@{/admin/auditoria}" class="nav-link"
                        th:classappend="${seccionActiva == 'auditoria'} ? 'active'">
                         <i class="nav-icon fas fa-history"></i>
                         <p>Auditoria</p>

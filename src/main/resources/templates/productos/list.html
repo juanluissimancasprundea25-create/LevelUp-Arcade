@@ -13,7 +13,7 @@
         <div class="row mb-2">
           <div class="col-sm-6"><h1>Productos</h1></div>
           <div class="col-sm-6 text-right">
-            <a th:href="@{/productos/nuevo}" class="btn btn-primary">
+            <a th:href="@{/admin/productos/nuevo}" class="btn btn-primary">
               <i class="fas fa-plus"></i> Nuevo producto
             </a>
           </div>
@@ -35,7 +35,7 @@
 
         <div class="card">
           <div class="card-header">
-            <form th:action="@{/productos}" method="get" class="form-inline">
+            <form th:action="@{/admin/productos}" method="get" class="form-inline">
               <div class="input-group mr-2" style="width: 280px;">
                 <input type="text" name="q" th:value="${q}" class="form-control"
                        placeholder="Buscar por nombre, SKU, descripcion..."/>
@@ -67,7 +67,7 @@
               </div>
 
               <a th:if="${q != null and !q.isEmpty() or categoriaIdFiltro != null or bajoStockFiltro != null}"
-                 th:href="@{/productos}" class="btn btn-link ml-2">Limpiar</a>
+                 th:href="@{/admin/productos}" class="btn btn-link ml-2">Limpiar</a>
             </form>
           </div>
 
@@ -94,7 +94,7 @@
               <tr th:each="p : ${productos}">
                 <td><code th:text="${p.sku}"></code></td>
                 <td>
-                  <a th:href="@{/productos/{id}(id=${p.id})}"
+                  <a th:href="@{/admin/productos/{id}(id=${p.id})}"
                      th:text="${p.nombre}"></a>
                 </td>
                 <td th:text="${p.categoria != null ? p.categoria.nombre : '-'}"></td>
@@ -113,11 +113,11 @@
                   <span th:unless="${p.activo}" class="badge badge-secondary">Inactivo</span>
                 </td>
                 <td class="text-right">
-                  <a th:href="@{/productos/{id}(id=${p.id})}"
+                  <a th:href="@{/admin/productos/{id}(id=${p.id})}"
                      class="btn btn-sm btn-info" title="Ver">
                     <i class="fas fa-eye"></i>
                   </a>
-                  <a th:href="@{/productos/{id}/editar(id=${p.id})}"
+                  <a th:href="@{/admin/productos/{id}/editar(id=${p.id})}"
                      class="btn btn-sm btn-warning" title="Editar">
                     <i class="fas fa-edit"></i>
                   </a>

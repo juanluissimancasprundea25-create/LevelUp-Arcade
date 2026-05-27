@@ -28,7 +28,7 @@
 
         <div class="card">
           <div class="card-header">
-            <form th:action="@{/devoluciones}" method="get" class="form-inline">
+            <form th:action="@{/admin/devoluciones}" method="get" class="form-inline">
               <label class="mr-2">Estado:</label>
               <select name="estado" class="form-control mr-3"
                       onchange="this.form.submit()">
@@ -46,7 +46,7 @@
                 <i class="fas fa-search"></i>
               </button>
               <a th:if="${estadoFiltro != null or clienteIdFiltro != null}"
-                 th:href="@{/devoluciones}" class="btn btn-link ml-2">Limpiar</a>
+                 th:href="@{/admin/devoluciones}" class="btn btn-link ml-2">Limpiar</a>
             </form>
           </div>
 
@@ -72,12 +72,12 @@
               </tr>
               <tr th:each="d : ${devoluciones}">
                 <td>
-                  <a th:href="@{/devoluciones/{id}(id=${d.id})}"
+                  <a th:href="@{/admin/devoluciones/{id}(id=${d.id})}"
                      th:text="'#' + ${d.id}"></a>
                 </td>
                 <td th:text="${d.fechaSolicitud != null ? #temporals.format(d.fechaSolicitud, 'dd/MM/yyyy HH:mm') : '-'}"></td>
                 <td>
-                  <a th:href="@{/pedidos/{id}(id=${d.pedidoId})}"
+                  <a th:href="@{/admin/pedidos/{id}(id=${d.pedidoId})}"
                      th:text="'#' + ${d.pedidoId}"></a>
                 </td>
                 <td th:text="${d.clienteId}"></td>
@@ -98,7 +98,7 @@
                   </span>
                 </td>
                 <td class="text-right">
-                  <a th:href="@{/devoluciones/{id}(id=${d.id})}"
+                  <a th:href="@{/admin/devoluciones/{id}(id=${d.id})}"
                      class="btn btn-sm btn-info" title="Ver">
                     <i class="fas fa-eye"></i>
                   </a>
@@ -113,7 +113,7 @@
             <ul class="pagination pagination-sm m-0 float-right">
               <li class="page-item" th:classappend="${pagina.first} ? 'disabled'">
                 <a class="page-link"
-                   th:href="@{/devoluciones(page=${pagina.number - 1}, estado=${estadoFiltro}, clienteId=${clienteIdFiltro})}">«</a>
+                   th:href="@{/admin/devoluciones(page=${pagina.number - 1}, estado=${estadoFiltro}, clienteId=${clienteIdFiltro})}">«</a>
               </li>
               <li class="page-item disabled">
                 <span class="page-link"
@@ -121,7 +121,7 @@
               </li>
               <li class="page-item" th:classappend="${pagina.last} ? 'disabled'">
                 <a class="page-link"
-                   th:href="@{/devoluciones(page=${pagina.number + 1}, estado=${estadoFiltro}, clienteId=${clienteIdFiltro})}">»</a>
+                   th:href="@{/admin/devoluciones(page=${pagina.number + 1}, estado=${estadoFiltro}, clienteId=${clienteIdFiltro})}">»</a>
               </li>
             </ul>
           </div>

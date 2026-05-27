@@ -15,10 +15,10 @@
             <h1 th:text="'Factura ' + ${factura.numeroFactura}"></h1>
           </div>
           <div class="col-sm-4 text-right">
-            <a th:href="@{/facturas}" class="btn btn-default">
+            <a th:href="@{/admin/facturas}" class="btn btn-default">
               <i class="fas fa-arrow-left"></i> Volver
             </a>
-            <a th:href="@{/facturas/{id}/pdf(id=${factura.id})}"
+            <a th:href="@{/admin/facturas/{id}/pdf(id=${factura.id})}"
                class="btn btn-primary">
               <i class="fas fa-file-pdf"></i> Descargar PDF
             </a>
@@ -50,13 +50,13 @@
 
                   <dt class="col-sm-4">Pedido</dt>
                   <dd class="col-sm-8">
-                    <a th:href="@{/pedidos/{id}(id=${factura.pedidoId})}"
+                    <a th:href="@{/admin/pedidos/{id}(id=${factura.pedidoId})}"
                        th:text="'#' + ${factura.pedidoId}"></a>
                   </dd>
 
                   <dt class="col-sm-4">Cliente</dt>
                   <dd class="col-sm-8">
-                    <a th:href="@{/clientes/{id}(id=${factura.clienteId})}"
+                    <a th:href="@{/admin/clientes/{id}(id=${factura.clienteId})}"
                        th:text="${factura.clienteNombre}"></a>
                   </dd>
 

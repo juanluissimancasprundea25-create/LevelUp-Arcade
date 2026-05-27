@@ -26,7 +26,7 @@
                             </h1>
                         </div>
                         <div class="col-sm-4 text-right">
-                            <a th:href="@{/pedidos}" class="btn btn-default">
+                            <a th:href="@{/admin/pedidos}" class="btn btn-default">
                                 <i class="fas fa-arrow-left"></i> Volver
                             </a>
                         </div>
@@ -66,7 +66,7 @@
 
                                         <dt class="col-sm-4">Cliente</dt>
                                         <dd class="col-sm-8">
-                                            <a th:href="@{/clientes/{id}(id=${pedido.clienteId})}"
+                                            <a th:href="@{/admin/clientes/{id}(id=${pedido.clienteId})}"
                                                 th:text="${pedido.clienteNombreCompleto}"></a><br>
                                             <small class="text-muted" th:text="${pedido.clienteEmail}"></small>
                                         </dd>
@@ -128,7 +128,7 @@
                                 <div class="card-header">
                                     <h3 class="card-title">Marcar como pagado</h3>
                                 </div>
-                                <form th:action="@{/pedidos/{id}/pagar(id=${pedido.id})}" method="post">
+                                <form th:action="@{/admin/pedidos/{id}/pagar(id=${pedido.id})}" method="post">
                                     <div class="card-body">
                                         <div class="form-group">
                                             <label>Metodo de pago</label>
@@ -158,7 +158,7 @@
                                     <p class="text-muted small">
                                         Marca el pedido como enviado al cliente.
                                     </p>
-                                    <form th:action="@{/pedidos/{id}/enviar(id=${pedido.id})}" method="post">
+                                    <form th:action="@{/admin/pedidos/{id}/enviar(id=${pedido.id})}" method="post">
                                         <button type="submit" class="btn btn-primary btn-block">
                                             <i class="fas fa-truck"></i> Marcar como enviado
                                         </button>
@@ -175,7 +175,7 @@
                                     <p class="text-muted small">
                                         Confirma la entrega al cliente.
                                     </p>
-                                    <form th:action="@{/pedidos/{id}/entregar(id=${pedido.id})}" method="post">
+                                    <form th:action="@{/admin/pedidos/{id}/entregar(id=${pedido.id})}" method="post">
                                         <button type="submit" class="btn btn-success btn-block">
                                             <i class="fas fa-check-double"></i> Marcar como entregado
                                         </button>
@@ -193,7 +193,7 @@
                                     <p class="text-muted small">
                                         Si el pedido estaba PAGADO se restaurara el stock automaticamente.
                                     </p>
-                                    <form th:action="@{/pedidos/{id}/cancelar(id=${pedido.id})}" method="post"
+                                    <form th:action="@{/admin/pedidos/{id}/cancelar(id=${pedido.id})}" method="post"
                                         onsubmit="return confirm('Cancelar este pedido? Esta accion no se puede deshacer.');">
                                         <button type="submit" class="btn btn-danger btn-block">
                                             <i class="fas fa-ban"></i> Cancelar pedido
@@ -213,7 +213,7 @@
                                         Emite la factura para este pedido. Si ya existe una factura, se devolvera
                                         la misma (idempotente).
                                     </p>
-                                    <form th:action="@{/facturas/emitir/{id}(id=${pedido.id})}" method="post">
+                                    <form th:action="@{/admin/facturas/emitir/{id}(id=${pedido.id})}" method="post">
                                         <button type="submit" class="btn btn-secondary btn-block">
                                             <i class="fas fa-file-invoice-dollar"></i> Emitir factura
                                         </button>

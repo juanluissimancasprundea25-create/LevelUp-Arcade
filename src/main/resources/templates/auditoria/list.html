@@ -29,7 +29,7 @@
 
         <div class="card">
           <div class="card-header">
-            <form th:action="@{/auditoria}" method="get" class="form-inline">
+            <form th:action="@{/admin/auditoria}" method="get" class="form-inline">
               <label class="mr-2">Usuario ID:</label>
               <input type="number" name="usuarioId" th:value="${usuarioIdFiltro}"
                      class="form-control mr-3" style="width: 100px;"/>
@@ -48,7 +48,7 @@
                 <i class="fas fa-filter"></i> Filtrar
               </button>
               <a th:if="${usuarioIdFiltro != null or accionFiltro != null or entidadFiltro != null}"
-                 th:href="@{/auditoria}" class="btn btn-link ml-2">Limpiar</a>
+                 th:href="@{/admin/auditoria}" class="btn btn-link ml-2">Limpiar</a>
               <span class="ml-auto text-muted small">
                 Solo se aplica el primer filtro relleno.
               </span>
@@ -116,11 +116,11 @@
             <ul class="pagination pagination-sm m-0 float-right">
               <li class="page-item" th:classappend="${pagina.first} ? 'disabled'">
                 <a class="page-link"
-                   th:href="@{/auditoria(page=0, usuarioId=${usuarioIdFiltro}, accion=${accionFiltro}, entidad=${entidadFiltro})}">««</a>
+                   th:href="@{/admin/auditoria(page=0, usuarioId=${usuarioIdFiltro}, accion=${accionFiltro}, entidad=${entidadFiltro})}">««</a>
               </li>
               <li class="page-item" th:classappend="${pagina.first} ? 'disabled'">
                 <a class="page-link"
-                   th:href="@{/auditoria(page=${pagina.number - 1}, usuarioId=${usuarioIdFiltro}, accion=${accionFiltro}, entidad=${entidadFiltro})}">«</a>
+                   th:href="@{/admin/auditoria(page=${pagina.number - 1}, usuarioId=${usuarioIdFiltro}, accion=${accionFiltro}, entidad=${entidadFiltro})}">«</a>
               </li>
               <li class="page-item disabled">
                 <span class="page-link"
@@ -128,11 +128,11 @@
               </li>
               <li class="page-item" th:classappend="${pagina.last} ? 'disabled'">
                 <a class="page-link"
-                   th:href="@{/auditoria(page=${pagina.number + 1}, usuarioId=${usuarioIdFiltro}, accion=${accionFiltro}, entidad=${entidadFiltro})}">»</a>
+                   th:href="@{/admin/auditoria(page=${pagina.number + 1}, usuarioId=${usuarioIdFiltro}, accion=${accionFiltro}, entidad=${entidadFiltro})}">»</a>
               </li>
               <li class="page-item" th:classappend="${pagina.last} ? 'disabled'">
                 <a class="page-link"
-                   th:href="@{/auditoria(page=${pagina.totalPages - 1}, usuarioId=${usuarioIdFiltro}, accion=${accionFiltro}, entidad=${entidadFiltro})}">»»</a>
+                   th:href="@{/admin/auditoria(page=${pagina.totalPages - 1}, usuarioId=${usuarioIdFiltro}, accion=${accionFiltro}, entidad=${entidadFiltro})}">»»</a>
               </li>
             </ul>
             <div class="float-left text-muted small">

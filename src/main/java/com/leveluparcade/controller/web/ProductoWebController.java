@@ -35,7 +35,7 @@ import java.util.List;
  * <p>Acordado con Ivan (autor del modulo de Productos).
  */
 @Controller
-@RequestMapping("/productos")
+@RequestMapping("/admin/productos")
 @PreAuthorize("hasRole('ADMIN')")
 public class ProductoWebController {
 

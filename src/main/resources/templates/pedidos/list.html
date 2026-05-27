@@ -28,7 +28,7 @@
 
         <div class="card">
           <div class="card-header">
-            <form th:action="@{/pedidos}" method="get" class="form-inline">
+            <form th:action="@{/admin/pedidos}" method="get" class="form-inline">
               <label class="mr-2">Filtrar por estado:</label>
               <select name="estado" class="form-control mr-2"
                       onchange="this.form.submit()">
@@ -38,7 +38,7 @@
                         th:text="${e}"
                         th:selected="${estadoFiltro != null and estadoFiltro.name() == e.name()}"></option>
               </select>
-              <a th:if="${estadoFiltro != null}" th:href="@{/pedidos}"
+              <a th:if="${estadoFiltro != null}" th:href="@{/admin/pedidos}"
                  class="btn btn-link">Limpiar</a>
             </form>
           </div>
@@ -65,7 +65,7 @@
               </tr>
               <tr th:each="p : ${pedidos}">
                 <td>
-                  <a th:href="@{/pedidos/{id}(id=${p.id})}"
+                  <a th:href="@{/admin/pedidos/{id}(id=${p.id})}"
                      th:text="'#' + ${p.id}"></a>
                 </td>
                 <td th:text="${p.fechaPedido != null ? #temporals.format(p.fechaPedido, 'dd/MM/yyyy HH:mm') : '-'}"></td>
@@ -88,7 +88,7 @@
                   </span>
                 </td>
                 <td class="text-right">
-                  <a th:href="@{/pedidos/{id}(id=${p.id})}"
+                  <a th:href="@{/admin/pedidos/{id}(id=${p.id})}"
                      class="btn btn-sm btn-info" title="Ver">
                     <i class="fas fa-eye"></i>
                   </a>

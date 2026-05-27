@@ -29,7 +29,7 @@ import java.util.List;
  * global de SecurityConfig.
  */
 @Controller
-@RequestMapping("/proveedores")
+@RequestMapping("/admin/proveedores")
 @PreAuthorize("hasRole('ADMIN')")
 public class ProveedorWebController {
 
