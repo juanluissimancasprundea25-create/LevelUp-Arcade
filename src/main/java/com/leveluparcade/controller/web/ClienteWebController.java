@@ -21,7 +21,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.util.List;
 
 @Controller
-@RequestMapping("/clientes")
+@RequestMapping("/admin/clientes")
 @PreAuthorize("hasRole('ADMIN')")
 public class ClienteWebController {
 

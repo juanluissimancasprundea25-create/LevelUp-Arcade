@@ -36,7 +36,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
  * URL sea consistente con el resto del panel web.
  */
 @Controller
-@RequestMapping("/facturas")
+@RequestMapping("/admin/facturas")
 public class FacturaWebController {
 
     private static final String SECCION = "facturas";
@@ -110,22 +110,5 @@ public class FacturaWebController {
                         "attachment; filename=\"" + filename + "\"")
                 .contentType(MediaType.APPLICATION_PDF)
                 .body(pdf);
-    }
-
-    /**
-     * Verificacion publica de una factura por su numero.
-     * Sin login. Es la URL a la que apunta el QR del PDF.
-     */
-    @GetMapping("/verificar/{numeroFactura}")
-    public String verificar(@PathVariable String numeroFactura, Model model) {
-        try {
-            FacturaResponse factura = facturaService.verificar(numeroFactura);
-            model.addAttribute("factura", factura);
-            model.addAttribute("valida", true);
-        } catch (ResourceNotFoundException ex) {
-            model.addAttribute("numeroBuscado", numeroFactura);
-            model.addAttribute("valida", false);
-        }
-        return "facturas/verificar";
     }
 }

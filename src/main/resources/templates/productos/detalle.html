@@ -19,10 +19,10 @@
             </h1>
           </div>
           <div class="col-sm-4 text-right">
-            <a th:href="@{/productos}" class="btn btn-default">
+            <a th:href="@{/admin/productos}" class="btn btn-default">
               <i class="fas fa-arrow-left"></i> Volver
             </a>
-            <a th:href="@{/productos/{id}/editar(id=${producto.id})}"
+            <a th:href="@{/admin/productos/{id}/editar(id=${producto.id})}"
                class="btn btn-warning">
               <i class="fas fa-edit"></i> Editar
             </a>
@@ -85,7 +85,7 @@
                   <dt class="col-sm-4">Proveedor</dt>
                   <dd class="col-sm-8">
                     <a th:if="${producto.proveedor != null}"
-                       th:href="@{/proveedores/{id}(id=${producto.proveedor.id})}"
+                       th:href="@{/admin/proveedores/{id}(id=${producto.proveedor.id})}"
                        th:text="${producto.proveedor.nombreEmpresa}"></a>
                     <span th:unless="${producto.proveedor != null}">-</span>
                   </dd>
@@ -123,7 +123,7 @@
                   Si el producto tiene pedidos asociados, no podra eliminarse.
                   Desactivelo en su lugar editandolo.
                 </p>
-                <form th:action="@{/productos/{id}/eliminar(id=${producto.id})}"
+                <form th:action="@{/admin/productos/{id}/eliminar(id=${producto.id})}"
                       method="post"
                       onsubmit="return confirm('Eliminar este producto? Esta accion no se puede deshacer.');">
                   <button type="submit" class="btn btn-danger btn-block">

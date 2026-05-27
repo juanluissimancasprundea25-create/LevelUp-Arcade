@@ -23,7 +23,7 @@
             </h1>
           </div>
           <div class="col-sm-4 text-right">
-            <a th:href="@{/devoluciones}" class="btn btn-default">
+            <a th:href="@{/admin/devoluciones}" class="btn btn-default">
               <i class="fas fa-arrow-left"></i> Volver
             </a>
           </div>
@@ -59,13 +59,13 @@
 
                   <dt class="col-sm-4">Pedido asociado</dt>
                   <dd class="col-sm-8">
-                    <a th:href="@{/pedidos/{id}(id=${devolucion.pedidoId})}"
+                    <a th:href="@{/admin/pedidos/{id}(id=${devolucion.pedidoId})}"
                        th:text="'#' + ${devolucion.pedidoId}"></a>
                   </dd>
 
                   <dt class="col-sm-4">Cliente</dt>
                   <dd class="col-sm-8">
-                    <a th:href="@{/clientes/{id}(id=${devolucion.clienteId})}"
+                    <a th:href="@{/admin/clientes/{id}(id=${devolucion.clienteId})}"
                        th:text="'ID ' + ${devolucion.clienteId}"></a>
                   </dd>
 
@@ -124,7 +124,7 @@
                   Al aprobar se restaurara el stock de los productos y se calculara
                   el importe a reembolsar.
                 </p>
-                <form th:action="@{/devoluciones/{id}/aprobar(id=${devolucion.id})}"
+                <form th:action="@{/admin/devoluciones/{id}/aprobar(id=${devolucion.id})}"
                       method="post">
                   <button type="submit" class="btn btn-info btn-block">
                     <i class="fas fa-check"></i> Aprobar
@@ -135,7 +135,7 @@
 
             <div th:if="${devolucion.estado.name() == 'SOLICITADA'}" class="card card-danger">
               <div class="card-header"><h3 class="card-title">Rechazar devolucion</h3></div>
-              <form th:action="@{/devoluciones/{id}/rechazar(id=${devolucion.id})}"
+              <form th:action="@{/admin/devoluciones/{id}/rechazar(id=${devolucion.id})}"
                     method="post">
                 <div class="card-body">
                   <div class="form-group">
@@ -161,7 +161,7 @@
                   Marca la devolucion como completada tras realizar el reembolso
                   al cliente (fuera del sistema).
                 </p>
-                <form th:action="@{/devoluciones/{id}/completar(id=${devolucion.id})}"
+                <form th:action="@{/admin/devoluciones/{id}/completar(id=${devolucion.id})}"
                       method="post">
                   <button type="submit" class="btn btn-success btn-block">
                     <i class="fas fa-check-double"></i> Marcar como completada

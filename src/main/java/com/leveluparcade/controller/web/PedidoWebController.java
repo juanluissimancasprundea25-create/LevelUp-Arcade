@@ -28,7 +28,7 @@ import java.util.List;
  * misma logica de negocio que la API REST {@code /api/pedidos}.
  */
 @Controller
-@RequestMapping("/pedidos")
+@RequestMapping("/admin/pedidos")
 @PreAuthorize("hasRole('ADMIN')")
 public class PedidoWebController {
 

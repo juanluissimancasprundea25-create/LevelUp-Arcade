@@ -20,7 +20,7 @@
             </h1>
           </div>
           <div class="col-sm-4 text-right">
-            <a th:href="@{/chat}" class="btn btn-default">
+            <a th:href="@{/admin/chat}" class="btn btn-default">
               <i class="fas fa-arrow-left"></i> Volver al listado
             </a>
           </div>
@@ -100,7 +100,7 @@
           </div>
 
           <div class="card-footer">
-            <form th:action="@{/chat/{id}(id=${clienteUsuarioId})}" method="post">
+            <form th:action="@{/admin/chat/{id}(id=${clienteUsuarioId})}" method="post">
               <div class="input-group">
                 <textarea name="contenido" class="form-control" rows="2"
                           placeholder="Escribe tu respuesta..."

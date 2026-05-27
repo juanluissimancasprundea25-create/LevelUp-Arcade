@@ -33,7 +33,7 @@
 
               <li th:each="c : ${conversaciones}"
                   style="display: block; margin-bottom: 0.5rem;">
-                <a th:href="@{/chat/{id}(id=${c.clienteUsuarioId})}"
+                <a th:href="@{/admin/chat/{id}(id=${c.clienteUsuarioId})}"
                    class="d-flex align-items-center p-3 rounded"
                    style="background: #f8f9fa; text-decoration: none; color: inherit;">
 

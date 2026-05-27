@@ -14,8 +14,8 @@
                     <div class="col-sm-6"><h1>Detalle de cliente</h1></div>
                     <div class="col-sm-6">
                         <ol class="breadcrumb float-sm-right">
-                            <li class="breadcrumb-item"><a th:href="@{/dashboard}">Inicio</a></li>
-                            <li class="breadcrumb-item"><a th:href="@{/clientes}">Clientes</a></li>
+                            <li class="breadcrumb-item"><a th:href="@{/admin/dashboard}">Inicio</a></li>
+                            <li class="breadcrumb-item"><a th:href="@{/admin/clientes}">Clientes</a></li>
                             <li class="breadcrumb-item active" th:text="${cliente.nombreCompleto()}">Cliente</li>
                         </ol>
                     </div>
@@ -40,10 +40,10 @@
                             <span th:unless="${cliente.activo()}" class="badge badge-secondary ml-2">Inactivo</span>
                         </h3>
                         <div class="card-tools">
-                            <a th:href="@{/clientes/{id}/editar(id=${cliente.id()})}" class="btn btn-warning btn-sm">
+                            <a th:href="@{/admin/clientes/{id}/editar(id=${cliente.id()})}" class="btn btn-warning btn-sm">
                                 <i class="fas fa-edit mr-1"></i> Editar
                             </a>
-                            <form th:action="@{/clientes/{id}/eliminar(id=${cliente.id()})}"
+                            <form th:action="@{/admin/clientes/{id}/eliminar(id=${cliente.id()})}"
                                   method="post" class="d-inline"
                                   onsubmit="return confirm('Seguro que quieres eliminar este cliente? Tambien se borrara su usuario.');">
                                 <button type="submit" class="btn btn-danger btn-sm">
@@ -86,7 +86,7 @@
                     </div>
 
                     <div class="card-footer">
-                        <a th:href="@{/clientes}" class="btn btn-secondary">
+                        <a th:href="@{/admin/clientes}" class="btn btn-secondary">
                             <i class="fas fa-arrow-left mr-1"></i> Volver
                         </a>
                     </div>

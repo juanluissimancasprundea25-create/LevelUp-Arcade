@@ -69,7 +69,7 @@ public class HomeController {
     }
 
     /** Pagina de login. Spring Security gestiona el POST. */
-    @GetMapping("/login")
+    @GetMapping("/admin/login")
     public String login(
             @RequestParam(value = "error", required = false) String error,
             Model model) {
@@ -86,7 +86,7 @@ public class HomeController {
      * <p>Carga contadores agregados de todas las entidades principales
      * y los pedidos mas recientes para mostrar como tabla resumen.
      */
-    @GetMapping("/dashboard")
+    @GetMapping("/admin/dashboard")
     @PreAuthorize("hasRole('ADMIN')")
     public String dashboard(Model model) {
 

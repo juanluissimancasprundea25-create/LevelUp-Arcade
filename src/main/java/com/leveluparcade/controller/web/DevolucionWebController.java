@@ -27,7 +27,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
  * <p>Llama directamente al DevolucionService (Opcion A).
  */
 @Controller
-@RequestMapping("/devoluciones")
+@RequestMapping("/admin/devoluciones")
 @PreAuthorize("hasRole('ADMIN')")
 public class DevolucionWebController {
 

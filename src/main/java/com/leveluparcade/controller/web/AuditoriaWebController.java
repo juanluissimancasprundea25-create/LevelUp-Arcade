@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RequestParam;
  * <p>Llama directamente al AuditoriaService (Opcion A).
  */
 @Controller
-@RequestMapping("/auditoria")
+@RequestMapping("/admin/auditoria")
 @PreAuthorize("hasRole('ADMIN')")
 public class AuditoriaWebController {
 

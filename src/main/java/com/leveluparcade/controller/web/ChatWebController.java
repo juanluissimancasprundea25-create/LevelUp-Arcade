@@ -32,7 +32,7 @@ import java.util.List;
  * <p>Llama directamente al ChatService (Opcion A).
  */
 @Controller
-@RequestMapping("/chat")
+@RequestMapping("/admin/chat")
 @PreAuthorize("hasRole('ADMIN')")
 public class ChatWebController {
 

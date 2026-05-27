@@ -20,12 +20,19 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
  *  1) apiSecurityFilterChain  (@Order(1)) -> /api/** -> JWT + STATELESS
  *     Para clientes API (mobile, integraciones, tests JWT).
  *
- *  2) webSecurityFilterChain  (@Order(2)) -> resto -> form-login + sesion + CSRF
+ *  2) adminSecurityFilterChain (@Order(2)) -> /admin/** -> form-login + sesion + CSRF
  *     Para el panel web AdminLTE (solo ROLE_ADMIN).
  *
- * IMPORTANTE: el orden importa. Spring evalua las cadenas por @Order ascendente.
+ * <p>Las rutas publicas (landing /, recursos estaticos, /facturas/verificar/**,
+ * y la futura tienda cliente en raiz) caen fuera de ambas cadenas y son
+ * accesibles sin login.
+ *
+ * <p>IMPORTANTE: el orden importa. Spring evalua las cadenas por @Order ascendente.
  * Si una peticion encaja con el securityMatcher de la primera, las siguientes
  * no se evaluan.
+ *
+ * <p>Cuando se anada el login de cliente (PR siguiente), se introducira una
+ * tercera cadena @Order(3) con securityMatcher para /cuenta/** o similar.
  */
 @Configuration
 @EnableMethodSecurity
@@ -59,32 +66,30 @@ public class SecurityConfig {
     }
 
     /**
-     * Cadena 2: panel web AdminLTE con form-login (sesion con cookie).
-     * Aplica a todo lo que NO sea /api/**.
-     * Solo ROLE_ADMIN puede acceder a /dashboard y rutas internas.
+     * Cadena 2: panel admin con form-login. Solo aplica a /admin/**.
+     * Todo lo que esta bajo /admin/** requiere ROLE_ADMIN, excepto la propia
+     * pagina de login (/admin/login).
      */
     @Bean
     @Order(2)
-    public SecurityFilterChain webSecurityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain adminSecurityFilterChain(HttpSecurity http) throws Exception {
         http
+            .securityMatcher("/admin/**")
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/login", "/error", "/css/**", "/js/**",
-                 "/images/**", "/webjars/**", "/adminlte/**",
-                 "/fragments/**", "/favicon.ico",
-                 "/facturas/verificar/**").permitAll()
+                .requestMatchers("/admin/login").permitAll()
                 .anyRequest().hasRole("ADMIN")
             )
             .formLogin(form -> form
-                .loginPage("/login")
-                .loginProcessingUrl("/login")
+                .loginPage("/admin/login")
+                .loginProcessingUrl("/admin/login")
                 .usernameParameter("email")
                 .passwordParameter("password")
-                .defaultSuccessUrl("/dashboard", true)
-                .failureUrl("/login?error")
+                .defaultSuccessUrl("/admin/dashboard", true)
+                .failureUrl("/admin/login?error")
                 .permitAll()
             )
             .logout(logout -> logout
-                .logoutUrl("/logout")
+                .logoutUrl("/admin/logout")
                 .logoutSuccessUrl("/?logout")
                 .invalidateHttpSession(true)
                 .deleteCookies("JSESSIONID")
@@ -95,8 +100,29 @@ public class SecurityConfig {
                 .maximumSessions(1)
             );
 
-        // CSRF queda ACTIVADO por defecto para form-login: el form debe
-        // incluir el token (Thymeleaf lo inyecta automaticamente con th:action).
+        // CSRF queda ACTIVADO por defecto para form-login.
+        return http.build();
+    }
+
+    /**
+     * Cadena 3: rutas publicas.
+     *
+     * <p>Cubre la landing /, recursos estaticos, /facturas/verificar/** (QR),
+     * /error, y CUALQUIER otra ruta no cubierta por las cadenas anteriores.
+     * Esto deja preparado el terreno para que la futura tienda cliente
+     * (catalogo, registro, etc) viva en la raiz sin necesitar login.
+     */
+    @Bean
+    @Order(3)
+    public SecurityFilterChain publicSecurityFilterChain(HttpSecurity http) throws Exception {
+        http
+            .authorizeHttpRequests(auth -> auth
+                .anyRequest().permitAll()
+            )
+            // CSRF desactivado en publico porque aun no hay formularios aqui.
+            // Cuando se anada registro de cliente / carrito, se evaluara reactivarlo
+            // solo para esas rutas, o moverlas a una cadena propia con CSRF on.
+            .csrf(csrf -> csrf.disable());
 
         return http.build();
     }

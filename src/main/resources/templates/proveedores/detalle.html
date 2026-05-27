@@ -15,10 +15,10 @@
             <h1 th:text="${proveedor.nombreEmpresa}"></h1>
           </div>
           <div class="col-sm-4 text-right">
-            <a th:href="@{/proveedores}" class="btn btn-default">
+            <a th:href="@{/admin/proveedores}" class="btn btn-default">
               <i class="fas fa-arrow-left"></i> Volver
             </a>
-            <a th:href="@{/proveedores/{id}/editar(id=${proveedor.id})}"
+            <a th:href="@{/admin/proveedores/{id}/editar(id=${proveedor.id})}"
                class="btn btn-warning">
               <i class="fas fa-edit"></i> Editar
             </a>
@@ -98,7 +98,7 @@
                   Si el proveedor tiene productos asociados, no podra eliminarse.
                   Desactivelo o reasigne los productos primero.
                 </p>
-                <form th:action="@{/proveedores/{id}/eliminar(id=${proveedor.id})}"
+                <form th:action="@{/admin/proveedores/{id}/eliminar(id=${proveedor.id})}"
                       method="post"
                       onsubmit="return confirm('Eliminar este proveedor? Esta accion no se puede deshacer.');">
                   <button type="submit" class="btn btn-danger btn-block">

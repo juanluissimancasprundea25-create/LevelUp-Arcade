@@ -37,7 +37,7 @@
                 <p>Clientes</p>
               </div>
               <div class="icon"><i class="fas fa-users"></i></div>
-              <a th:href="@{/clientes}" class="small-box-footer">
+              <a th:href="@{/admin/clientes}" class="small-box-footer">
                 Gestionar <i class="fas fa-arrow-circle-right"></i>
               </a>
             </div>
@@ -50,7 +50,7 @@
                 <p>Proveedores</p>
               </div>
               <div class="icon"><i class="fas fa-truck"></i></div>
-              <a th:href="@{/proveedores}" class="small-box-footer">
+              <a th:href="@{/admin/proveedores}" class="small-box-footer">
                 Gestionar <i class="fas fa-arrow-circle-right"></i>
               </a>
             </div>
@@ -67,7 +67,7 @@
                 </p>
               </div>
               <div class="icon"><i class="fas fa-gamepad"></i></div>
-              <a th:href="@{/productos}" class="small-box-footer">
+              <a th:href="@{/admin/productos}" class="small-box-footer">
                 Gestionar <i class="fas fa-arrow-circle-right"></i>
               </a>
             </div>
@@ -80,7 +80,7 @@
                 <p>Total facturado</p>
               </div>
               <div class="icon"><i class="fas fa-file-invoice-dollar"></i></div>
-              <a th:href="@{/facturas}" class="small-box-footer"
+              <a th:href="@{/admin/facturas}" class="small-box-footer"
                  style="color: rgba(255,255,255,0.8);">
                 Ver facturas <i class="fas fa-arrow-circle-right"></i>
               </a>
@@ -97,7 +97,7 @@
                   <i class="fas fa-shopping-cart"></i> Pedidos por estado
                 </h3>
                 <div class="card-tools">
-                  <a th:href="@{/pedidos}" class="btn btn-sm btn-default">
+                  <a th:href="@{/admin/pedidos}" class="btn btn-sm btn-default">
                     Ver todos <i class="fas fa-arrow-right"></i>
                   </a>
                 </div>
@@ -106,7 +106,7 @@
                 <div class="row text-center">
 
                   <div class="col-md col-6">
-                    <a th:href="@{/pedidos(estado='PENDIENTE')}"
+                    <a th:href="@{/admin/pedidos(estado='PENDIENTE')}"
                        style="text-decoration: none; color: inherit;">
                       <div class="description-block">
                         <h2 class="text-warning"
@@ -117,7 +117,7 @@
                   </div>
 
                   <div class="col-md col-6">
-                    <a th:href="@{/pedidos(estado='PAGADO')}"
+                    <a th:href="@{/admin/pedidos(estado='PAGADO')}"
                        style="text-decoration: none; color: inherit;">
                       <div class="description-block">
                         <h2 class="text-info"
@@ -128,7 +128,7 @@
                   </div>
 
                   <div class="col-md col-6">
-                    <a th:href="@{/pedidos(estado='ENVIADO')}"
+                    <a th:href="@{/admin/pedidos(estado='ENVIADO')}"
                        style="text-decoration: none; color: inherit;">
                       <div class="description-block">
                         <h2 class="text-primary"
@@ -139,7 +139,7 @@
                   </div>
 
                   <div class="col-md col-6">
-                    <a th:href="@{/pedidos(estado='ENTREGADO')}"
+                    <a th:href="@{/admin/pedidos(estado='ENTREGADO')}"
                        style="text-decoration: none; color: inherit;">
                       <div class="description-block">
                         <h2 class="text-success"
@@ -150,7 +150,7 @@
                   </div>
 
                   <div class="col-md col-6">
-                    <a th:href="@{/pedidos(estado='CANCELADO')}"
+                    <a th:href="@{/admin/pedidos(estado='CANCELADO')}"
                        style="text-decoration: none; color: inherit;">
                       <div class="description-block">
                         <h2 class="text-muted"
@@ -183,7 +183,7 @@
                   <li class="list-group-item d-flex justify-content-between">
                     <span><i class="fas fa-undo text-warning"></i>
                       Devoluciones solicitadas</span>
-                    <a th:href="@{/devoluciones(estado='SOLICITADA')}"
+                    <a th:href="@{/admin/devoluciones(estado='SOLICITADA')}"
                        class="badge badge-warning"
                        th:text="${kpis.devolucionesSolicitadas}">0</a>
                   </li>
@@ -191,7 +191,7 @@
                   <li class="list-group-item d-flex justify-content-between">
                     <span><i class="fas fa-check text-info"></i>
                       Devoluciones aprobadas (pendientes reembolso)</span>
-                    <a th:href="@{/devoluciones(estado='APROBADA')}"
+                    <a th:href="@{/admin/devoluciones(estado='APROBADA')}"
                        class="badge badge-info"
                        th:text="${kpis.devolucionesAprobadas}">0</a>
                   </li>
@@ -199,7 +199,7 @@
                   <li class="list-group-item d-flex justify-content-between">
                     <span><i class="fas fa-comments text-primary"></i>
                       Mensajes sin leer</span>
-                    <a th:href="@{/chat}"
+                    <a th:href="@{/admin/chat}"
                        class="badge badge-primary"
                        th:text="${kpis.mensajesSinLeer}">0</a>
                   </li>
@@ -207,7 +207,7 @@
                   <li class="list-group-item d-flex justify-content-between">
                     <span><i class="fas fa-box text-danger"></i>
                       Productos bajo stock</span>
-                    <a th:href="@{/productos}"
+                    <a th:href="@{/admin/productos}"
                        class="badge badge-danger"
                        th:text="${kpis.productosBajoStock}">0</a>
                   </li>
@@ -225,7 +225,7 @@
                   <i class="fas fa-history"></i> Ultimos pedidos
                 </h3>
                 <div class="card-tools">
-                  <a th:href="@{/pedidos}" class="btn btn-sm btn-default">
+                  <a th:href="@{/admin/pedidos}" class="btn btn-sm btn-default">
                     Ver todos
                   </a>
                 </div>
@@ -249,7 +249,7 @@
                   </tr>
                   <tr th:each="p : ${ultimosPedidos}">
                     <td>
-                      <a th:href="@{/pedidos/{id}(id=${p.id})}"
+                      <a th:href="@{/admin/pedidos/{id}(id=${p.id})}"
                          th:text="'#' + ${p.id}"></a>
                     </td>
                     <td th:text="${p.clienteNombreCompleto}"></td>
