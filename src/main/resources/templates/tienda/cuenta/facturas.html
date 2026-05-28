@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{tienda/fragments/head :: head('Mis facturas')}"></head>
+<body>
+
+<div th:replace="~{tienda/fragments/header :: header}"></div>
+
+<main class="container my-5">
+    <div class="row">
+
+        <div class="col-lg-3 mb-4">
+            <div th:replace="~{tienda/cuenta/_sidebar :: sidebar}"></div>
+        </div>
+
+        <div class="col-lg-9">
+            <h2 class="tienda-titulo mb-3">Mis facturas</h2>
+
+            <div th:if="${facturas.totalElements == 0}" class="card cuenta-card text-center py-5">
+                <div class="card-body">
+                    <i class="fas fa-file-invoice fa-3x text-muted mb-3"></i>
+                    <p class="text-muted mb-0">Aun no tienes facturas.</p>
+                </div>
+            </div>
+
+            <div th:if="${facturas.totalElements > 0}" class="card cuenta-card">
+                <div class="table-responsive">
+                    <table class="table mb-0 align-middle">
+                        <thead>
+                            <tr>
+                                <th>Numero</th>
+                                <th>Fecha</th>
+                                <th>Pedido</th>
+                                <th class="text-right">Total</th>
+                                <th class="text-right">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="f : ${facturas.content}">
+                                <td><strong th:text="${f.numeroFactura}">F-0001</strong></td>
+                                <td th:text="${#temporals.format(f.fechaEmision, 'dd/MM/yyyy')}">fecha</td>
+                                <td>
+                                    <a th:href="@{/cuenta/pedidos/{id}(id=${f.pedidoId})}"
+                                       th:text="'#' + ${f.pedidoId}">#0</a>
+                                </td>
+                                <td class="text-right font-weight-bold"
+                                    th:text="${#numbers.formatDecimal(f.total, 1, 'POINT', 2, 'COMMA')} + ' EUR'">
+                                    0,00 EUR
+                                </td>
+                                <td class="text-right">
+                                    <a th:href="@{/cuenta/facturas/{id}/pdf(id=${f.id})}"
+                                       class="btn btn-sm btn-outline-secondary"
+                                       title="Descargar PDF">
+                                        <i class="fas fa-download"></i> PDF
+                                    </a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Paginacion -->
+            <nav th:if="${totalPaginas > 1}" class="mt-3">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item" th:classappend="${paginaActual == 0} ? 'disabled'">
+                        <a class="page-link"
+                           th:href="@{/cuenta/facturas(page=${paginaActual - 1})}">Anterior</a>
+                    </li>
+                    <li class="page-item"
+                        th:each="i : ${#numbers.sequence(0, totalPaginas - 1)}"
+                        th:classappend="${i == paginaActual} ? 'active'">
+                        <a class="page-link"
+                           th:href="@{/cuenta/facturas(page=${i})}"
+                           th:text="${i + 1}">1</a>
+                    </li>
+                    <li class="page-item" th:classappend="${paginaActual + 1 >= totalPaginas} ? 'disabled'">
+                        <a class="page-link"
+                           th:href="@{/cuenta/facturas(page=${paginaActual + 1})}">Siguiente</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</main>
+
+<div th:replace="~{tienda/fragments/footer :: footer}"></div>
+<div th:replace="~{tienda/fragments/scripts :: scripts}"></div>
+</body>
+</html>

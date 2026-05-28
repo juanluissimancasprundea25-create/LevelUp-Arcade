@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!--
+  Sidebar de la zona privada del cliente. Marca el item activo con
+  ${seccionCuenta} (cada controller lo pone en el modelo).
+-->
+<div th:fragment="sidebar" class="card cuenta-sidebar">
+    <div class="list-group list-group-flush">
+        <a th:href="@{/cuenta}"
+           class="list-group-item list-group-item-action"
+           th:classappend="${seccionCuenta == 'inicio'} ? 'active' : ''">
+            <i class="fas fa-home mr-2"></i> Inicio
+        </a>
+        <a th:href="@{/cuenta/pedidos}"
+           class="list-group-item list-group-item-action"
+           th:classappend="${seccionCuenta == 'pedidos'} ? 'active' : ''">
+            <i class="fas fa-shopping-bag mr-2"></i> Mis pedidos
+        </a>
+        <a th:href="@{/cuenta/facturas}"
+           class="list-group-item list-group-item-action"
+           th:classappend="${seccionCuenta == 'facturas'} ? 'active' : ''">
+            <i class="fas fa-file-invoice mr-2"></i> Mis facturas
+        </a>
+        <a th:href="@{/cuenta/devoluciones}"
+           class="list-group-item list-group-item-action"
+           th:classappend="${seccionCuenta == 'devoluciones'} ? 'active' : ''">
+            <i class="fas fa-undo mr-2"></i> Mis devoluciones
+        </a>
+        <a th:href="@{/cuenta/perfil}"
+           class="list-group-item list-group-item-action"
+           th:classappend="${seccionCuenta == 'perfil'} ? 'active' : ''">
+            <i class="fas fa-user-cog mr-2"></i> Mi perfil
+        </a>
+    </div>
+</div>
+
+</body>
+</html>
