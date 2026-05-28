@@ -24,6 +24,11 @@
                         <i class="fas fa-home mr-1"></i> Inicio
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/catalogo}">
+                        <i class="fas fa-store mr-1"></i> Catalogo
+                    </a>
+                </li>
             </ul>
 
             <ul class="navbar-nav ml-auto">
@@ -37,6 +42,16 @@
                 <li class="nav-item" sec:authorize="!isAuthenticated()">
                     <a class="nav-link btn-registrar ml-2" th:href="@{/registro}">
                         Crear cuenta
+                    </a>
+                </li>
+
+                <!-- CARRITO (solo cliente) -->
+                <li class="nav-item" sec:authorize="hasRole('CLIENTE')">
+                    <a class="nav-link position-relative" th:href="@{/carrito}">
+                        <i class="fas fa-shopping-cart mr-1"></i> Carrito
+                        <span th:if="${carritoUnidades != null and carritoUnidades > 0}"
+                              class="badge badge-pill badge-carrito"
+                              th:text="${carritoUnidades}">0</span>
                     </a>
                 </li>
 

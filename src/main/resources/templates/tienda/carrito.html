@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{tienda/fragments/head :: head('Mi carrito')}"></head>
+<body>
+
+<div th:replace="~{tienda/fragments/header :: header}"></div>
+
+<main class="container py-4">
+
+    <h1 class="tienda-titulo mb-4">Mi carrito</h1>
+
+    <!-- Mensajes flash -->
+    <div th:if="${info}" class="alert alert-info" role="alert" th:text="${info}"></div>
+    <div th:if="${error}" class="alert alert-danger" role="alert" th:text="${error}"></div>
+
+    <!-- Carrito vacio -->
+    <div th:if="${carrito.estaVacio()}" class="text-center py-5">
+        <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
+        <p class="text-muted">Tu carrito esta vacio.</p>
+        <a th:href="@{/catalogo}" class="btn btn-tienda">
+            <i class="fas fa-store mr-2"></i> Ir al catalogo
+        </a>
+    </div>
+
+    <!-- Carrito con lineas -->
+    <div th:unless="${carrito.estaVacio()}" class="row">
+
+        <!-- Lista de lineas -->
+        <div class="col-lg-8 mb-4">
+            <div class="card carrito-card">
+                <div class="table-responsive">
+                    <table class="table mb-0 align-middle">
+                        <thead>
+                            <tr>
+                                <th>Producto</th>
+                                <th class="text-center">Precio</th>
+                                <th class="text-center" style="width: 170px;">Cantidad</th>
+                                <th class="text-right">Subtotal</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="linea : ${carrito.lineas}">
+                                <!-- Producto -->
+                                <td>
+                                    <a th:href="@{/producto/{id}(id=${linea.producto.id})}"
+                                       class="carrito-producto-nombre"
+                                       th:text="${linea.producto.nombre}">Producto</a>
+                                    <div class="small text-muted"
+                                         th:text="'Stock: ' + ${linea.producto.stock}">Stock</div>
+                                </td>
+                                <!-- Precio unitario -->
+                                <td class="text-center"
+                                    th:text="${#numbers.formatDecimal(linea.producto.precio, 1, 'POINT', 2, 'COMMA')} + ' EUR'">
+                                    0,00 EUR
+                                </td>
+                                <!-- Cantidad (form) -->
+                                <td class="text-center">
+                                    <form th:action="@{/carrito/linea/{id}(id=${linea.id})}" method="post"
+                                          class="form-inline justify-content-center">
+                                        <input type="number" name="cantidad"
+                                               class="form-control form-control-sm carrito-cantidad"
+                                               th:value="${linea.cantidad}"
+                                               min="1" th:max="${linea.producto.stock}">
+                                        <button type="submit" class="btn btn-sm btn-outline-secondary ml-2"
+                                                title="Actualizar cantidad">
+                                            <i class="fas fa-sync-alt"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                                <!-- Subtotal -->
+                                <td class="text-right font-weight-bold"
+                                    th:text="${#numbers.formatDecimal(linea.subtotal, 1, 'POINT', 2, 'COMMA')} + ' EUR'">
+                                    0,00 EUR
+                                </td>
+                                <!-- Eliminar -->
+                                <td class="text-right">
+                                    <form th:action="@{/carrito/linea/{id}/eliminar(id=${linea.id})}" method="post">
+                                        <button type="submit" class="btn btn-sm btn-link text-danger"
+                                                title="Eliminar">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between mt-3">
+                <a th:href="@{/catalogo}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left mr-1"></i> Seguir comprando
+                </a>
+                <form th:action="@{/carrito/vaciar}" method="post">
+                    <button type="submit" class="btn btn-outline-danger">
+                        <i class="fas fa-trash mr-1"></i> Vaciar carrito
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Resumen -->
+        <div class="col-lg-4">
+            <div class="card carrito-resumen">
+                <div class="card-body">
+                    <h5 class="mb-3">Resumen</h5>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Unidades</span>
+                        <span th:text="${carrito.totalUnidades}">0</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-3">
+                        <span class="text-muted">Total</span>
+                        <span class="carrito-total"
+                              th:text="${#numbers.formatDecimal(carrito.total, 1, 'POINT', 2, 'COMMA')} + ' EUR'">
+                            0,00 EUR
+                        </span>
+                    </div>
+                    <hr>
+                    <!-- El checkout llega en el PR #24 -->
+                    <button type="button" class="btn btn-tienda btn-block btn-lg" disabled>
+                        <i class="fas fa-lock mr-2"></i> Finalizar compra
+                    </button>
+                    <small class="text-muted d-block mt-2 text-center">
+                        El pago estara disponible en la proxima version.
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</main>
+
+<div th:replace="~{tienda/fragments/footer :: footer}"></div>
+<div th:replace="~{tienda/fragments/scripts :: scripts}"></div>
+
+</body>
+</html>
