@@ -83,7 +83,7 @@ public class DevolucionWebController {
         } catch (IllegalStateException ex) {
             ra.addFlashAttribute("flashError", ex.getMessage());
         }
-        return "redirect:/devoluciones/" + id;
+        return "redirect:/admin/devoluciones/" + id;
     }
 
     /** Rechaza la devolucion con el motivo recibido del form. */
@@ -96,7 +96,7 @@ public class DevolucionWebController {
         if (motivoRechazo == null || motivoRechazo.isBlank()) {
             ra.addFlashAttribute("flashError",
                     "Debes indicar un motivo para rechazar la devolucion.");
-            return "redirect:/devoluciones/" + id;
+            return "redirect:/admin/devoluciones/" + id;
         }
 
         try {
@@ -107,7 +107,7 @@ public class DevolucionWebController {
         } catch (IllegalStateException ex) {
             ra.addFlashAttribute("flashError", ex.getMessage());
         }
-        return "redirect:/devoluciones/" + id;
+        return "redirect:/admin/devoluciones/" + id;
     }
 
     /** Marca la devolucion como COMPLETADA (tras reembolso manual). */
@@ -119,6 +119,6 @@ public class DevolucionWebController {
         } catch (IllegalStateException ex) {
             ra.addFlashAttribute("flashError", ex.getMessage());
         }
-        return "redirect:/devoluciones/" + id;
+        return "redirect:/admin/devoluciones/" + id;
     }
 }

@@ -16,17 +16,9 @@
                         <i class="fas fa-sign-in-alt mr-2"></i>Iniciar sesion
                     </h2>
 
-                    <div th:if="${loginError}" class="alert alert-danger">
-                        <i class="fas fa-exclamation-triangle mr-2"></i>
-                        <span th:text="${loginError}">Error</span>
-                    </div>
                     <div th:if="${param.error}" class="alert alert-danger">
                         <i class="fas fa-exclamation-triangle mr-2"></i>
                         Email o contrasena incorrectos.
-                    </div>
-                    <div th:if="${logoutMsg}" class="alert alert-info">
-                        <i class="fas fa-info-circle mr-2"></i>
-                        <span th:text="${logoutMsg}">Sesion cerrada</span>
                     </div>
                     <div th:if="${param.logout}" class="alert alert-info">
                         <i class="fas fa-info-circle mr-2"></i>

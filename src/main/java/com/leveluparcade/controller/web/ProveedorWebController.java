@@ -96,7 +96,7 @@ public class ProveedorWebController {
             ProveedorResponse creado = proveedorService.crear(form);
             ra.addFlashAttribute("flashOk",
                     "Proveedor '" + creado.nombreEmpresa() + "' creado correctamente.");
-            return "redirect:/proveedores/" + creado.id();
+            return "redirect:/admin/proveedores/" + creado.id();
         } catch (IllegalArgumentException ex) {
             bindingResult.rejectValue("cif", "duplicado", ex.getMessage());
             model.addAttribute("modoEdicion", false);
@@ -152,7 +152,7 @@ public class ProveedorWebController {
             ProveedorResponse actualizado = proveedorService.actualizar(id, form);
             ra.addFlashAttribute("flashOk",
                     "Proveedor '" + actualizado.nombreEmpresa() + "' actualizado.");
-            return "redirect:/proveedores/" + id;
+            return "redirect:/admin/proveedores/" + id;
         } catch (IllegalArgumentException ex) {
             bindingResult.rejectValue("cif", "duplicado", ex.getMessage());
             model.addAttribute("proveedorId", id);
@@ -168,10 +168,10 @@ public class ProveedorWebController {
         try {
             proveedorService.eliminar(id);
             ra.addFlashAttribute("flashOk", "Proveedor eliminado.");
-            return "redirect:/proveedores";
+            return "redirect:/admin/proveedores";
         } catch (IllegalStateException ex) {
             ra.addFlashAttribute("flashError", ex.getMessage());
-            return "redirect:/proveedores/" + id;
+            return "redirect:/admin/proveedores/" + id;
         }
     }
 }

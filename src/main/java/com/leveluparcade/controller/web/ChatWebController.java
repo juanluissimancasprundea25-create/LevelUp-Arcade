@@ -98,7 +98,7 @@ public class ChatWebController {
 
         if (contenido == null || contenido.isBlank()) {
             ra.addFlashAttribute("flashError", "El mensaje no puede estar vacio.");
-            return "redirect:/chat/" + clienteUsuarioId;
+            return "redirect:/admin/chat/" + clienteUsuarioId;
         }
 
         try {
@@ -110,7 +110,7 @@ public class ChatWebController {
             ra.addFlashAttribute("flashError",
                     "No se ha podido enviar el mensaje: " + ex.getMessage());
         }
-        return "redirect:/chat/" + clienteUsuarioId;
+        return "redirect:/admin/chat/" + clienteUsuarioId;
     }
 
     /** Marca un mensaje como leido (llamado desde JS o como fallback). */
@@ -123,6 +123,6 @@ public class ChatWebController {
         } catch (Exception ignored) {
             // Si falla, no rompemos la UX
         }
-        return "redirect:/chat/" + clienteUsuarioId;
+        return "redirect:/admin/chat/" + clienteUsuarioId;
     }
 }
