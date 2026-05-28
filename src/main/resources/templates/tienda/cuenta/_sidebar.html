@@ -28,6 +28,11 @@
            th:classappend="${seccionCuenta == 'devoluciones'} ? 'active' : ''">
             <i class="fas fa-undo mr-2"></i> Mis devoluciones
         </a>
+        <a th:href="@{/cuenta/chat}"
+           class="list-group-item list-group-item-action"
+           th:classappend="${seccionCuenta == 'chat'} ? 'active' : ''">
+            <i class="fas fa-comments mr-2"></i> Chat soporte
+        </a>
         <a th:href="@{/cuenta/perfil}"
            class="list-group-item list-group-item-action"
            th:classappend="${seccionCuenta == 'perfil'} ? 'active' : ''">

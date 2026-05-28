@@ -364,3 +364,48 @@ body {
     color: #8a8aa0;
     font-weight: 600;
 }
+
+/* ============================================================
+   CHAT CLIENTE (PR #25)
+   ============================================================ */
+.chat-msg {
+    display: flex;
+    margin-bottom: .6rem;
+}
+.chat-msg-mio {
+    justify-content: flex-end;
+}
+.chat-msg-otro {
+    justify-content: flex-start;
+}
+.chat-burbuja {
+    max-width: 75%;
+    padding: .55rem .8rem;
+    border-radius: 14px;
+    box-shadow: 0 1px 2px rgba(0,0,0,.06);
+    word-wrap: break-word;
+}
+.chat-msg-mio .chat-burbuja {
+    background: var(--levelup-purple);
+    color: #fff;
+    border-bottom-right-radius: 4px;
+}
+.chat-msg-otro .chat-burbuja {
+    background: #fff;
+    color: #2c2c54;
+    border: 1px solid #e8e8f0;
+    border-bottom-left-radius: 4px;
+}
+.chat-burbuja-texto {
+    white-space: pre-wrap;
+    line-height: 1.35;
+}
+.chat-burbuja-meta {
+    font-size: .7rem;
+    opacity: .7;
+    margin-top: .2rem;
+    text-align: right;
+}
+.chat-msg-otro .chat-burbuja-meta {
+    color: #8a8aa0;
+}
