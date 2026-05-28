@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{tienda/fragments/head :: head(${producto.nombre})}"></head>
+<body>
+
+<div th:replace="~{tienda/fragments/header :: header}"></div>
+
+<main class="container py-4">
+
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb tienda-breadcrumb">
+            <li class="breadcrumb-item"><a th:href="@{/}">Inicio</a></li>
+            <li class="breadcrumb-item"><a th:href="@{/catalogo}">Catalogo</a></li>
+            <li class="breadcrumb-item active" aria-current="page"
+                th:text="${producto.nombre}">Producto</li>
+        </ol>
+    </nav>
+
+    <!-- Mensajes flash -->
+    <div th:if="${info}" class="alert alert-info" role="alert" th:text="${info}"></div>
+    <div th:if="${error}" class="alert alert-danger" role="alert" th:text="${error}"></div>
+
+    <div class="row">
+
+        <!-- Imagen -->
+        <div class="col-md-6 mb-4">
+            <div class="producto-detalle-img">
+                <img th:if="${producto.imagenUrl != null and !#strings.isEmpty(producto.imagenUrl)}"
+                     th:src="${producto.imagenUrl}"
+                     th:alt="${producto.nombre}"
+                     class="img-fluid rounded">
+                <div th:unless="${producto.imagenUrl != null and !#strings.isEmpty(producto.imagenUrl)}"
+                     class="producto-detalle-placeholder">
+                    <i class="fas fa-gamepad"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Datos y compra -->
+        <div class="col-md-6">
+            <small class="text-muted text-uppercase"
+                   th:text="${producto.categoria != null ? producto.categoria.nombre : 'Sin categoria'}">
+                Categoria
+            </small>
+            <h1 class="tienda-titulo mt-1 mb-2" th:text="${producto.nombre}">Producto</h1>
+            <p class="text-muted small mb-3">
+                SKU: <span th:text="${producto.sku}">SKU</span>
+            </p>
+
+            <div class="producto-detalle-precio mb-3"
+                 th:text="${#numbers.formatDecimal(producto.precio, 1, 'POINT', 2, 'COMMA')} + ' EUR'">
+                0,00 EUR
+            </div>
+
+            <!-- Estado de stock con cantidad exacta -->
+            <div class="mb-4">
+                <div th:if="${producto.stock != null and producto.stock == 0}"
+                     class="alert alert-secondary py-2 px-3 mb-0 d-inline-block">
+                    <i class="fas fa-times-circle mr-1"></i>
+                    Sin stock
+                </div>
+                <div th:if="${producto.stock != null and producto.stock > 0 and producto.stock < 5}"
+                     class="alert alert-warning py-2 px-3 mb-0 d-inline-block">
+                    <i class="fas fa-exclamation-triangle mr-1"></i>
+                    Quedan solo <strong th:text="${producto.stock}">0</strong> unidades
+                </div>
+                <div th:if="${producto.stock != null and producto.stock >= 5}"
+                     class="alert alert-success py-2 px-3 mb-0 d-inline-block">
+                    <i class="fas fa-check-circle mr-1"></i>
+                    <strong th:text="${producto.stock}">0</strong> unidades disponibles
+                </div>
+            </div>
+
+            <!-- Form anadir al carrito -->
+            <form th:action="@{/carrito/add}" method="post" class="mb-4">
+                <input type="hidden" name="productoId" th:value="${producto.id}">
+                <div class="form-row align-items-end">
+                    <div class="form-group col-4 col-sm-3 mb-2">
+                        <label for="cantidad" class="small font-weight-bold text-muted mb-1">
+                            Cantidad
+                        </label>
+                        <input type="number"
+                               id="cantidad"
+                               name="cantidad"
+                               class="form-control"
+                               value="1"
+                               min="1"
+                               th:max="${producto.stock != null and producto.stock > 0 ? producto.stock : 1}"
+                               th:disabled="${producto.stock == null or producto.stock == 0}">
+                    </div>
+                    <div class="form-group col-8 col-sm-9 mb-2">
+                        <button type="submit"
+                                class="btn btn-tienda btn-lg btn-block"
+                                th:disabled="${producto.stock == null or producto.stock == 0}">
+                            <i class="fas fa-cart-plus mr-2"></i>
+                            Anadir al carrito
+                        </button>
+                    </div>
+                </div>
+                <small class="text-muted d-block">
+                    <i class="fas fa-info-circle mr-1"></i>
+                    El carrito estara disponible en la proxima version.
+                </small>
+            </form>
+
+            <!-- Descripcion -->
+            <div th:if="${producto.descripcion != null and !#strings.isEmpty(producto.descripcion)}"
+                 class="producto-detalle-desc">
+                <h5 class="mb-2">Descripcion</h5>
+                <p th:text="${producto.descripcion}" class="text-muted">Descripcion del producto</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Relacionados -->
+    <section th:if="${!#lists.isEmpty(relacionados)}" class="mt-5">
+        <h3 class="tienda-titulo mb-3">Tambien te puede interesar</h3>
+        <div class="row">
+            <div class="col-6 col-md-3 mb-3" th:each="r : ${relacionados}">
+                <a th:href="@{/producto/{id}(id=${r.id})}" class="card producto-card h-100 text-decoration-none">
+                    <div class="producto-thumb">
+                        <img th:if="${r.imagenUrl != null and !#strings.isEmpty(r.imagenUrl)}"
+                             th:src="${r.imagenUrl}" th:alt="${r.nombre}" class="card-img-top">
+                        <div th:unless="${r.imagenUrl != null and !#strings.isEmpty(r.imagenUrl)}"
+                             class="producto-thumb-placeholder">
+                            <i class="fas fa-gamepad"></i>
+                        </div>
+                    </div>
+                    <div class="card-body p-2">
+                        <h6 class="card-title mb-1 producto-nombre" th:text="${r.nombre}">Nombre</h6>
+                        <span class="producto-precio"
+                              th:text="${#numbers.formatDecimal(r.precio, 1, 'POINT', 2, 'COMMA')} + ' EUR'">
+                            0,00 EUR
+                        </span>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </section>
+
+</main>
+
+<div th:replace="~{tienda/fragments/footer :: footer}"></div>
+<div th:replace="~{tienda/fragments/scripts :: scripts}"></div>
+
+</body>
+</html>

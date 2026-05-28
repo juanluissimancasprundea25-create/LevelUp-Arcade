@@ -63,6 +63,13 @@ body {
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(127, 119, 221, 0.4);
 }
+.btn-tienda:disabled,
+.btn-tienda.disabled {
+    background: #b8b8c8;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+}
 
 /* --- Cards auth y cuenta --- */
 .card-auth {
@@ -104,4 +111,140 @@ body {
 }
 .tienda-footer p {
     margin: 0;
+}
+
+/* ============================================================
+   CATALOGO Y DETALLE DE PRODUCTO (PR #22)
+   ============================================================ */
+
+/* Filtros */
+.catalogo-filtros {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 2px 6px rgba(0,0,0,.04);
+}
+
+/* Card de producto en grid */
+.producto-card {
+    border: 1px solid #eee;
+    border-radius: 12px;
+    overflow: hidden;
+    color: inherit;
+    transition: transform .15s ease, box-shadow .15s ease;
+    background: #fff;
+}
+.producto-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 24px rgba(127, 119, 221, 0.18);
+    text-decoration: none;
+    color: inherit;
+}
+
+.producto-thumb {
+    position: relative;
+    aspect-ratio: 1 / 1;
+    background: #f5f3ff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+.producto-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.producto-thumb-placeholder {
+    font-size: 3.5rem;
+    color: #c9c2ff;
+}
+
+/* Badges sobre la imagen */
+.badge-stock {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: .75rem;
+    padding: .35rem .6rem;
+    border-radius: 16px;
+    font-weight: 600;
+}
+.badge-stock-fuera {
+    background: #2c2c54;
+    color: #fff;
+}
+.badge-stock-bajo {
+    background: #ffb347;
+    color: #2c2c54;
+}
+
+.producto-nombre {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    min-height: 2.6em;
+    font-weight: 600;
+    color: #2c2c54;
+}
+
+.producto-precio {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--levelup-purple);
+}
+
+/* Breadcrumb tienda */
+.tienda-breadcrumb {
+    background: transparent;
+    padding-left: 0;
+}
+.tienda-breadcrumb a {
+    color: var(--levelup-purple);
+    text-decoration: none;
+}
+.tienda-breadcrumb a:hover {
+    text-decoration: underline;
+}
+
+/* Detalle de producto */
+.producto-detalle-img {
+    background: #f5f3ff;
+    border-radius: 12px;
+    aspect-ratio: 1 / 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+.producto-detalle-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.producto-detalle-placeholder {
+    font-size: 6rem;
+    color: #c9c2ff;
+}
+
+.producto-detalle-precio {
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: var(--levelup-purple);
+}
+
+.producto-detalle-desc {
+    border-top: 1px solid #eee;
+    padding-top: 1rem;
+    margin-top: 1rem;
+}
+
+/* Paginacion en colores de la marca */
+.pagination .page-link {
+    color: var(--levelup-purple);
+}
+.pagination .page-item.active .page-link {
+    background-color: var(--levelup-purple);
+    border-color: var(--levelup-purple);
+    color: #fff;
 }
