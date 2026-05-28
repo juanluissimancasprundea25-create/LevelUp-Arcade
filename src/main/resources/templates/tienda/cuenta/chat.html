@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{tienda/fragments/head :: head('Chat soporte')}"></head>
+<body>
+
+<div th:replace="~{tienda/fragments/header :: header}"></div>
+
+<main class="container my-5">
+    <div class="row">
+
+        <div class="col-lg-3 mb-4">
+            <div th:replace="~{tienda/cuenta/_sidebar :: sidebar}"></div>
+        </div>
+
+        <div class="col-lg-9">
+            <h2 class="tienda-titulo mb-3">Chat con soporte</h2>
+
+            <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+            <div class="card cuenta-card">
+                <div class="card-body p-0 d-flex flex-column" style="height: 70vh;">
+
+                    <!-- Cabecera fija con info -->
+                    <div class="px-3 py-2 border-bottom d-flex align-items-center">
+                        <i class="fas fa-headset mr-2" style="color: var(--levelup-purple);"></i>
+                        <div>
+                            <strong>Equipo de soporte LevelUp</strong>
+                            <small class="text-muted d-block">
+                                Te respondemos en horario de tienda.
+                            </small>
+                        </div>
+                    </div>
+
+                    <!-- Lista de mensajes scrollable -->
+                    <div id="chat-mensajes" class="flex-grow-1 p-3"
+                         style="overflow-y: auto; background: #f8f9fc;">
+                        <div th:if="${#lists.isEmpty(mensajes)}"
+                             class="text-center text-muted py-5">
+                            <i class="fas fa-comments fa-3x mb-2 opacity-50"></i>
+                            <p class="mb-0">Aun no hay mensajes. Escribe el primero!</p>
+                        </div>
+                        <div th:each="m : ${mensajes}" class="chat-msg"
+                             th:classappend="${m.remitenteId == usuarioId} ? 'chat-msg-mio' : 'chat-msg-otro'">
+                            <div class="chat-burbuja">
+                                <div class="chat-burbuja-texto" th:text="${m.contenido}">Mensaje</div>
+                                <div class="chat-burbuja-meta"
+                                     th:text="${#temporals.format(m.fechaEnvio, 'dd/MM HH:mm')}">
+                                    fecha
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Form de envio -->
+                    <form th:action="@{/cuenta/chat/enviar}" method="post"
+                          class="border-top p-2 d-flex">
+                        <input type="text" name="contenido"
+                               class="form-control mr-2"
+                               placeholder="Escribe tu mensaje..."
+                               autocomplete="off" maxlength="4000" required>
+                        <button type="submit" class="btn btn-tienda">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <small class="text-muted d-block mt-2">
+                <i class="fas fa-shield-alt mr-1"></i>
+                Tu conversacion es privada. Solo la pueden ver los administradores.
+            </small>
+        </div>
+    </div>
+</main>
+
+<div th:replace="~{tienda/fragments/footer :: footer}"></div>
+<div th:replace="~{tienda/fragments/scripts :: scripts}"></div>
+
+<!-- Polling del chat: refresca el historial cada 5s sin recargar la pagina -->
+<script th:inline="javascript">
+(function() {
+    var usuarioId = /*[[${usuarioId}]]*/ 0;
+    var contenedor = document.getElementById('chat-mensajes');
+    if (!contenedor) return;
+
+    // Scroll al fondo al cargar
+    function scrollAbajo() {
+        contenedor.scrollTop = contenedor.scrollHeight;
+    }
+    scrollAbajo();
+
+    // Formatea fecha dd/MM HH:mm (zona local)
+    function fmtFecha(iso) {
+        if (!iso) return '';
+        var d = new Date(iso);
+        if (isNaN(d.getTime())) return '';
+        var pad = function(n) { return n < 10 ? '0' + n : '' + n; };
+        return pad(d.getDate()) + '/' + pad(d.getMonth() + 1)
+            + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+    }
+
+    function escapeHtml(s) {
+        if (s == null) return '';
+        return String(s)
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+
+    // Renderiza los mensajes desde un array. Solo redibuja si cambia el numero
+    // de mensajes (evita re-render innecesario y perdida de seleccion).
+    var ultimoCount = contenedor.querySelectorAll('.chat-msg').length;
+    function render(mensajes) {
+        if (mensajes.length === ultimoCount) return;
+        ultimoCount = mensajes.length;
+
+        if (mensajes.length === 0) {
+            contenedor.innerHTML = '<div class="text-center text-muted py-5">'
+                + '<i class="fas fa-comments fa-3x mb-2 opacity-50"></i>'
+                + '<p class="mb-0">Aun no hay mensajes. Escribe el primero!</p></div>';
+            return;
+        }
+
+        var html = '';
+        for (var i = 0; i < mensajes.length; i++) {
+            var m = mensajes[i];
+            var mio = (m.remitenteId === usuarioId);
+            html += '<div class="chat-msg ' + (mio ? 'chat-msg-mio' : 'chat-msg-otro') + '">'
+                + '<div class="chat-burbuja">'
+                + '<div class="chat-burbuja-texto">' + escapeHtml(m.contenido) + '</div>'
+                + '<div class="chat-burbuja-meta">' + escapeHtml(fmtFecha(m.fechaEnvio)) + '</div>'
+                + '</div></div>';
+        }
+        contenedor.innerHTML = html;
+        scrollAbajo();
+    }
+
+    function poll() {
+        fetch('/cuenta/chat/mensajes', { credentials: 'same-origin' })
+            .then(function(r) { return r.ok ? r.json() : null; })
+            .then(function(data) { if (data) render(data); })
+            .catch(function() { /* silencioso */ });
+    }
+
+    // Polling cada 5 segundos
+    setInterval(poll, 5000);
+})();
+</script>
+
+</body>
+</html>
