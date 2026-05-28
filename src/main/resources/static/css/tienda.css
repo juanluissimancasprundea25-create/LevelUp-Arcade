@@ -248,3 +248,60 @@ body {
     border-color: var(--levelup-purple);
     color: #fff;
 }
+
+/* ============================================================
+   CARRITO (PR #23)
+   ============================================================ */
+
+/* Badge del navbar */
+.badge-carrito {
+    position: absolute;
+    top: 2px;
+    right: -2px;
+    background: var(--levelup-green);
+    color: #15392b;
+    font-size: .7rem;
+    font-weight: 700;
+}
+
+/* Tarjetas del carrito */
+.carrito-card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 2px 6px rgba(0,0,0,.04);
+    overflow: hidden;
+}
+.carrito-card thead th {
+    border-top: none;
+    font-size: .8rem;
+    text-transform: uppercase;
+    color: #8a8aa0;
+    font-weight: 600;
+}
+.carrito-producto-nombre {
+    font-weight: 600;
+    color: #2c2c54;
+    text-decoration: none;
+}
+.carrito-producto-nombre:hover {
+    color: var(--levelup-purple);
+    text-decoration: underline;
+}
+.carrito-cantidad {
+    width: 70px;
+    text-align: center;
+}
+
+/* Resumen lateral */
+.carrito-resumen {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 2px 6px rgba(0,0,0,.04);
+    position: sticky;
+    top: 1rem;
+}
+.carrito-total {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: var(--levelup-purple);
+}
