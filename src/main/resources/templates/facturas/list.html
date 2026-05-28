@@ -28,7 +28,7 @@
 
         <div class="card">
           <div class="card-header">
-            <form th:action="@{/facturas}" method="get" class="form-inline">
+            <form th:action="@{/admin/facturas}" method="get" class="form-inline">
               <label class="mr-2">Cliente ID:</label>
               <input type="number" name="clienteId" th:value="${clienteIdFiltro}"
                      class="form-control mr-2" style="width: 120px;"/>
@@ -94,7 +94,7 @@
             <ul class="pagination pagination-sm m-0 float-right">
               <li class="page-item" th:classappend="${pagina.first} ? 'disabled'">
                 <a class="page-link"
-                   th:href="@{/facturas(page=${pagina.number - 1}, clienteId=${clienteIdFiltro})}">«</a>
+                   th:href="@{/admin/facturas(page=${pagina.number - 1}, clienteId=${clienteIdFiltro})}">«</a>
               </li>
               <li class="page-item disabled">
                 <span class="page-link"
@@ -102,7 +102,7 @@
               </li>
               <li class="page-item" th:classappend="${pagina.last} ? 'disabled'">
                 <a class="page-link"
-                   th:href="@{/facturas(page=${pagina.number + 1}, clienteId=${clienteIdFiltro})}">»</a>
+                   th:href="@{/admin/facturas(page=${pagina.number + 1}, clienteId=${clienteIdFiltro})}">»</a>
               </li>
             </ul>
           </div>

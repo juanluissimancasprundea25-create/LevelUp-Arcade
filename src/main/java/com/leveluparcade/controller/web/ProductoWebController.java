@@ -157,7 +157,7 @@ public class ProductoWebController {
         Producto guardado = productoRepository.save(form);
         ra.addFlashAttribute("flashOk",
                 "Producto '" + guardado.getNombre() + "' creado correctamente.");
-        return "redirect:/productos/" + guardado.getId();
+        return "redirect:/admin/productos/" + guardado.getId();
     }
 
     /** Formulario de edicion. */
@@ -221,7 +221,7 @@ public class ProductoWebController {
         productoRepository.save(existente);
         ra.addFlashAttribute("flashOk",
                 "Producto '" + existente.getNombre() + "' actualizado.");
-        return "redirect:/productos/" + id;
+        return "redirect:/admin/productos/" + id;
     }
 
     /** Eliminar. */
@@ -232,12 +232,12 @@ public class ProductoWebController {
         try {
             productoRepository.delete(producto);
             ra.addFlashAttribute("flashOk", "Producto eliminado.");
-            return "redirect:/productos";
+            return "redirect:/admin/productos";
         } catch (Exception ex) {
             ra.addFlashAttribute("flashError",
                     "No se puede eliminar el producto: puede tener pedidos asociados. " +
                     "Desactivelo en su lugar.");
-            return "redirect:/productos/" + id;
+            return "redirect:/admin/productos/" + id;
         }
     }
 

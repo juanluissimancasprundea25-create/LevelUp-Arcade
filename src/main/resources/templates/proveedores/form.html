@@ -24,7 +24,7 @@
             <h3 class="card-title">Datos del proveedor</h3>
           </div>
 
-          <form th:action="${modoEdicion} ? @{/proveedores/{id}(id=${proveedorId})} : @{/proveedores}"
+          <form th:action="${modoEdicion} ? @{/admin/proveedores/{id}(id=${proveedorId})} : @{/admin/proveedores}"
                 th:object="${proveedorForm}" method="post">
 
             <div class="card-body">

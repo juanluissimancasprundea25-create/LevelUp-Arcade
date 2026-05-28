@@ -75,7 +75,7 @@ public class ClienteWebController {
         try {
             ClienteCreadoResponse creado = clienteService.crear(cliente);
             redirect.addFlashAttribute("clienteCreado", creado);
-            return "redirect:/clientes/" + creado.cliente().id() + "/credenciales";
+            return "redirect:/admin/clientes/" + creado.cliente().id() + "/credenciales";
         } catch (IllegalArgumentException ex) {
             binding.reject("error.cliente", ex.getMessage());
             model.addAttribute("titulo", "Nuevo cliente");
@@ -89,7 +89,7 @@ public class ClienteWebController {
     @GetMapping("/{id}/credenciales")
     public String credenciales(@PathVariable Long id, Model model) {
         if (!model.containsAttribute("clienteCreado")) {
-            return "redirect:/clientes/" + id;
+            return "redirect:/admin/clientes/" + id;
         }
         model.addAttribute("titulo", "Credenciales del nuevo cliente");
         model.addAttribute("tituloSeccion", "Credenciales del nuevo cliente");
@@ -152,13 +152,13 @@ public class ClienteWebController {
 
         clienteService.actualizar(id, cliente);
         redirect.addFlashAttribute("flashOk", "Cliente actualizado correctamente.");
-        return "redirect:/clientes/" + id;
+        return "redirect:/admin/clientes/" + id;
     }
 
     @PostMapping("/{id}/eliminar")
     public String eliminar(@PathVariable Long id, RedirectAttributes redirect) {
         clienteService.eliminar(id);
         redirect.addFlashAttribute("flashOk", "Cliente eliminado correctamente.");
-        return "redirect:/clientes";
+        return "redirect:/admin/clientes";
     }
 }

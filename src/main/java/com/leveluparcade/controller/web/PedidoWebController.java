@@ -80,7 +80,7 @@ public class PedidoWebController {
         } catch (IllegalStateException ex) {
             ra.addFlashAttribute("flashError", ex.getMessage());
         }
-        return "redirect:/pedidos/" + id;
+        return "redirect:/admin/pedidos/" + id;
     }
 
     /** Marca el pedido como ENVIADO. */
@@ -92,7 +92,7 @@ public class PedidoWebController {
         } catch (IllegalStateException ex) {
             ra.addFlashAttribute("flashError", ex.getMessage());
         }
-        return "redirect:/pedidos/" + id;
+        return "redirect:/admin/pedidos/" + id;
     }
 
     /** Marca el pedido como ENTREGADO. */
@@ -104,7 +104,7 @@ public class PedidoWebController {
         } catch (IllegalStateException ex) {
             ra.addFlashAttribute("flashError", ex.getMessage());
         }
-        return "redirect:/pedidos/" + id;
+        return "redirect:/admin/pedidos/" + id;
     }
 
     /** Cancela el pedido (restaura stock si estaba PAGADO). */
@@ -116,6 +116,6 @@ public class PedidoWebController {
         } catch (IllegalStateException ex) {
             ra.addFlashAttribute("flashError", ex.getMessage());
         }
-        return "redirect:/pedidos/" + id;
+        return "redirect:/admin/pedidos/" + id;
     }
 }

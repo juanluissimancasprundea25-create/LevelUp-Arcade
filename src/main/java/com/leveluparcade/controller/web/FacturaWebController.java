@@ -91,10 +91,10 @@ public class FacturaWebController {
             FacturaResponse f = facturaService.emitirFactura(req);
             ra.addFlashAttribute("flashOk",
                     "Factura " + f.getNumeroFactura() + " emitida correctamente.");
-            return "redirect:/facturas/" + f.getId();
+            return "redirect:/admin/facturas/" + f.getId();
         } catch (IllegalStateException ex) {
             ra.addFlashAttribute("flashError", ex.getMessage());
-            return "redirect:/pedidos/" + pedidoId;
+            return "redirect:/admin/pedidos/" + pedidoId;
         }
     }
 
