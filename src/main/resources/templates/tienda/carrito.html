@@ -119,13 +119,9 @@
                         </span>
                     </div>
                     <hr>
-                    <!-- El checkout llega en el PR #24 -->
-                    <button type="button" class="btn btn-tienda btn-block btn-lg" disabled>
-                        <i class="fas fa-lock mr-2"></i> Finalizar compra
-                    </button>
-                    <small class="text-muted d-block mt-2 text-center">
-                        El pago estara disponible en la proxima version.
-                    </small>
+                    <a th:href="@{/checkout}" class="btn btn-tienda btn-block btn-lg">
+                        <i class="fas fa-credit-card mr-2"></i> Finalizar compra
+                    </a>
                 </div>
             </div>
         </div>
