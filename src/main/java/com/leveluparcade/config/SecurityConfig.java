@@ -87,12 +87,13 @@ public class SecurityConfig {
     @Order(3)
     public SecurityFilterChain authSecurityFilterChain(HttpSecurity http) throws Exception {
         http
-            .securityMatcher("/login", "/login/**", "/registro", "/registro/**", "/logout", "/cuenta/**", "/carrito/**")
+            .securityMatcher("/login", "/login/**", "/registro", "/registro/**", "/logout", "/cuenta/**", "/carrito/**", "/checkout/**")
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/login", "/login/**", "/registro", "/registro/**").permitAll()
                 .requestMatchers("/cuenta/**").hasRole("CLIENTE")
                 .requestMatchers("/carrito/**").hasRole("CLIENTE")
+                .requestMatchers("/checkout/**").hasRole("CLIENTE")
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form

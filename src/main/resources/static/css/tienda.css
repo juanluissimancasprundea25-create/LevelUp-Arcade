@@ -305,3 +305,29 @@ body {
     font-weight: 800;
     color: var(--levelup-purple);
 }
+
+/* ============================================================
+   CHECKOUT (PR #24a)
+   ============================================================ */
+.checkout-card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 2px 6px rgba(0,0,0,.04);
+}
+.checkout-resumen {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 2px 6px rgba(0,0,0,.04);
+    position: sticky;
+    top: 1rem;
+}
+.checkout-total {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: var(--levelup-purple);
+}
+.checkout-ok-icon {
+    font-size: 4rem;
+    color: var(--levelup-green);
+    line-height: 1;
+}
