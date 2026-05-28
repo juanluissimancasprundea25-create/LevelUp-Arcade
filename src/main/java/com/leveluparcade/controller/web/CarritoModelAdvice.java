@@ -1,30 +1,33 @@
 package com.leveluparcade.controller.web;
 
 import com.leveluparcade.service.CarritoService;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
 
 /**
  * Inyecta el numero de unidades del carrito en el modelo de TODAS las
- * vistas, para pintar el badge del navbar de la tienda.
+ * vistas de la tienda, para pintar el badge del navbar.
  *
- * <p>Si no hay cliente logueado, {@link CarritoService#contarUnidades()}
- * devuelve 0 sin lanzar error, asi que el badge simplemente no aparece.
- *
- * <p>Se limita a controllers del paquete web.* (anotacion basePackages),
- * que son los que renderizan vistas Thymeleaf. No afecta a la API REST.
+ * <p>Usa {@link ObjectProvider} para que el bean sea opcional en el
+ * contexto de {@code @WebMvcTest} (slices que no cargan CarritoService).
+ * En runtime real el bean siempre existe.
  */
 @ControllerAdvice(basePackages = "com.leveluparcade.controller.web")
 public class CarritoModelAdvice {
 
-    private final CarritoService carritoService;
+    private final ObjectProvider<CarritoService> carritoServiceProvider;
 
-    public CarritoModelAdvice(CarritoService carritoService) {
-        this.carritoService = carritoService;
+    public CarritoModelAdvice(ObjectProvider<CarritoService> carritoServiceProvider) {
+        this.carritoServiceProvider = carritoServiceProvider;
     }
 
     @ModelAttribute("carritoUnidades")
     public int carritoUnidades() {
+        CarritoService carritoService = carritoServiceProvider.getIfAvailable();
+        if (carritoService == null) {
+            return 0;
+        }
         try {
             return carritoService.contarUnidades();
         } catch (Exception ex) {

@@ -63,14 +63,25 @@ class CarritoServiceImplTest {
         producto.setActivo(true);
     }
 
+    // ---------- helper stub comun para obtenerCarritoActual ----------
+
+    /**
+     * Configura los mocks necesarios para que obtenerCarritoActual()
+     * devuelva el carrito de setUp(). El service llama a
+     * findByClienteIdConLineas (no findByClienteId) desde PR#23 hotfix LazyInit.
+     */
+    private void stubObtenerCarritoActual() {
+        when(securityHelper.getClienteActualId()).thenReturn(1L);
+        when(clienteRepository.findById(1L)).thenReturn(Optional.of(cliente));
+        when(carritoRepository.findByClienteIdConLineas(1L)).thenReturn(Optional.of(carrito));
+    }
+
     // ---------- anadirProducto ----------
 
     @Test
     @DisplayName("anadir producto nuevo -> crea linea con la cantidad pedida")
     void anadirProductoNuevo() {
-        when(securityHelper.getClienteActualId()).thenReturn(1L);
-        when(clienteRepository.findById(1L)).thenReturn(Optional.of(cliente));
-        when(carritoRepository.findByClienteId(1L)).thenReturn(Optional.of(carrito));
+        stubObtenerCarritoActual();
         when(productoRepository.findById(100L)).thenReturn(Optional.of(producto));
         when(lineaCarritoRepository.findByCarritoIdAndProductoId(10L, 100L))
                 .thenReturn(Optional.empty());
@@ -90,9 +101,7 @@ class CarritoServiceImplTest {
                 .id(50L).carrito(carrito).producto(producto).cantidad(1).build();
         carrito.getLineas().add(existente);
 
-        when(securityHelper.getClienteActualId()).thenReturn(1L);
-        when(clienteRepository.findById(1L)).thenReturn(Optional.of(cliente));
-        when(carritoRepository.findByClienteId(1L)).thenReturn(Optional.of(carrito));
+        stubObtenerCarritoActual();
         when(productoRepository.findById(100L)).thenReturn(Optional.of(producto));
         when(lineaCarritoRepository.findByCarritoIdAndProductoId(10L, 100L))
                 .thenReturn(Optional.of(existente));
@@ -107,9 +116,7 @@ class CarritoServiceImplTest {
     @Test
     @DisplayName("anadir mas que el stock -> IllegalArgumentException")
     void anadirSuperaStock() {
-        when(securityHelper.getClienteActualId()).thenReturn(1L);
-        when(clienteRepository.findById(1L)).thenReturn(Optional.of(cliente));
-        when(carritoRepository.findByClienteId(1L)).thenReturn(Optional.of(carrito));
+        stubObtenerCarritoActual();
         when(productoRepository.findById(100L)).thenReturn(Optional.of(producto));
         when(lineaCarritoRepository.findByCarritoIdAndProductoId(10L, 100L))
                 .thenReturn(Optional.empty());
@@ -146,9 +153,7 @@ class CarritoServiceImplTest {
                 .id(50L).carrito(carrito).producto(producto).cantidad(3).build();
         carrito.getLineas().add(linea);
 
-        when(securityHelper.getClienteActualId()).thenReturn(1L);
-        when(clienteRepository.findById(1L)).thenReturn(Optional.of(cliente));
-        when(carritoRepository.findByClienteId(1L)).thenReturn(Optional.of(carrito));
+        stubObtenerCarritoActual();
         when(carritoRepository.save(any(Carrito.class))).thenAnswer(inv -> inv.getArgument(0));
 
         Carrito resultado = service.cambiarCantidad(50L, 0);
@@ -163,9 +168,7 @@ class CarritoServiceImplTest {
                 .id(50L).carrito(carrito).producto(producto).cantidad(1).build();
         carrito.getLineas().add(linea);
 
-        when(securityHelper.getClienteActualId()).thenReturn(1L);
-        when(clienteRepository.findById(1L)).thenReturn(Optional.of(cliente));
-        when(carritoRepository.findByClienteId(1L)).thenReturn(Optional.of(carrito));
+        stubObtenerCarritoActual();
 
         assertThatThrownBy(() -> service.cambiarCantidad(50L, 99))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -175,9 +178,7 @@ class CarritoServiceImplTest {
     @Test
     @DisplayName("cambiar cantidad de linea ajena -> ResourceNotFoundException")
     void cambiarLineaAjena() {
-        when(securityHelper.getClienteActualId()).thenReturn(1L);
-        when(clienteRepository.findById(1L)).thenReturn(Optional.of(cliente));
-        when(carritoRepository.findByClienteId(1L)).thenReturn(Optional.of(carrito));
+        stubObtenerCarritoActual();
 
         assertThatThrownBy(() -> service.cambiarCantidad(777L, 2))
                 .isInstanceOf(ResourceNotFoundException.class);
@@ -192,9 +193,7 @@ class CarritoServiceImplTest {
                 .id(50L).carrito(carrito).producto(producto).cantidad(2).build();
         carrito.getLineas().add(linea);
 
-        when(securityHelper.getClienteActualId()).thenReturn(1L);
-        when(clienteRepository.findById(1L)).thenReturn(Optional.of(cliente));
-        when(carritoRepository.findByClienteId(1L)).thenReturn(Optional.of(carrito));
+        stubObtenerCarritoActual();
         when(carritoRepository.save(any(Carrito.class))).thenAnswer(inv -> inv.getArgument(0));
 
         Carrito resultado = service.eliminarLinea(50L);
@@ -216,6 +215,8 @@ class CarritoServiceImplTest {
     @Test
     @DisplayName("contar unidades con carrito -> suma de cantidades")
     void contarConCarrito() {
+        // contarUnidades usa findByClienteId (sin JOIN FETCH), no ConLineas.
+        // Las lineas se acceden dentro de la transaccion -> no hay LazyInit.
         carrito.getLineas().add(LineaCarrito.builder()
                 .id(50L).carrito(carrito).producto(producto).cantidad(2).build());
         carrito.getLineas().add(LineaCarrito.builder()
@@ -234,7 +235,8 @@ class CarritoServiceImplTest {
     void obtenerCarritoCreaSiNoExiste() {
         when(securityHelper.getClienteActualId()).thenReturn(1L);
         when(clienteRepository.findById(1L)).thenReturn(Optional.of(cliente));
-        when(carritoRepository.findByClienteId(1L)).thenReturn(Optional.empty());
+        // findByClienteIdConLineas vacio -> crea nuevo
+        when(carritoRepository.findByClienteIdConLineas(1L)).thenReturn(Optional.empty());
         when(carritoRepository.save(any(Carrito.class))).thenAnswer(inv -> {
             Carrito c = inv.getArgument(0);
             c.setId(99L);
