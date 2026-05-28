@@ -13,7 +13,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.Import;
@@ -24,11 +26,14 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.servlet.View;
+import org.springframework.web.servlet.ViewResolver;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -43,6 +48,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * <p>Excluye SecurityConfig real y JwtFilter para evitar arrastrar
  * la cadena de seguridad completa (mismo patron que los tests api).
  * Las rutas son publicas, no hay @PreAuthorize que probar.
+ *
+ * <p>IMPORTANTE: el CatalogoController devuelve vistas Thymeleaf
+ * ("tienda/catalogo", "tienda/producto"). En un @WebMvcTest, MockMvc
+ * intenta RESOLVER y RENDERIZAR la plantilla real, lo que en un slice
+ * provoca TemplateInputException ("template might not exist"). Aqui no
+ * queremos probar el render (eso no es responsabilidad de un test de
+ * controller), solo el nombre de vista y el modelo. Por eso registramos
+ * un ViewResolver no-op que mapea cualquier nombre a una vista vacia:
+ * los asserts de view()/model() siguen funcionando sin tocar plantillas.
  */
 @WebMvcTest(
     controllers = CatalogoController.class,
@@ -52,7 +66,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
     )
 )
 @AutoConfigureMockMvc(addFilters = false)
-@Import(WebMvcSecurityTestConfig.class)
+@Import({ WebMvcSecurityTestConfig.class, CatalogoControllerTest.NoOpViewConfig.class })
 @DisplayName("CatalogoController - tests web mvc")
 class CatalogoControllerTest {
 
@@ -60,6 +74,29 @@ class CatalogoControllerTest {
 
     @MockBean ProductoRepository productoRepository;
     @MockBean CategoriaRepository categoriaRepository;
+
+    /**
+     * ViewResolver de test: cualquier nombre de vista resuelve a una vista
+     * vacia que no escribe nada. Evita que MockMvc cargue plantillas reales.
+     */
+    @TestConfiguration
+    static class NoOpViewConfig {
+        @Bean
+        ViewResolver noOpViewResolver() {
+            return (String viewName, Locale locale) -> new View() {
+                @Override
+                public String getContentType() {
+                    return "text/html";
+                }
+                @Override
+                public void render(java.util.Map<String, ?> model,
+                                   jakarta.servlet.http.HttpServletRequest request,
+                                   jakarta.servlet.http.HttpServletResponse response) {
+                    // no-op: no renderiza nada
+                }
+            };
+        }
+    }
 
     // ---------- /catalogo ----------
 
@@ -107,7 +144,6 @@ class CatalogoControllerTest {
             .andExpect(status().isOk())
             .andExpect(model().attribute("orden", "precio_asc"));
 
-        // Aprovecho para verificar que el sort llega al repo
         org.mockito.ArgumentCaptor<Pageable> captor = org.mockito.ArgumentCaptor.forClass(Pageable.class);
         verify(productoRepository).findAll(any(Specification.class), captor.capture());
         Sort sort = captor.getValue().getSort();
