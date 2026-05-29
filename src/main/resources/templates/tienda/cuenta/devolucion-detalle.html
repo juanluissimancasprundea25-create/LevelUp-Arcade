@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{tienda/fragments/head :: head('Devolucion #' + ${devolucion.id})}"></head>
+<body>
+
+<div th:replace="~{tienda/fragments/header :: header}"></div>
+
+<main class="container my-5">
+    <div class="row">
+
+        <div class="col-lg-3 mb-4">
+            <div th:replace="~{tienda/cuenta/_sidebar :: sidebar}"></div>
+        </div>
+
+        <div class="col-lg-9">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2 class="tienda-titulo mb-0">
+                    Devolucion <span th:text="'#' + ${devolucion.id}">#0</span>
+                </h2>
+                <a th:href="@{/cuenta/devoluciones}" class="btn btn-link">
+                    <i class="fas fa-arrow-left mr-1"></i> Volver
+                </a>
+            </div>
+
+            <div th:if="${info}"  class="alert alert-info"  role="alert" th:text="${info}"></div>
+            <div th:if="${error}" class="alert alert-danger" role="alert" th:text="${error}"></div>
+
+            <!-- Cabecera con estado y datos basicos -->
+            <div class="card cuenta-card mb-3">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-2">
+                            <small class="text-muted d-block">Fecha de solicitud</small>
+                            <span th:text="${#temporals.format(devolucion.fechaSolicitud, 'dd/MM/yyyy HH:mm')}">fecha</span>
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            <small class="text-muted d-block">Pedido</small>
+                            <a th:href="@{/cuenta/pedidos/{id}(id=${devolucion.pedidoId})}"
+                               th:text="'#' + ${devolucion.pedidoId}">#0</a>
+                        </div>
+                        <div class="col-md-4 mb-2 text-md-right">
+                            <small class="text-muted d-block">Estado</small>
+                            <span class="badge" th:classappend="${
+                                devolucion.estado.name() == 'APROBADA' ? 'badge-info' :
+                                devolucion.estado.name() == 'COMPLETADA' ? 'badge-success' :
+                                devolucion.estado.name() == 'RECHAZADA' ? 'badge-danger' :
+                                'badge-warning'}"
+                                  th:text="${devolucion.estado}">ESTADO</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Timeline visual del estado -->
+            <div class="card cuenta-card mb-3">
+                <div class="card-body">
+                    <ul class="list-unstyled mb-0">
+                        <li class="d-flex align-items-start mb-2">
+                            <i class="fas fa-check-circle text-success mr-2 mt-1"></i>
+                            <div>
+                                <strong>Solicitada</strong>
+                                <small class="text-muted d-block"
+                                       th:text="${#temporals.format(devolucion.fechaSolicitud, 'dd/MM/yyyy HH:mm')}">fecha</small>
+                            </div>
+                        </li>
+
+                        <li class="d-flex align-items-start mb-2"
+                            th:if="${devolucion.estado.name() == 'APROBADA' or devolucion.estado.name() == 'COMPLETADA'}">
+                            <i class="fas fa-check-circle text-success mr-2 mt-1"></i>
+                            <div>
+                                <strong>Aprobada</strong>
+                                <small class="text-muted d-block">
+                                    Importe a reembolsar:
+                                    <span th:text="${#numbers.formatDecimal(devolucion.importeDevuelto, 1, 'POINT', 2, 'COMMA')} + ' EUR'">0,00 EUR</span>
+                                </small>
+                            </div>
+                        </li>
+
+                        <li class="d-flex align-items-start mb-2"
+                            th:if="${devolucion.estado.name() == 'COMPLETADA'}">
+                            <i class="fas fa-check-circle text-success mr-2 mt-1"></i>
+                            <div>
+                                <strong>Reembolsada</strong>
+                                <small class="text-muted d-block">
+                                    El reembolso se ha realizado correctamente.
+                                </small>
+                            </div>
+                        </li>
+
+                        <li class="d-flex align-items-start mb-2"
+                            th:if="${devolucion.estado.name() == 'RECHAZADA'}">
+                            <i class="fas fa-times-circle text-danger mr-2 mt-1"></i>
+                            <div>
+                                <strong>Rechazada</strong>
+                                <small class="text-muted d-block"
+                                       th:text="${devolucion.observacionesAdmin ?: 'Sin comentarios.'}">Motivo</small>
+                            </div>
+                        </li>
+
+                        <!-- Estados pendientes (en gris) -->
+                        <li class="d-flex align-items-start mb-2 text-muted"
+                            th:if="${devolucion.estado.name() == 'SOLICITADA'}">
+                            <i class="far fa-circle mr-2 mt-1"></i>
+                            <div>
+                                <span>Pendiente de revision por el equipo de soporte</span>
+                            </div>
+                        </li>
+                        <li class="d-flex align-items-start mb-2 text-muted"
+                            th:if="${devolucion.estado.name() == 'APROBADA'}">
+                            <i class="far fa-circle mr-2 mt-1"></i>
+                            <div>
+                                <span>Reembolso en proceso</span>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Articulos devueltos -->
+            <div class="card cuenta-card mb-3">
+                <div class="card-body">
+                    <h6>Articulos a devolver</h6>
+                    <table class="table table-sm mb-0">
+                        <thead>
+                            <tr>
+                                <th>Producto</th>
+                                <th class="text-center">Cantidad</th>
+                                <th class="text-right">Precio</th>
+                                <th class="text-right">Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="l : ${devolucion.lineas}">
+                                <td th:text="${l.productoNombre}">Producto</td>
+                                <td class="text-center" th:text="${l.cantidad}">1</td>
+                                <td class="text-right"
+                                    th:text="${#numbers.formatDecimal(l.precioUnitario, 1, 'POINT', 2, 'COMMA')} + ' EUR'">
+                                    0,00 EUR
+                                </td>
+                                <td class="text-right"
+                                    th:text="${#numbers.formatDecimal(l.subtotal, 1, 'POINT', 2, 'COMMA')} + ' EUR'">
+                                    0,00 EUR
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Motivo del cliente -->
+            <div class="card cuenta-card">
+                <div class="card-body">
+                    <h6>Tu motivo</h6>
+                    <p class="mb-0" style="white-space: pre-wrap;"
+                       th:text="${devolucion.motivo}">Motivo de la devolucion</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</main>
+
+<div th:replace="~{tienda/fragments/footer :: footer}"></div>
+<div th:replace="~{tienda/fragments/scripts :: scripts}"></div>
+</body>
+</html>

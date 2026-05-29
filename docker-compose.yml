@@ -41,8 +41,13 @@ services:
       MAIL_PASSWORD: ${MAIL_PASSWORD}
       RECAPTCHA_SITE_KEY: ${RECAPTCHA_SITE_KEY}
       RECAPTCHA_SECRET: ${RECAPTCHA_SECRET}
+      LEVELUPARCADE_UPLOADS_PATH: /app/uploads
     ports:
       - "8080:8080"
+    volumes:
+      # Persistencia de imagenes subidas (PR #27).
+      # Si cambias la ruta, ajusta tambien LEVELUPARCADE_UPLOADS_PATH.
+      - ./uploads:/app/uploads
     networks:
       - levelup-net
 

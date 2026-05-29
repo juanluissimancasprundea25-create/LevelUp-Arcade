@@ -24,10 +24,21 @@
             <h3 class="card-title">Datos del producto</h3>
           </div>
 
+          <!--
+            enctype=multipart/form-data es OBLIGATORIO para que el input
+            type="file" se envie. Sin esto el fichero llega vacio.
+          -->
           <form th:action="${modoEdicion} ? @{/admin/productos/{id}(id=${productoId})} : @{/admin/productos}"
-                th:object="${productoForm}" method="post">
+                th:object="${productoForm}"
+                method="post"
+                enctype="multipart/form-data">
 
             <div class="card-body">
+
+              <!-- Errores globales (incluye los de imagen rechazada) -->
+              <div th:if="${#fields.hasGlobalErrors()}" class="alert alert-danger">
+                <p th:each="err : ${#fields.globalErrors()}" th:text="${err}" class="mb-0"></p>
+              </div>
 
               <div class="form-row">
                 <div class="form-group col-md-4">
@@ -100,11 +111,62 @@
                 </div>
               </div>
 
+              <!-- Imagen del producto -->
               <div class="form-group">
-                <label>URL de imagen</label>
-                <input type="text" th:field="*{imagenUrl}" class="form-control"
-                       placeholder="https://..."/>
-                <small class="text-muted">URL externa a la imagen del producto (opcional).</small>
+                <label>Imagen del producto</label>
+
+                <!--
+                  Layout en dos columnas:
+                  - Izquierda: preview cuadrado (siempre 200x200 reservados
+                    via aspect-ratio = no salta el layout aunque tarde en
+                    cargar). Reserva visual identica para placeholder e img.
+                  - Derecha: input file + ayuda.
+                -->
+                <div class="row align-items-start">
+                  <div class="col-md-3">
+                    <div id="img-preview-wrap"
+                         style="width: 200px; aspect-ratio: 1 / 1;
+                                background:#f5f5f5; border:1px solid #e0e0e0;
+                                border-radius: 6px; overflow: hidden;
+                                display:flex; align-items:center; justify-content:center;">
+                      <!-- Imagen actual (en edicion) -->
+                      <img id="img-preview"
+                           th:if="${modoEdicion and productoForm.imagenUrl != null and !#strings.isEmpty(productoForm.imagenUrl)}"
+                           th:src="${#strings.startsWith(productoForm.imagenUrl, 'http')
+                                    ? productoForm.imagenUrl
+                                    : '/img/' + productoForm.imagenUrl}"
+                           alt="Preview"
+                           style="width:100%; height:100%; object-fit:cover;">
+                      <!-- Placeholder cuando no hay imagen -->
+                      <span id="img-placeholder"
+                            th:if="${!modoEdicion or productoForm.imagenUrl == null or #strings.isEmpty(productoForm.imagenUrl)}"
+                            style="color:#bbb;">
+                        <i class="fas fa-image fa-3x"></i>
+                      </span>
+                    </div>
+                  </div>
+
+                  <div class="col-md-9">
+                    <input type="file" name="imagenFile" id="imagenFile"
+                           class="form-control-file"
+                           accept="image/jpeg,image/png,image/webp">
+                    <small class="text-muted d-block mt-2">
+                      Formatos: JPG, PNG o WEBP. Maximo 5 MB.
+                      La imagen se recorta a un cuadrado centrado y se
+                      reescala a <strong>600x600 px</strong> para que todas
+                      las fichas del catalogo tengan el mismo aspecto.
+                    </small>
+
+                    <div th:if="${modoEdicion and productoForm.imagenUrl != null and !#strings.isEmpty(productoForm.imagenUrl)}"
+                         class="custom-control custom-checkbox mt-3">
+                      <input type="checkbox" class="custom-control-input"
+                             id="eliminarImagen" name="eliminarImagen" value="true">
+                      <label class="custom-control-label" for="eliminarImagen">
+                        Eliminar la imagen actual al guardar
+                      </label>
+                    </div>
+                  </div>
+                </div>
               </div>
 
               <div class="form-group">
@@ -133,6 +195,37 @@
 
   <footer th:replace="~{fragments/footer :: footer}"></footer>
 </div>
+
+<!--
+  Preview en cliente. URL.createObjectURL evita una segunda peticion
+  al servidor y se ve al instante. El contenedor ya reserva 200x200
+  via aspect-ratio: no hay salto de layout.
+-->
+<script>
+(function(){
+    var input = document.getElementById('imagenFile');
+    if (!input) return;
+    input.addEventListener('change', function(){
+        var f = input.files && input.files[0];
+        if (!f) return;
+        var wrap = document.getElementById('img-preview-wrap');
+        var placeholder = document.getElementById('img-placeholder');
+        var img = document.getElementById('img-preview');
+        if (placeholder) placeholder.remove();
+        if (!img) {
+            img = document.createElement('img');
+            img.id = 'img-preview';
+            img.alt = 'Preview';
+            img.style.width = '100%';
+            img.style.height = '100%';
+            img.style.objectFit = 'cover';
+            wrap.appendChild(img);
+        }
+        img.src = URL.createObjectURL(f);
+    });
+})();
+</script>
+
 <th:block th:replace="~{fragments/scripts :: scripts}"></th:block>
 </body>
 </html>

@@ -45,6 +45,13 @@ spring:
   thymeleaf:
     cache: false
 
+  # --- Multipart: subida de ficheros (imagenes de producto) ---
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 5MB
+      max-request-size: 6MB
+
 # --- JWT ---
 jwt:
   secret: ${JWT_SECRET}
@@ -67,6 +74,16 @@ logging:
 leveluparcade:
   devoluciones:
     dias-limite: 14
+  uploads:
+    # Carpeta raiz donde se almacenan los ficheros subidos.
+    # En desarrollo local: ./uploads (relativo al cwd).
+    # En Docker se sobreescribe a /app/uploads via env LEVELUPARCADE_UPLOADS_PATH
+    # y se monta un volumen ./uploads:/app/uploads para que persista.
+    path: ${LEVELUPARCADE_UPLOADS_PATH:./uploads}
+    imagen-producto:
+      tamano: 600
+      calidad: 0.85
+      max-bytes: 5242880  # 5 MB
   facturas:
     prefijo-numero: "FAC"
     url-verificacion-base: "http://localhost:8080/api/facturas/verificar"

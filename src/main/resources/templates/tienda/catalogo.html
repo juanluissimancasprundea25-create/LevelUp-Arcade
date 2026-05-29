@@ -75,9 +75,19 @@
             <a th:href="@{/producto/{id}(id=${p.id})}" class="card producto-card h-100 text-decoration-none">
 
                 <div class="producto-thumb">
+                    <!--
+                      PR #27: imagenUrl es ahora un path relativo
+                      "productos/abc.jpg" servido desde /img/.
+                      Compat con URLs http(s) antiguas: se usan tal cual.
+                      .producto-thumb ya reserva el cuadrado via CSS
+                      (aspect-ratio 1/1 + object-fit cover): cero saltos.
+                    -->
                     <img th:if="${p.imagenUrl != null and !#strings.isEmpty(p.imagenUrl)}"
-                         th:src="${p.imagenUrl}"
+                         th:src="${#strings.startsWith(p.imagenUrl, 'http')
+                                  ? p.imagenUrl
+                                  : '/img/' + p.imagenUrl}"
                          th:alt="${p.nombre}"
+                         loading="lazy"
                          class="card-img-top">
                     <div th:unless="${p.imagenUrl != null and !#strings.isEmpty(p.imagenUrl)}"
                          class="producto-thumb-placeholder">

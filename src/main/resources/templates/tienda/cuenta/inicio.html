@@ -12,37 +12,65 @@
         Hola, <span th:text="${usuario.nombre}">Cliente</span>
     </h1>
 
-    <p class="lead text-muted">
-        Esta es tu zona privada. Pronto podras ver aqui tus pedidos, facturas y devoluciones.
-    </p>
+    <p class="text-muted">Esta es tu zona privada. Aqui puedes consultar tus
+       pedidos, facturas, devoluciones y editar tus datos.</p>
 
     <div class="row mt-4">
-        <div class="col-md-4 mb-3">
-            <div class="card card-cuenta h-100">
+
+        <div class="col-lg-4 col-md-6 mb-3">
+            <a th:href="@{/cuenta/pedidos}" class="card card-cuenta h-100 text-decoration-none">
                 <div class="card-body text-center">
                     <i class="fas fa-shopping-bag fa-3x mb-3 text-primary"></i>
                     <h5>Mis pedidos</h5>
-                    <p class="text-muted small">Proximamente</p>
+                    <p class="text-muted mb-0">
+                        <strong th:text="${numPedidos}">0</strong> pedido(s)
+                    </p>
                 </div>
-            </div>
+            </a>
         </div>
-        <div class="col-md-4 mb-3">
-            <div class="card card-cuenta h-100">
+
+        <div class="col-lg-4 col-md-6 mb-3">
+            <a th:href="@{/cuenta/facturas}" class="card card-cuenta h-100 text-decoration-none">
                 <div class="card-body text-center">
                     <i class="fas fa-file-invoice fa-3x mb-3 text-success"></i>
                     <h5>Mis facturas</h5>
-                    <p class="text-muted small">Proximamente</p>
+                    <p class="text-muted mb-0">
+                        <strong th:text="${numFacturas}">0</strong> factura(s)
+                    </p>
                 </div>
-            </div>
+            </a>
         </div>
-        <div class="col-md-4 mb-3">
-            <div class="card card-cuenta h-100">
+
+        <div class="col-lg-4 col-md-6 mb-3">
+            <a th:href="@{/cuenta/devoluciones}" class="card card-cuenta h-100 text-decoration-none">
                 <div class="card-body text-center">
-                    <i class="fas fa-user-cog fa-3x mb-3 text-warning"></i>
-                    <h5>Mi perfil</h5>
-                    <p class="text-muted small">Proximamente</p>
+                    <i class="fas fa-undo fa-3x mb-3 text-warning"></i>
+                    <h5>Mis devoluciones</h5>
+                    <p class="text-muted mb-0">
+                        <strong th:text="${numDevoluciones}">0</strong> solicitud(es)
+                    </p>
                 </div>
-            </div>
+            </a>
+        </div>
+
+        <div class="col-lg-4 col-md-6 mb-3">
+            <a th:href="@{/cuenta/chat}" class="card card-cuenta h-100 text-decoration-none">
+                <div class="card-body text-center">
+                    <i class="fas fa-comments fa-3x mb-3 text-info"></i>
+                    <h5>Chat soporte</h5>
+                    <p class="text-muted mb-0">Habla con el equipo</p>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-lg-4 col-md-6 mb-3">
+            <a th:href="@{/cuenta/perfil}" class="card card-cuenta h-100 text-decoration-none">
+                <div class="card-body text-center">
+                    <i class="fas fa-user-cog fa-3x mb-3" style="color: var(--levelup-purple);"></i>
+                    <h5>Mi perfil</h5>
+                    <p class="text-muted mb-0">Editar mis datos</p>
+                </div>
+            </a>
         </div>
     </div>
 

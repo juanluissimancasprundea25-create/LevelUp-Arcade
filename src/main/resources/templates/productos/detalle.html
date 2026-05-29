@@ -104,14 +104,30 @@
 
           <div class="col-md-4">
 
-            <!-- Imagen si existe -->
-            <div th:if="${producto.imagenUrl != null and !producto.imagenUrl.isBlank()}"
-                 class="card">
+            <!--
+              Imagen del producto.
+              Tras PR #27 imagenUrl es un path relativo tipo "productos/abc.jpg";
+              compatibilidad con datos antiguos que aun son URLs http(s).
+              El contenedor reserva el cuadrado con aspect-ratio: no hay salto.
+            -->
+            <div class="card">
               <div class="card-header"><h3 class="card-title">Imagen</h3></div>
               <div class="card-body text-center">
-                <img th:src="${producto.imagenUrl}" alt="Imagen del producto"
-                     class="img-fluid"
-                     style="max-height: 200px; object-fit: contain;"/>
+                <div style="width: 100%; max-width: 240px; margin: 0 auto;
+                            aspect-ratio: 1 / 1; background:#f5f5f5;
+                            border-radius: 6px; overflow:hidden;
+                            display:flex; align-items:center; justify-content:center;">
+                  <img th:if="${producto.imagenUrl != null and !#strings.isEmpty(producto.imagenUrl)}"
+                       th:src="${#strings.startsWith(producto.imagenUrl, 'http')
+                                ? producto.imagenUrl
+                                : '/img/' + producto.imagenUrl}"
+                       alt="Imagen del producto"
+                       style="width:100%; height:100%; object-fit:cover;"/>
+                  <span th:if="${producto.imagenUrl == null or #strings.isEmpty(producto.imagenUrl)}"
+                        style="color:#bbb;">
+                    <i class="fas fa-image fa-3x"></i>
+                  </span>
+                </div>
               </div>
             </div>
 

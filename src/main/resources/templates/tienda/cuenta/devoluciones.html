@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{tienda/fragments/head :: head('Mis devoluciones')}"></head>
+<body>
+
+<div th:replace="~{tienda/fragments/header :: header}"></div>
+
+<main class="container my-5">
+    <div class="row">
+
+        <div class="col-lg-3 mb-4">
+            <div th:replace="~{tienda/cuenta/_sidebar :: sidebar}"></div>
+        </div>
+
+        <div class="col-lg-9">
+            <h2 class="tienda-titulo mb-3">Mis devoluciones</h2>
+
+            <div th:if="${info}"  class="alert alert-info"  role="alert" th:text="${info}"></div>
+            <div th:if="${error}" class="alert alert-danger" role="alert" th:text="${error}"></div>
+
+            <div th:if="${devoluciones.totalElements == 0}" class="card cuenta-card text-center py-5">
+                <div class="card-body">
+                    <i class="fas fa-undo fa-3x text-muted mb-3"></i>
+                    <p class="text-muted">Aun no has solicitado ninguna devolucion.</p>
+                    <small class="text-muted d-block">
+                        Puedes solicitar una devolucion desde el detalle de un pedido entregado.
+                    </small>
+                </div>
+            </div>
+
+            <div th:if="${devoluciones.totalElements > 0}" class="card cuenta-card">
+                <div class="table-responsive">
+                    <table class="table mb-0 align-middle">
+                        <thead>
+                            <tr>
+                                <th>Devolucion</th>
+                                <th>Fecha</th>
+                                <th>Pedido</th>
+                                <th>Estado</th>
+                                <th class="text-right">Importe</th>
+                                <th class="text-right">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="d : ${devoluciones.content}">
+                                <td><strong th:text="'#' + ${d.id}">#0</strong></td>
+                                <td th:text="${#temporals.format(d.fechaSolicitud, 'dd/MM/yyyy')}">fecha</td>
+                                <td>
+                                    <a th:href="@{/cuenta/pedidos/{id}(id=${d.pedidoId})}"
+                                       th:text="'#' + ${d.pedidoId}">#0</a>
+                                </td>
+                                <td>
+                                    <span class="badge" th:classappend="${
+                                        d.estado.name() == 'APROBADA' ? 'badge-info' :
+                                        d.estado.name() == 'COMPLETADA' ? 'badge-success' :
+                                        d.estado.name() == 'RECHAZADA' ? 'badge-danger' :
+                                        'badge-warning'}"
+                                          th:text="${d.estado}">ESTADO</span>
+                                </td>
+                                <td class="text-right"
+                                    th:text="${d.importeDevuelto != null ?
+                                              #numbers.formatDecimal(d.importeDevuelto, 1, 'POINT', 2, 'COMMA') + ' EUR'
+                                              : '-'}">
+                                    0,00 EUR
+                                </td>
+                                <td class="text-right">
+                                    <a th:href="@{/cuenta/devoluciones/{id}(id=${d.id})}"
+                                       class="btn btn-sm btn-outline-secondary">
+                                        Ver detalle
+                                    </a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <nav th:if="${totalPaginas > 1}" class="mt-3">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item" th:classappend="${paginaActual == 0} ? 'disabled'">
+                        <a class="page-link"
+                           th:href="@{/cuenta/devoluciones(page=${paginaActual - 1})}">Anterior</a>
+                    </li>
+                    <li class="page-item"
+                        th:each="i : ${#numbers.sequence(0, totalPaginas - 1)}"
+                        th:classappend="${i == paginaActual} ? 'active'">
+                        <a class="page-link"
+                           th:href="@{/cuenta/devoluciones(page=${i})}"
+                           th:text="${i + 1}">1</a>
+                    </li>
+                    <li class="page-item" th:classappend="${paginaActual + 1 >= totalPaginas} ? 'disabled'">
+                        <a class="page-link"
+                           th:href="@{/cuenta/devoluciones(page=${paginaActual + 1})}">Siguiente</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</main>
+
+<div th:replace="~{tienda/fragments/footer :: footer}"></div>
+<div th:replace="~{tienda/fragments/scripts :: scripts}"></div>
+</body>
+</html>
