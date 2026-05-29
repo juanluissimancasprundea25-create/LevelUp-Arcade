@@ -15,12 +15,15 @@
         <div class="col-lg-9">
             <h2 class="tienda-titulo mb-3">Mis devoluciones</h2>
 
+            <div th:if="${info}"  class="alert alert-info"  role="alert" th:text="${info}"></div>
+            <div th:if="${error}" class="alert alert-danger" role="alert" th:text="${error}"></div>
+
             <div th:if="${devoluciones.totalElements == 0}" class="card cuenta-card text-center py-5">
                 <div class="card-body">
                     <i class="fas fa-undo fa-3x text-muted mb-3"></i>
                     <p class="text-muted">Aun no has solicitado ninguna devolucion.</p>
                     <small class="text-muted d-block">
-                        Para solicitar una devolucion, contacta con el equipo de soporte por chat.
+                        Puedes solicitar una devolucion desde el detalle de un pedido entregado.
                     </small>
                 </div>
             </div>
@@ -35,6 +38,7 @@
                                 <th>Pedido</th>
                                 <th>Estado</th>
                                 <th class="text-right">Importe</th>
+                                <th class="text-right">Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -58,6 +62,12 @@
                                               #numbers.formatDecimal(d.importeDevuelto, 1, 'POINT', 2, 'COMMA') + ' EUR'
                                               : '-'}">
                                     0,00 EUR
+                                </td>
+                                <td class="text-right">
+                                    <a th:href="@{/cuenta/devoluciones/{id}(id=${d.id})}"
+                                       class="btn btn-sm btn-outline-secondary">
+                                        Ver detalle
+                                    </a>
                                 </td>
                             </tr>
                         </tbody>

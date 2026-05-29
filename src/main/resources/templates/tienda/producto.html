@@ -28,8 +28,17 @@
         <!-- Imagen -->
         <div class="col-md-6 mb-4">
             <div class="producto-detalle-img">
+                <!--
+                  Tras PR #27 imagenUrl es un path relativo "productos/abc.jpg"
+                  que se sirve desde /img/. Compatibilidad con URLs http(s)
+                  anteriores: se usan tal cual.
+                  El contenedor .producto-detalle-img reserva el cuadrado via
+                  CSS (aspect-ratio: 1/1 + object-fit: cover): cero saltos.
+                -->
                 <img th:if="${producto.imagenUrl != null and !#strings.isEmpty(producto.imagenUrl)}"
-                     th:src="${producto.imagenUrl}"
+                     th:src="${#strings.startsWith(producto.imagenUrl, 'http')
+                              ? producto.imagenUrl
+                              : '/img/' + producto.imagenUrl}"
                      th:alt="${producto.nombre}"
                      class="img-fluid rounded">
                 <div th:unless="${producto.imagenUrl != null and !#strings.isEmpty(producto.imagenUrl)}"
@@ -123,7 +132,10 @@
                 <a th:href="@{/producto/{id}(id=${r.id})}" class="card producto-card h-100 text-decoration-none">
                     <div class="producto-thumb">
                         <img th:if="${r.imagenUrl != null and !#strings.isEmpty(r.imagenUrl)}"
-                             th:src="${r.imagenUrl}" th:alt="${r.nombre}" class="card-img-top">
+                             th:src="${#strings.startsWith(r.imagenUrl, 'http')
+                                      ? r.imagenUrl
+                                      : '/img/' + r.imagenUrl}"
+                             th:alt="${r.nombre}" class="card-img-top">
                         <div th:unless="${r.imagenUrl != null and !#strings.isEmpty(r.imagenUrl)}"
                              class="producto-thumb-placeholder">
                             <i class="fas fa-gamepad"></i>

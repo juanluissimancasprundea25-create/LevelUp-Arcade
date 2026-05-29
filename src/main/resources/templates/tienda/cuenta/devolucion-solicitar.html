@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{tienda/fragments/head :: head('Solicitar devolucion')}"></head>
+<body>
+
+<div th:replace="~{tienda/fragments/header :: header}"></div>
+
+<main class="container my-5">
+    <div class="row">
+
+        <div class="col-lg-3 mb-4">
+            <div th:replace="~{tienda/cuenta/_sidebar :: sidebar}"></div>
+        </div>
+
+        <div class="col-lg-9">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2 class="tienda-titulo mb-0">
+                    Solicitar devolucion <small class="text-muted">Pedido #<span th:text="${pedido.id}">0</span></small>
+                </h2>
+                <a th:href="@{/cuenta/pedidos/{id}(id=${pedido.id})}" class="btn btn-link">
+                    <i class="fas fa-arrow-left mr-1"></i> Volver al pedido
+                </a>
+            </div>
+
+            <div th:if="${error}" class="alert alert-danger" role="alert" th:text="${error}"></div>
+
+            <form th:action="@{/cuenta/devoluciones}" method="post">
+                <input type="hidden" name="pedidoId" th:value="${pedido.id}">
+
+                <div class="card cuenta-card mb-3">
+                    <div class="card-body">
+                        <p class="small text-muted mb-3">
+                            Selecciona los articulos que quieres devolver y cuantas unidades de cada uno.
+                            Dispones de <strong th:text="${diasLimite}">14</strong> dias desde la entrega
+                            del pedido.
+                        </p>
+
+                        <div class="table-responsive">
+                            <table class="table align-middle">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 40px;"></th>
+                                        <th>Producto</th>
+                                        <th class="text-center">Disponibles</th>
+                                        <th class="text-center" style="width: 140px;">Cantidad a devolver</th>
+                                        <th class="text-right">Precio unit.</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="l : ${lineasDevolvibles}">
+                                        <td>
+                                            <input type="checkbox" name="incluir"
+                                                   th:value="${l.id}"
+                                                   th:id="'incl-' + ${l.id}"
+                                                   class="dev-incluir">
+                                        </td>
+                                        <td>
+                                            <label th:for="'incl-' + ${l.id}" class="mb-0"
+                                                   th:text="${l.producto.nombre}">Producto</label>
+                                        </td>
+                                        <td class="text-center" th:text="${l.cantidadDevolvible}">1</td>
+                                        <td class="text-center">
+                                            <input type="number"
+                                                   th:name="'cantidad_' + ${l.id}"
+                                                   th:id="'cant-' + ${l.id}"
+                                                   class="form-control form-control-sm text-center dev-cantidad"
+                                                   min="1"
+                                                   th:max="${l.cantidadDevolvible}"
+                                                   th:value="${l.cantidadDevolvible}"
+                                                   disabled>
+                                        </td>
+                                        <td class="text-right"
+                                            th:text="${#numbers.formatDecimal(l.precioUnitario, 1, 'POINT', 2, 'COMMA')} + ' EUR'">
+                                            0,00 EUR
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card cuenta-card mb-3">
+                    <div class="card-body">
+                        <label for="motivo" class="font-weight-bold">Motivo de la devolucion *</label>
+                        <textarea id="motivo" name="motivo" class="form-control" rows="4"
+                                  maxlength="1000" required
+                                  placeholder="Describe el motivo (producto defectuoso, no era lo esperado, etc.)"></textarea>
+                        <small class="text-muted">Maximo 1000 caracteres.</small>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end">
+                    <a th:href="@{/cuenta/pedidos/{id}(id=${pedido.id})}" class="btn btn-link mr-2">
+                        Cancelar
+                    </a>
+                    <button type="submit" class="btn btn-tienda">
+                        <i class="fas fa-paper-plane mr-1"></i> Enviar solicitud
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</main>
+
+<div th:replace="~{tienda/fragments/footer :: footer}"></div>
+<div th:replace="~{tienda/fragments/scripts :: scripts}"></div>
+
+<!--
+  JS: habilita / deshabilita el input de cantidad segun el checkbox.
+  Asi el usuario no rellena por error una cantidad sin querer devolver
+  esa linea. El form envia "incluir" solo cuando esta marcado y solo
+  esas cantidades se procesan en el controller.
+-->
+<script>
+(function(){
+    document.querySelectorAll('.dev-incluir').forEach(function(chk){
+        var input = document.getElementById('cant-' + chk.value);
+        if (!input) return;
+        chk.addEventListener('change', function(){
+            input.disabled = !chk.checked;
+            if (chk.checked) input.focus();
+        });
+    });
+})();
+</script>
+
+</body>
+</html>
+

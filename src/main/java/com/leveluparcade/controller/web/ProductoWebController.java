@@ -7,6 +7,7 @@ import com.leveluparcade.exception.ResourceNotFoundException;
 import com.leveluparcade.repository.CategoriaRepository;
 import com.leveluparcade.repository.ProductoRepository;
 import com.leveluparcade.repository.ProveedorRepository;
+import com.leveluparcade.service.ImagenProductoService;
 import jakarta.validation.Valid;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.math.BigDecimal;
@@ -33,6 +35,13 @@ import java.util.List;
  * se puede refactorizar para usarlos.
  *
  * <p>Acordado con Ivan (autor del modulo de Productos).
+ *
+ * <p>PR #27: la imagen del producto ya NO se introduce por URL. Se sube
+ * un fichero (JPG/PNG/WEBP) que el {@link ImagenProductoService} recorta
+ * a 1:1, redimensiona a 600x600 y guarda en disco como JPEG. En BD se
+ * guarda el path relativo (ejemplo: {@code productos/abc123.jpg}) en la
+ * columna {@code imagen_url} (nombre conservado por compatibilidad con
+ * datos existentes que aun pueden ser URLs externas).
  */
 @Controller
 @RequestMapping("/admin/productos")
@@ -44,13 +53,16 @@ public class ProductoWebController {
     private final ProductoRepository productoRepository;
     private final CategoriaRepository categoriaRepository;
     private final ProveedorRepository proveedorRepository;
+    private final ImagenProductoService imagenProductoService;
 
     public ProductoWebController(ProductoRepository productoRepository,
                                  CategoriaRepository categoriaRepository,
-                                 ProveedorRepository proveedorRepository) {
+                                 ProveedorRepository proveedorRepository,
+                                 ImagenProductoService imagenProductoService) {
         this.productoRepository = productoRepository;
         this.categoriaRepository = categoriaRepository;
         this.proveedorRepository = proveedorRepository;
+        this.imagenProductoService = imagenProductoService;
     }
 
     /** Listado con filtros opcionales por texto, categoria y bajo stock. */
@@ -63,7 +75,6 @@ public class ProductoWebController {
 
         List<Producto> productos = productoRepository.findAll();
 
-        // Filtro por texto (nombre, SKU, descripcion)
         if (q != null && !q.isBlank()) {
             String filtro = q.toLowerCase().trim();
             productos = productos.stream()
@@ -74,7 +85,6 @@ public class ProductoWebController {
                     .toList();
         }
 
-        // Filtro por categoria
         if (categoriaId != null) {
             productos = productos.stream()
                     .filter(p -> p.getCategoria() != null
@@ -82,7 +92,6 @@ public class ProductoWebController {
                     .toList();
         }
 
-        // Filtro por bajo stock
         if (Boolean.TRUE.equals(bajoStock)) {
             productos = productos.stream()
                     .filter(p -> p.getStock() != null
@@ -134,14 +143,24 @@ public class ProductoWebController {
             BindingResult bindingResult,
             @RequestParam(value = "categoriaIdForm", required = false) Long categoriaIdForm,
             @RequestParam(value = "proveedorIdForm", required = false) Long proveedorIdForm,
+            @RequestParam(value = "imagenFile", required = false) MultipartFile imagenFile,
             RedirectAttributes ra,
             Model model) {
 
-        // Validar SKU duplicado a nivel controller
         if (form.getSku() != null && !form.getSku().isBlank()
                 && productoRepository.existsBySku(form.getSku())) {
             bindingResult.rejectValue("sku", "duplicado",
                     "Ya existe un producto con el SKU: " + form.getSku());
+        }
+
+        // Procesar imagen si viene una nueva
+        String imagenPath = null;
+        if (imagenFile != null && !imagenFile.isEmpty()) {
+            try {
+                imagenPath = imagenProductoService.guardar(imagenFile);
+            } catch (IllegalArgumentException ex) {
+                bindingResult.reject("imagen", ex.getMessage());
+            }
         }
 
         if (bindingResult.hasErrors()) {
@@ -151,7 +170,13 @@ public class ProductoWebController {
             return "productos/form";
         }
 
-        // Asignar relaciones manualmente desde los IDs
+        if (imagenPath != null) {
+            form.setImagenUrl(imagenPath);
+        } else {
+            // Si no se sube nada, no guardar nada raro
+            form.setImagenUrl(null);
+        }
+
         asignarCategoriaYProveedor(form, categoriaIdForm, proveedorIdForm);
 
         Producto guardado = productoRepository.save(form);
@@ -186,20 +211,40 @@ public class ProductoWebController {
             BindingResult bindingResult,
             @RequestParam(value = "categoriaIdForm", required = false) Long categoriaIdForm,
             @RequestParam(value = "proveedorIdForm", required = false) Long proveedorIdForm,
+            @RequestParam(value = "imagenFile", required = false) MultipartFile imagenFile,
+            @RequestParam(value = "eliminarImagen", required = false) Boolean eliminarImagen,
             RedirectAttributes ra,
             Model model) {
 
         Producto existente = productoRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Producto", id));
 
-        // Validar SKU duplicado solo si ha cambiado
         if (form.getSku() != null && !form.getSku().equals(existente.getSku())
                 && productoRepository.existsBySku(form.getSku())) {
             bindingResult.rejectValue("sku", "duplicado",
                     "Ya existe otro producto con el SKU: " + form.getSku());
         }
 
+        // Procesar imagen si viene una nueva
+        String nuevaImagen = null;
+        if (imagenFile != null && !imagenFile.isEmpty()) {
+            try {
+                nuevaImagen = imagenProductoService.guardar(imagenFile);
+            } catch (IllegalArgumentException ex) {
+                bindingResult.reject("imagen", ex.getMessage());
+            }
+        }
+
         if (bindingResult.hasErrors()) {
+            // Si subio una imagen valida pero hay otros errores, la
+            // descartamos para evitar imagenes huerfanas.
+            if (nuevaImagen != null) {
+                imagenProductoService.borrarSiExiste(nuevaImagen);
+            }
+            // Restaurar imagenUrl del existente para que el preview del
+            // form siga mostrando la imagen actual (sin esto, el rebote
+            // por error de validacion la "perderia" visualmente).
+            form.setImagenUrl(existente.getImagenUrl());
             cargarOpcionesForm(model);
             model.addAttribute("productoId", id);
             model.addAttribute("modoEdicion", true);
@@ -214,9 +259,21 @@ public class ProductoWebController {
         existente.setPrecio(form.getPrecio());
         existente.setStock(form.getStock());
         existente.setStockMinimo(form.getStockMinimo());
-        existente.setImagenUrl(form.getImagenUrl());
         existente.setActivo(form.getActivo() != null ? form.getActivo() : true);
         asignarCategoriaYProveedor(existente, categoriaIdForm, proveedorIdForm);
+
+        // Gestion de imagen:
+        // - Si llega nueva imagen -> reemplazar y borrar la anterior.
+        // - Si marca "eliminarImagen" -> borrar la actual sin sustituto.
+        // - Si no llega nada -> conservar la actual.
+        String imagenAnterior = existente.getImagenUrl();
+        if (nuevaImagen != null) {
+            existente.setImagenUrl(nuevaImagen);
+            imagenProductoService.borrarSiExiste(imagenAnterior);
+        } else if (Boolean.TRUE.equals(eliminarImagen)) {
+            existente.setImagenUrl(null);
+            imagenProductoService.borrarSiExiste(imagenAnterior);
+        }
 
         productoRepository.save(existente);
         ra.addFlashAttribute("flashOk",
@@ -229,8 +286,11 @@ public class ProductoWebController {
     public String eliminar(@PathVariable Long id, RedirectAttributes ra) {
         Producto producto = productoRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Producto", id));
+        String imagen = producto.getImagenUrl();
         try {
             productoRepository.delete(producto);
+            // Borrar imagen asociada en disco (best effort)
+            imagenProductoService.borrarSiExiste(imagen);
             ra.addFlashAttribute("flashOk", "Producto eliminado.");
             return "redirect:/admin/productos";
         } catch (Exception ex) {
