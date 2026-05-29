@@ -56,7 +56,7 @@
           </div>
 
           <div class="card-body table-responsive p-0">
-            <table class="table table-hover table-striped text-nowrap">
+            <table class="table table-hover table-striped">
               <thead>
               <tr>
                 <th>ID</th>
@@ -76,16 +76,30 @@
                 </td>
               </tr>
               <tr th:each="l : ${logs}">
-                <td th:text="${l.id}" class="text-muted small"></td>
+                <td th:text="${l.id}" class="text-muted small text-nowrap"></td>
                 <td th:text="${l.fecha != null ? #temporals.format(l.fecha, 'dd/MM/yyyy HH:mm:ss') : '-'}"
-                    class="text-muted small"></td>
-                <td>
-                  <span th:if="${l.usuarioId != null}"
-                        th:text="'#' + ${l.usuarioId}"></span>
-                  <span th:if="${l.usuarioId == null}"
-                        class="text-muted">sistema</span>
+                    class="text-muted small text-nowrap"></td>
+
+                <!-- Usuario: nombre completo + email (en lugar del id crudo) -->
+                <td style="white-space: normal; min-width: 200px;">
+                  <th:block th:if="${l.usuarioId != null}"
+                            th:with="u=${usuariosMap.get(l.usuarioId)}">
+                    <th:block th:if="${u != null}">
+                      <strong th:text="${u.nombreCompleto}">Nombre</strong>
+                      <br/>
+                      <small class="text-muted" th:text="${u.email}">email@dominio</small>
+                    </th:block>
+                    <span th:if="${u == null}" class="text-muted small">
+                      <i class="fas fa-user-slash"></i>
+                      Usuario #<span th:text="${l.usuarioId}"></span> (eliminado)
+                    </span>
+                  </th:block>
+                  <span th:if="${l.usuarioId == null}" class="text-muted">
+                    <i class="fas fa-cog"></i> sistema
+                  </span>
                 </td>
-                <td>
+
+                <td class="text-nowrap">
                   <code th:text="${l.accion}"
                         th:classappend="${#strings.contains(l.accion, 'ELIMINADO')
                                        or #strings.contains(l.accion, 'CANCELADO')
@@ -93,11 +107,11 @@
                                        or #strings.contains(l.accion, 'FALLIDO')}
                                        ? 'text-danger' : ''"></code>
                 </td>
-                <td>
+                <td class="text-nowrap">
                   <span th:text="${l.entidad ?: '-'}"
                         class="badge badge-light"></span>
                 </td>
-                <td>
+                <td class="text-nowrap">
                   <span th:if="${l.entidadId != null}"
                         th:text="'#' + ${l.entidadId}"></span>
                   <span th:if="${l.entidadId == null}"
@@ -105,7 +119,7 @@
                 </td>
                 <td style="max-width: 400px; white-space: normal;"
                     th:text="${l.descripcion ?: '-'}"></td>
-                <td class="text-muted small" th:text="${l.ipOrigen ?: '-'}"></td>
+                <td class="text-muted small text-nowrap" th:text="${l.ipOrigen ?: '-'}"></td>
               </tr>
               </tbody>
             </table>

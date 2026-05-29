@@ -13,7 +13,7 @@
 
     <div th:if="${error}" class="alert alert-danger" role="alert" th:text="${error}"></div>
 
-    <form th:action="@{/checkout}" method="post">
+    <form th:action="@{/checkout}" method="post" id="checkoutForm" novalidate>
         <div class="row">
 
             <!-- Datos de envio y pago -->
@@ -49,26 +49,55 @@
                         </div>
 
                         <!-- Campos de tarjeta SIMULADOS: NO se envian al backend
-                             (sin atributo name) ni se guardan. Solo dan aspecto
-                             profesional como pedia el enunciado. -->
-                        <div class="border rounded p-3 mt-2 bg-light">
+                             (sin atributo name) ni se guardan. Validacion solo
+                             client-side: el cliente no puede pagar sin rellenarlos
+                             cuando el metodo es TARJETA. -->
+                        <div id="bloqueTarjeta" class="border rounded p-3 mt-2 bg-light">
                             <small class="text-muted d-block mb-2">
                                 <i class="fas fa-lock mr-1"></i>
                                 Datos de pago (demo, no se almacenan)
                             </small>
+
                             <div class="form-group mb-2">
-                                <input type="text" class="form-control"
-                                       placeholder="Numero de tarjeta"
-                                       inputmode="numeric" autocomplete="off">
+                                <label for="tarjetaNumero" class="small text-muted mb-1">
+                                    Numero de tarjeta
+                                </label>
+                                <input type="text" id="tarjetaNumero" class="form-control"
+                                       placeholder="0000 0000 0000 0000"
+                                       inputmode="numeric"
+                                       autocomplete="off"
+                                       maxlength="19">
+                                <div class="invalid-feedback" id="errorTarjetaNumero">
+                                    Introduce los 16 digitos de la tarjeta.
+                                </div>
                             </div>
+
                             <div class="form-row">
                                 <div class="col-7 mb-2">
-                                    <input type="text" class="form-control"
-                                           placeholder="MM/AA" autocomplete="off">
+                                    <label for="tarjetaFecha" class="small text-muted mb-1">
+                                        Caducidad (MM/AA)
+                                    </label>
+                                    <input type="text" id="tarjetaFecha" class="form-control"
+                                           placeholder="MM/AA"
+                                           inputmode="numeric"
+                                           autocomplete="off"
+                                           maxlength="5">
+                                    <div class="invalid-feedback" id="errorTarjetaFecha">
+                                        Formato MM/AA. La tarjeta no puede estar caducada.
+                                    </div>
                                 </div>
                                 <div class="col-5 mb-2">
-                                    <input type="text" class="form-control"
-                                           placeholder="CVV" autocomplete="off">
+                                    <label for="tarjetaCvv" class="small text-muted mb-1">
+                                        CVV
+                                    </label>
+                                    <input type="text" id="tarjetaCvv" class="form-control"
+                                           placeholder="123"
+                                           inputmode="numeric"
+                                           autocomplete="off"
+                                           maxlength="4">
+                                    <div class="invalid-feedback" id="errorTarjetaCvv">
+                                        3 o 4 digitos.
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -120,6 +149,134 @@
 
 <div th:replace="~{tienda/fragments/footer :: footer}"></div>
 <div th:replace="~{tienda/fragments/scripts :: scripts}"></div>
+
+<script>
+(function() {
+    'use strict';
+
+    var form        = document.getElementById('checkoutForm');
+    var metodoPago  = document.getElementById('metodoPago');
+    var bloqueTarj  = document.getElementById('bloqueTarjeta');
+    var inpNumero   = document.getElementById('tarjetaNumero');
+    var inpFecha    = document.getElementById('tarjetaFecha');
+    var inpCvv      = document.getElementById('tarjetaCvv');
+
+    // --- Formateadores -----------------------------------------------------
+
+    // Agrupa el numero de tarjeta en bloques de 4 digitos: "1234 5678 9012 3456"
+    inpNumero.addEventListener('input', function(e) {
+        var digits = e.target.value.replace(/\D/g, '').slice(0, 16);
+        var groups = digits.match(/.{1,4}/g);
+        e.target.value = groups ? groups.join(' ') : '';
+        clearError(inpNumero);
+    });
+
+    // Auto-formato MM/AA: al teclear el 3er digito, se inserta la barra
+    inpFecha.addEventListener('input', function(e) {
+        var digits = e.target.value.replace(/\D/g, '').slice(0, 4);
+        if (digits.length >= 3) {
+            e.target.value = digits.slice(0, 2) + '/' + digits.slice(2);
+        } else {
+            e.target.value = digits;
+        }
+        clearError(inpFecha);
+    });
+
+    // CVV: solo digitos
+    inpCvv.addEventListener('input', function(e) {
+        e.target.value = e.target.value.replace(/\D/g, '').slice(0, 4);
+        clearError(inpCvv);
+    });
+
+    // --- Toggle visibilidad/obligatoriedad segun metodo de pago -----------
+
+    function esTarjeta() {
+        return metodoPago.value === 'TARJETA';
+    }
+
+    function actualizarBloqueTarjeta() {
+        if (esTarjeta()) {
+            bloqueTarj.style.display = '';
+        } else {
+            bloqueTarj.style.display = 'none';
+            // Si el cliente cambia a otro metodo, limpiamos errores
+            clearError(inpNumero);
+            clearError(inpFecha);
+            clearError(inpCvv);
+        }
+    }
+    metodoPago.addEventListener('change', actualizarBloqueTarjeta);
+    actualizarBloqueTarjeta();
+
+    // --- Validaciones ------------------------------------------------------
+
+    function setError(input, mensaje) {
+        input.classList.add('is-invalid');
+        var fb = input.parentElement.querySelector('.invalid-feedback');
+        if (fb && mensaje) { fb.textContent = mensaje; }
+    }
+    function clearError(input) {
+        input.classList.remove('is-invalid');
+    }
+
+    function validarNumero() {
+        var digits = inpNumero.value.replace(/\s/g, '');
+        if (digits.length !== 16 || !/^\d{16}$/.test(digits)) {
+            setError(inpNumero, 'Introduce los 16 digitos de la tarjeta.');
+            return false;
+        }
+        return true;
+    }
+
+    function validarFecha() {
+        var v = inpFecha.value.trim();
+        var match = v.match(/^(0[1-9]|1[0-2])\/(\d{2})$/);
+        if (!match) {
+            setError(inpFecha, 'Formato MM/AA invalido.');
+            return false;
+        }
+        var mes = parseInt(match[1], 10);
+        var anio = 2000 + parseInt(match[2], 10);
+
+        var hoy = new Date();
+        // Ultimo dia del mes de caducidad: la tarjeta es valida durante todo
+        // el mes que figura impreso (asi funcionan las tarjetas reales).
+        var finMes = new Date(anio, mes, 0, 23, 59, 59);
+
+        if (finMes < hoy) {
+            setError(inpFecha, 'La tarjeta esta caducada.');
+            return false;
+        }
+        return true;
+    }
+
+    function validarCvv() {
+        if (!/^\d{3,4}$/.test(inpCvv.value)) {
+            setError(inpCvv, 'CVV de 3 o 4 digitos.');
+            return false;
+        }
+        return true;
+    }
+
+    // --- Submit ------------------------------------------------------------
+
+    form.addEventListener('submit', function(e) {
+        if (!esTarjeta()) { return; } // otros metodos: no validamos tarjeta
+
+        var ok = true;
+        if (!validarNumero()) { ok = false; }
+        if (!validarFecha())  { ok = false; }
+        if (!validarCvv())    { ok = false; }
+
+        if (!ok) {
+            e.preventDefault();
+            // Foco en el primer campo erroneo
+            var primero = bloqueTarj.querySelector('.is-invalid');
+            if (primero) { primero.focus(); }
+        }
+    });
+})();
+</script>
 
 </body>
 </html>
