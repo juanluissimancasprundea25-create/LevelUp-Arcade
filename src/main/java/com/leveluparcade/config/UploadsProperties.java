@@ -1,7 +1,6 @@
 package com.leveluparcade.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
 
 /**
  * Propiedades de configuracion para la subida de ficheros.
@@ -17,14 +16,13 @@ import org.springframework.context.annotation.Configuration;
  *         max-bytes: 5242880
  * </pre>
  *
- * <p>El {@code path} es el directorio raiz donde se guardan los ficheros
- * subidos. En desarrollo {@code ./uploads} (relativo al directorio de
- * trabajo). En Docker se monta como volumen, por defecto {@code /app/uploads}.
- *
- * <p>Las imagenes de productos se guardan bajo {@code {path}/productos/}
- * y se sirven via {@code /img/productos/} (ver {@link WebMvcConfig}).
+ * <p>El registro como bean se hace via {@code @EnableConfigurationProperties}
+ * en {@link WebMvcConfig}. Asi se garantiza que en los slices de test
+ * (@WebMvcTest) que cargan WebMvcConfig, esta clase tambien queda
+ * disponible. {@link com.leveluparcade.service.impl.ImagenProductoServiceImpl}
+ * la inyecta normalmente (en arranque completo); en @WebMvcTest, el
+ * servicio se mockea, asi que no hay dependencia ahi.
  */
-@Configuration
 @ConfigurationProperties(prefix = "leveluparcade.uploads")
 public class UploadsProperties {
 
