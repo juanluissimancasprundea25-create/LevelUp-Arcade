@@ -25,13 +25,6 @@ public class Factura {
     @Column(name = "ruta_pdf", length = 500)
     private String rutaPdf;
 
-    /**
-     * Contenido textual del QR (URL de verificación).
-     * El nombre de la columna en BD es hash_qr por compatibilidad con V1.
-     */
-    @Column(name = "hash_qr", length = 255)
-    private String contenidoQr;
-
     @PrePersist
     public void prePersist() {
         if (fechaEmision == null) {
@@ -63,7 +56,4 @@ public class Factura {
 
     public String getRutaPdf() { return rutaPdf; }
     public void setRutaPdf(String rutaPdf) { this.rutaPdf = rutaPdf; }
-
-    public String getContenidoQr() { return contenidoQr; }
-    public void setContenidoQr(String contenidoQr) { this.contenidoQr = contenidoQr; }
 }

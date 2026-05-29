@@ -3,7 +3,6 @@ package com.leveluparcade.service.impl;
 import com.leveluparcade.auditoria.AuditoriaEvent;
 import com.leveluparcade.auditoria.AuditoriaPublisher;
 import com.leveluparcade.auditoria.TipoEvento;
-import com.leveluparcade.config.FacturasProperties;
 import com.leveluparcade.dto.request.EmitirFacturaRequest;
 import com.leveluparcade.dto.response.FacturaResponse;
 import com.leveluparcade.entity.Factura;
@@ -30,7 +29,6 @@ public class FacturaServiceImpl implements FacturaService {
     private final PedidoRepository pedidoRepository;
     private final NumeradorFacturas numerador;
     private final PdfFacturaService pdfService;
-    private final FacturasProperties props;
     private final SecurityHelper securityHelper;
     private final AuditoriaPublisher auditoria;
 
@@ -39,14 +37,12 @@ public class FacturaServiceImpl implements FacturaService {
             PedidoRepository pedidoRepository,
             NumeradorFacturas numerador,
             PdfFacturaService pdfService,
-            FacturasProperties props,
             SecurityHelper securityHelper,
             AuditoriaPublisher auditoria) {
         this.facturaRepository = facturaRepository;
         this.pedidoRepository = pedidoRepository;
         this.numerador = numerador;
         this.pdfService = pdfService;
-        this.props = props;
         this.securityHelper = securityHelper;
         this.auditoria = auditoria;
     }
@@ -72,13 +68,11 @@ public class FacturaServiceImpl implements FacturaService {
         }
 
         String numero = numerador.generarSiguiente();
-        String urlVerificacion = props.getUrlVerificacionBase() + "/" + numero;
 
         Factura factura = new Factura();
         factura.setPedido(pedido);
         factura.setNumeroFactura(numero);
         factura.setFechaEmision(LocalDateTime.now());
-        factura.setContenidoQr(urlVerificacion);
 
         Factura guardada = facturaRepository.save(factura);
 
@@ -132,14 +126,6 @@ public class FacturaServiceImpl implements FacturaService {
         return pdf;
     }
 
-    @Override
-    @Transactional(readOnly = true)
-    public FacturaResponse verificar(String numeroFactura) {
-        Factura f = facturaRepository.findByNumeroFactura(numeroFactura)
-            .orElseThrow(() -> new ResourceNotFoundException("Factura no encontrada: " + numeroFactura));
-        return toResponse(f);
-    }
-
     /**
      * Busca factura y verifica que el usuario actual sea ADMIN o el cliente dueño.
      */
@@ -170,7 +156,6 @@ public class FacturaServiceImpl implements FacturaService {
                 ? " " + f.getPedido().getCliente().getUsuario().getApellidos() : "")
         );
         r.setTotal(f.getPedido().getTotal());
-        r.setUrlVerificacion(f.getContenidoQr());
         return r;
     }
 }

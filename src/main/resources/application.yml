@@ -86,7 +86,6 @@ leveluparcade:
       max-bytes: 5242880  # 5 MB
   facturas:
     prefijo-numero: "FAC"
-    url-verificacion-base: "http://localhost:8080/api/facturas/verificar"
     emisor:
       nombre: "LevelUp Arcade S.L."
       cif: "B12345678"

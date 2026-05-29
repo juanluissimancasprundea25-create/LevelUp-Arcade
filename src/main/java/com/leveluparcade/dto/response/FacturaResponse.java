@@ -12,7 +12,6 @@ public class FacturaResponse {
     private Long clienteId;
     private String clienteNombre;
     private BigDecimal total;
-    private String urlVerificacion;
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -34,7 +33,4 @@ public class FacturaResponse {
 
     public BigDecimal getTotal() { return total; }
     public void setTotal(BigDecimal total) { this.total = total; }
-
-    public String getUrlVerificacion() { return urlVerificacion; }
-    public void setUrlVerificacion(String urlVerificacion) { this.urlVerificacion = urlVerificacion; }
 }

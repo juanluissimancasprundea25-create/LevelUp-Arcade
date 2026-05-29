@@ -70,9 +70,4 @@ public class FacturaApiController {
             .contentType(MediaType.APPLICATION_PDF)
             .body(pdf);
     }
-
-    @GetMapping("/verificar/{numeroFactura}")
-    public ResponseEntity<FacturaResponse> verificar(@PathVariable String numeroFactura) {
-        return ResponseEntity.ok(facturaService.verificar(numeroFactura));
-    }
 }

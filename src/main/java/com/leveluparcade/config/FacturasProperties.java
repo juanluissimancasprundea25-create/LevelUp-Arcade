@@ -6,17 +6,6 @@ import org.springframework.context.annotation.Configuration;
 /**
  * Propiedades de configuracion del modulo de facturas.
  * Lee del application.yml bajo el prefijo leveluparcade.facturas.
- *
- * Ejemplo:
- *   leveluparcade:
- *     facturas:
- *       prefijo-numero: "FAC"
- *       url-verificacion-base: "http://localhost:8080/api/facturas/verificar"
- *       emisor:
- *         nombre: "LevelUp Arcade S.L."
- *         cif: "B12345678"
- *         direccion: "Calle Falsa 123, 28001 Madrid, Espana"
- *         email: "facturacion@leveluparcade.local"
  */
 @Configuration
 @ConfigurationProperties(prefix = "leveluparcade.facturas")
@@ -29,12 +18,6 @@ public class FacturasProperties {
     private String prefijoNumero = "FAC";
 
     /**
-     * URL base que se incrustara en el QR de cada factura.
-     * El QR apuntara a {urlVerificacionBase}/{numeroFactura}.
-     */
-    private String urlVerificacionBase = "http://localhost:8080/api/facturas/verificar";
-
-    /**
      * Datos del emisor (la empresa) que apareceran en cabecera del PDF.
      */
     private Emisor emisor = new Emisor();
@@ -45,14 +28,6 @@ public class FacturasProperties {
 
     public void setPrefijoNumero(String prefijoNumero) {
         this.prefijoNumero = prefijoNumero;
-    }
-
-    public String getUrlVerificacionBase() {
-        return urlVerificacionBase;
-    }
-
-    public void setUrlVerificacionBase(String urlVerificacionBase) {
-        this.urlVerificacionBase = urlVerificacionBase;
     }
 
     public Emisor getEmisor() {
@@ -74,36 +49,16 @@ public class FacturasProperties {
         private String direccion;
         private String email;
 
-        public String getNombre() {
-            return nombre;
-        }
+        public String getNombre() { return nombre; }
+        public void setNombre(String nombre) { this.nombre = nombre; }
 
-        public void setNombre(String nombre) {
-            this.nombre = nombre;
-        }
+        public String getCif() { return cif; }
+        public void setCif(String cif) { this.cif = cif; }
 
-        public String getCif() {
-            return cif;
-        }
+        public String getDireccion() { return direccion; }
+        public void setDireccion(String direccion) { this.direccion = direccion; }
 
-        public void setCif(String cif) {
-            this.cif = cif;
-        }
-
-        public String getDireccion() {
-            return direccion;
-        }
-
-        public void setDireccion(String direccion) {
-            this.direccion = direccion;
-        }
-
-        public String getEmail() {
-            return email;
-        }
-
-        public void setEmail(String email) {
-            this.email = email;
-        }
+        public String getEmail() { return email; }
+        public void setEmail(String email) { this.email = email; }
     }
 }

@@ -10,7 +10,6 @@ import com.lowagie.text.DocumentException;
 import com.lowagie.text.Element;
 import com.lowagie.text.Font;
 import com.lowagie.text.FontFactory;
-import com.lowagie.text.Image;
 import com.lowagie.text.PageSize;
 import com.lowagie.text.Paragraph;
 import com.lowagie.text.Phrase;
@@ -26,8 +25,7 @@ import java.time.format.DateTimeFormatter;
 
 /**
  * Genera el PDF de una factura usando OpenPDF (fork libre de iText 4).
- * El QR se embebe abajo a la derecha. El PDF NO se persiste en disco,
- * se devuelve como byte[] para descarga al vuelo.
+ * El PDF NO se persiste en disco, se devuelve como byte[] para descarga al vuelo.
  */
 @Service
 public class PdfFacturaService {
@@ -36,11 +34,9 @@ public class PdfFacturaService {
         DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
     private final FacturasProperties props;
-    private final QrService qrService;
 
-    public PdfFacturaService(FacturasProperties props, QrService qrService) {
+    public PdfFacturaService(FacturasProperties props) {
         this.props = props;
-        this.qrService = qrService;
     }
 
     public byte[] generar(Factura factura) {
@@ -55,7 +51,6 @@ public class PdfFacturaService {
             anadirDatosCliente(doc, factura.getPedido().getCliente());
             anadirTablaLineas(doc, factura.getPedido());
             anadirTotales(doc, factura.getPedido());
-            anadirQr(doc, factura.getContenidoQr());
 
             doc.close();
             return out.toByteArray();
@@ -147,23 +142,5 @@ public class PdfFacturaService {
         total.setAlignment(Element.ALIGN_RIGHT);
         doc.add(total);
         doc.add(new Paragraph(" "));
-    }
-
-    private void anadirQr(Document doc, String contenidoQr) throws DocumentException {
-        if (contenidoQr == null || contenidoQr.isBlank()) return;
-        try {
-            byte[] png = qrService.generarPng(contenidoQr, 150);
-            Image img = Image.getInstance(png);
-            img.setAlignment(Element.ALIGN_RIGHT);
-            img.scaleAbsolute(120, 120);
-            doc.add(img);
-
-            Font fontPie = FontFactory.getFont(FontFactory.HELVETICA, 8, Color.GRAY);
-            Paragraph pie = new Paragraph("Escanea para verificar esta factura", fontPie);
-            pie.setAlignment(Element.ALIGN_RIGHT);
-            doc.add(pie);
-        } catch (Exception e) {
-            // Si el QR falla, no rompemos el PDF; solo se omite
-        }
     }
 }

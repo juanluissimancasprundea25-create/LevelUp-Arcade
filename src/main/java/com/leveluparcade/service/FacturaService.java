@@ -18,6 +18,4 @@ public interface FacturaService {
     Page<FacturaResponse> listarMias(Pageable pageable);
 
     byte[] descargarPdf(Long id);
-
-    FacturaResponse verificar(String numeroFactura);
 }
