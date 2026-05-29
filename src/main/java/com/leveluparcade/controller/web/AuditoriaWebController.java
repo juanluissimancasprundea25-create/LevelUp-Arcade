@@ -1,6 +1,8 @@
 package com.leveluparcade.controller.web;
 
 import com.leveluparcade.entity.AuditoriaLog;
+import com.leveluparcade.entity.Usuario;
+import com.leveluparcade.repository.UsuarioRepository;
 import com.leveluparcade.service.AuditoriaService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -13,6 +15,13 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 /**
  * Controller web para consultar el log de auditoria desde el panel admin.
  *
@@ -21,6 +30,10 @@ import org.springframework.web.bind.annotation.RequestParam;
  * automaticamente; aqui solo se consulta.
  *
  * <p>Llama directamente al AuditoriaService (Opcion A).
+ *
+ * <p>Tras la mejora, ademas del log enriquece la vista con un mapa
+ * id -> Usuario de los usuarios referenciados en la pagina actual,
+ * para mostrar nombre completo + email en lugar del id crudo.
  */
 @Controller
 @RequestMapping("/admin/auditoria")
@@ -30,9 +43,12 @@ public class AuditoriaWebController {
     private static final String SECCION = "auditoria";
 
     private final AuditoriaService auditoriaService;
+    private final UsuarioRepository usuarioRepository;
 
-    public AuditoriaWebController(AuditoriaService auditoriaService) {
+    public AuditoriaWebController(AuditoriaService auditoriaService,
+                                  UsuarioRepository usuarioRepository) {
         this.auditoriaService = auditoriaService;
+        this.usuarioRepository = usuarioRepository;
     }
 
     /**
@@ -63,8 +79,25 @@ public class AuditoriaWebController {
             pagina = auditoriaService.listar(pageable);
         }
 
+        // Carga en una sola consulta los usuarios referenciados en la
+        // pagina actual. Asi la vista puede mostrar nombre + email en
+        // lugar del id crudo, sin caer en N+1 (un select por fila).
+        Set<Long> userIds = pagina.getContent().stream()
+                .map(AuditoriaLog::getUsuarioId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+
+        Map<Long, Usuario> usuariosMap = new HashMap<>();
+        if (!userIds.isEmpty()) {
+            List<Usuario> usuarios = usuarioRepository.findAllById(userIds);
+            for (Usuario u : usuarios) {
+                usuariosMap.put(u.getId(), u);
+            }
+        }
+
         model.addAttribute("pagina", pagina);
         model.addAttribute("logs", pagina.getContent());
+        model.addAttribute("usuariosMap", usuariosMap);
         model.addAttribute("usuarioIdFiltro", usuarioId);
         model.addAttribute("accionFiltro", accion);
         model.addAttribute("entidadFiltro", entidad);

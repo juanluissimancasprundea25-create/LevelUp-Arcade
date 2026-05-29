@@ -34,6 +34,15 @@
                         <div>
                             <small class="text-muted d-block">Metodo de pago</small>
                             <span th:text="${pedido.metodoPago}">TARJETA</span>
+                            <!-- Si pago con tarjeta, mostramos el numero enmascarado.
+                                 No guardamos el numero real (por seguridad), asi que
+                                 lo mostramos siempre con puntos. -->
+                            <div th:if="${pedido.metodoPago != null and pedido.metodoPago.name() == 'TARJETA'}"
+                                 class="small text-muted mt-1"
+                                 style="font-family: 'Courier New', monospace; letter-spacing: 0.1em;">
+                                <i class="fas fa-lock mr-1"></i>
+                                •••• •••• •••• ••••
+                            </div>
                         </div>
                         <div class="text-right">
                             <small class="text-muted d-block">Total</small>
