@@ -31,86 +31,66 @@
     <section class="content">
       <div class="container-fluid">
 
-        <div th:if="${flashError}" class="alert alert-danger alert-dismissible">
-          <button type="button" class="close" data-dismiss="alert">&times;</button>
-          <span th:text="${flashError}"></span>
+        <div id="alertError" class="alert alert-danger alert-dismissible" style="display:none;">
+          <button type="button" class="close" onclick="this.parentElement.style.display='none';">&times;</button>
+          <span id="alertErrorTexto"></span>
         </div>
 
-        <div class="card direct-chat direct-chat-primary">
-          <div class="card-header">
-            <h3 class="card-title">Conversacion</h3>
+        <div class="card chat-card">
+          <div class="card-header chat-card-header">
+            <h3 class="card-title">
+              <i class="fas fa-headset mr-1"></i> Conversacion
+            </h3>
             <div class="card-tools">
-              <span class="badge badge-primary" th:text="${pagina.totalElements} + ' mensajes'"></span>
-              <button type="button" class="btn btn-tool" id="btnRefresh"
-                      title="Refrescar manualmente">
-                <i class="fas fa-sync-alt"></i>
-              </button>
+              <span id="chatContador" class="badge badge-primary"
+                    th:text="${pagina.totalElements} + ' mensajes'"></span>
+              <span id="chatEstado" class="badge badge-success ml-1">
+                <i class="fas fa-circle" style="font-size:0.6em;"></i> En linea
+              </span>
             </div>
           </div>
 
-          <div class="card-body" id="chatBody"
-               style="max-height: 500px; overflow-y: auto; background: #f4f6f9;">
-
-            <div th:if="${mensajes.isEmpty()}"
-                 class="text-center text-muted py-5">
+          <div class="card-body chat-body" id="chatBody">
+            <div id="chatVacio" class="text-center text-muted py-5"
+                 th:style="${mensajes.isEmpty()} ? '' : 'display:none;'">
               <i class="fas fa-comment-slash fa-2x mb-2" style="opacity: 0.3;"></i>
               <p>No hay mensajes en esta conversacion.</p>
             </div>
 
-            <div th:each="m : ${mensajes}" class="mb-3">
-
-              <!-- Mensaje del cliente (recibido) -->
-              <div th:if="${m.remitenteId == clienteUsuarioId}"
-                   class="d-flex justify-content-start">
-                <div style="max-width: 70%; background: white; padding: 0.75rem 1rem;
-                            border-radius: 0 12px 12px 12px;
-                            box-shadow: 0 1px 2px rgba(0,0,0,0.1);">
-                  <div class="text-muted small mb-1">
+            <div id="chatLista">
+              <div th:each="m : ${mensajes}" class="chat-msg"
+                   th:classappend="${m.remitenteId == clienteUsuarioId} ? 'chat-msg-recibido' : 'chat-msg-enviado'">
+                <div class="chat-burbuja">
+                  <div class="chat-meta">
                     <strong th:text="${m.remitenteNombre}"></strong>
                     <span th:text="${#temporals.format(m.fechaEnvio, 'dd/MM HH:mm')}"></span>
-                  </div>
-                  <div th:text="${m.contenido}" style="white-space: pre-wrap;"></div>
-                </div>
-              </div>
-
-              <!-- Mensaje del admin (enviado) -->
-              <div th:unless="${m.remitenteId == clienteUsuarioId}"
-                   class="d-flex justify-content-end">
-                <div style="max-width: 70%; background: #7f77dd; color: white;
-                            padding: 0.75rem 1rem;
-                            border-radius: 12px 0 12px 12px;
-                            box-shadow: 0 1px 2px rgba(0,0,0,0.1);">
-                  <div class="small mb-1" style="opacity: 0.85;">
-                    <strong th:text="${m.remitenteNombre}"></strong>
-                    <span th:text="${#temporals.format(m.fechaEnvio, 'dd/MM HH:mm')}"></span>
-                    <span th:if="${m.leido}" title="Leido"
-                          style="margin-left: 0.5rem;">
-                      <i class="fas fa-check-double"></i>
-                    </span>
-                    <span th:unless="${m.leido}" title="Enviado"
-                          style="margin-left: 0.5rem;">
-                      <i class="fas fa-check"></i>
+                    <span th:if="${m.remitenteId != clienteUsuarioId}"
+                          th:title="${m.leido} ? 'Leido' : 'Enviado'">
+                      <i th:class="${m.leido} ? 'fas fa-check-double' : 'fas fa-check'"></i>
                     </span>
                   </div>
-                  <div th:text="${m.contenido}" style="white-space: pre-wrap;"></div>
+                  <div class="chat-texto" th:text="${m.contenido}"></div>
                 </div>
               </div>
-
             </div>
           </div>
 
-          <div class="card-footer">
-            <form th:action="@{/admin/chat/{id}(id=${clienteUsuarioId})}" method="post">
+          <div class="card-footer chat-footer">
+            <form id="chatForm" th:data-url="@{/admin/chat/{id}(id=${clienteUsuarioId})}">
               <div class="input-group">
-                <textarea name="contenido" class="form-control" rows="2"
-                          placeholder="Escribe tu respuesta..."
-                          required maxlength="4000"></textarea>
+                <textarea id="chatInput" name="contenido" class="form-control chat-input"
+                          rows="2" placeholder="Escribe tu respuesta..."
+                          required maxlength="4000" autocomplete="off"></textarea>
                 <span class="input-group-append">
-                  <button type="submit" class="btn btn-primary">
+                  <button type="submit" id="chatEnviar" class="btn btn-primary chat-btn">
                     <i class="fas fa-paper-plane"></i> Enviar
                   </button>
                 </span>
               </div>
+              <small class="text-muted d-block mt-1">
+                <i class="fas fa-keyboard mr-1"></i>
+                Pulsa <kbd>Enter</kbd> para enviar, <kbd>Shift + Enter</kbd> para salto de linea.
+              </small>
             </form>
           </div>
         </div>
@@ -123,26 +103,274 @@
 </div>
 <th:block th:replace="~{fragments/scripts :: scripts}"></th:block>
 
-<script>
-  // Auto-scroll al fondo al cargar
-  (function() {
-    var chatBody = document.getElementById('chatBody');
-    if (chatBody) {
+<style>
+  .chat-card {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+    border: none;
+  }
+  .chat-card-header {
+    background: linear-gradient(90deg, #7f77dd 0%, #6b63c9 100%);
+    color: #fff;
+    border-bottom: none;
+  }
+  .chat-card-header .card-title { color: #fff; font-weight: 500; }
+  .chat-card-header .card-tools .badge { font-size: 0.85em; }
+
+  .chat-body {
+    height: 60vh;
+    min-height: 400px;
+    max-height: 600px;
+    overflow-y: auto;
+    background: #f4f6f9;
+    padding: 1rem 1.25rem;
+    scroll-behavior: smooth;
+  }
+  .chat-body::-webkit-scrollbar { width: 8px; }
+  .chat-body::-webkit-scrollbar-track { background: transparent; }
+  .chat-body::-webkit-scrollbar-thumb {
+    background: rgba(127,119,221,0.3);
+    border-radius: 4px;
+  }
+  .chat-body::-webkit-scrollbar-thumb:hover { background: rgba(127,119,221,0.5); }
+
+  .chat-msg {
+    display: flex;
+    margin-bottom: 0.85rem;
+    animation: chatFadeIn 0.25s ease-out;
+  }
+  @keyframes chatFadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .chat-msg-recibido { justify-content: flex-start; }
+  .chat-msg-enviado  { justify-content: flex-end; }
+
+  .chat-burbuja {
+    max-width: 70%;
+    padding: 0.6rem 0.9rem;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+    word-wrap: break-word;
+  }
+  .chat-msg-recibido .chat-burbuja {
+    background: #fff;
+    color: #333;
+    border-radius: 2px 14px 14px 14px;
+  }
+  .chat-msg-enviado .chat-burbuja {
+    background: linear-gradient(135deg, #7f77dd 0%, #6b63c9 100%);
+    color: #fff;
+    border-radius: 14px 2px 14px 14px;
+  }
+
+  .chat-meta {
+    font-size: 0.72rem;
+    margin-bottom: 0.25rem;
+    opacity: 0.85;
+    display: flex;
+    gap: 0.4rem;
+    align-items: center;
+  }
+  .chat-msg-recibido .chat-meta { color: #6c757d; }
+  .chat-msg-enviado  .chat-meta { color: rgba(255,255,255,0.9); }
+
+  .chat-texto { white-space: pre-wrap; line-height: 1.4; }
+
+  .chat-footer {
+    background: #fff;
+    border-top: 1px solid #e9ecef;
+    padding: 0.85rem 1rem;
+  }
+  .chat-input {
+    resize: none;
+    border-radius: 6px 0 0 6px;
+  }
+  .chat-input:focus {
+    border-color: #7f77dd;
+    box-shadow: 0 0 0 0.15rem rgba(127,119,221,0.25);
+  }
+  .chat-btn {
+    background: #7f77dd;
+    border-color: #7f77dd;
+    border-radius: 0 6px 6px 0;
+    min-width: 110px;
+  }
+  .chat-btn:hover, .chat-btn:focus {
+    background: #6b63c9;
+    border-color: #6b63c9;
+  }
+  .chat-btn:disabled { opacity: 0.6; }
+
+  kbd {
+    background: #e9ecef;
+    color: #495057;
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-size: 0.75em;
+  }
+</style>
+
+<script th:inline="javascript">
+(function() {
+  var clienteUsuarioId = /*[[${clienteUsuarioId}]]*/ 0;
+  var urlMensajes = /*[[@{/admin/chat/{id}/mensajes(id=${clienteUsuarioId})}]]*/ '';
+  var urlEnviar   = /*[[@{/admin/chat/{id}(id=${clienteUsuarioId})}]]*/ '';
+
+  var chatBody    = document.getElementById('chatBody');
+  var chatLista   = document.getElementById('chatLista');
+  var chatVacio   = document.getElementById('chatVacio');
+  var chatInput   = document.getElementById('chatInput');
+  var chatForm    = document.getElementById('chatForm');
+  var chatEnviar  = document.getElementById('chatEnviar');
+  var chatContador= document.getElementById('chatContador');
+  var alertError      = document.getElementById('alertError');
+  var alertErrorTexto = document.getElementById('alertErrorTexto');
+
+  // CSRF token (lo deja AdminLTE/Thymeleaf en metas)
+  var csrfToken  = document.querySelector('meta[name="_csrf"]');
+  var csrfHeader = document.querySelector('meta[name="_csrf_header"]');
+  csrfToken  = csrfToken  ? csrfToken.getAttribute('content')  : null;
+  csrfHeader = csrfHeader ? csrfHeader.getAttribute('content') : null;
+
+  function scrollAbajo(forzar) {
+    // Solo hace autoscroll si el usuario ya estaba cerca del fondo
+    var cerca = chatBody.scrollHeight - chatBody.scrollTop - chatBody.clientHeight < 80;
+    if (forzar || cerca) {
       chatBody.scrollTop = chatBody.scrollHeight;
     }
-  })();
+  }
+  scrollAbajo(true);
 
-  // Polling cada 15 segundos: recarga la pagina si la pestana esta activa
-  var pollingInterval = setInterval(function() {
-    if (!document.hidden) {
-      window.location.reload();
+  function escapeHtml(s) {
+    if (s == null) return '';
+    return String(s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
+  function fmtFecha(iso) {
+    if (!iso) return '';
+    var d = new Date(iso);
+    if (isNaN(d.getTime())) return '';
+    var p = function(n) { return n < 10 ? '0' + n : '' + n; };
+    return p(d.getDate()) + '/' + p(d.getMonth() + 1)
+         + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
+  }
+
+  function pintarMensajes(mensajes) {
+    if (!Array.isArray(mensajes)) return;
+
+    chatContador.textContent = mensajes.length + ' mensajes';
+
+    if (mensajes.length === 0) {
+      chatLista.innerHTML = '';
+      chatVacio.style.display = '';
+      return;
     }
-  }, 15000);
+    chatVacio.style.display = 'none';
 
-  // Refresh manual con el boton de la cabecera
-  document.getElementById('btnRefresh').addEventListener('click', function() {
-    window.location.reload();
+    var html = '';
+    for (var i = 0; i < mensajes.length; i++) {
+      var m = mensajes[i];
+      var esCliente = (m.remitenteId === clienteUsuarioId);
+      var clase = esCliente ? 'chat-msg-recibido' : 'chat-msg-enviado';
+
+      var indicador = '';
+      if (!esCliente) {
+        indicador = m.leido
+          ? '<i class="fas fa-check-double" title="Leido"></i>'
+          : '<i class="fas fa-check" title="Enviado"></i>';
+      }
+
+      html += '<div class="chat-msg ' + clase + '">'
+            +   '<div class="chat-burbuja">'
+            +     '<div class="chat-meta">'
+            +       '<strong>' + escapeHtml(m.remitenteNombre) + '</strong>'
+            +       '<span>' + escapeHtml(fmtFecha(m.fechaEnvio)) + '</span>'
+            +       indicador
+            +     '</div>'
+            +     '<div class="chat-texto">' + escapeHtml(m.contenido) + '</div>'
+            +   '</div>'
+            + '</div>';
+    }
+    chatLista.innerHTML = html;
+  }
+
+  var ultimoCount = chatLista.querySelectorAll('.chat-msg').length;
+
+  function refrescar() {
+    fetch(urlMensajes, { credentials: 'same-origin', headers: { 'Accept': 'application/json' } })
+      .then(function(r) { return r.ok ? r.json() : null; })
+      .then(function(data) {
+        if (!data) return;
+        if (data.length !== ultimoCount) {
+          pintarMensajes(data);
+          ultimoCount = data.length;
+          scrollAbajo(false);
+        } else {
+          // mismo numero de mensajes pero quiza cambiaron flags leido/etc
+          pintarMensajes(data);
+        }
+      })
+      .catch(function() { /* silencioso */ });
+  }
+
+  // Polling cada 5 segundos, SIN recargar la pagina ni tocar el textarea
+  setInterval(refrescar, 5000);
+
+  // Envio AJAX para no perder scroll ni redirigir
+  function enviar() {
+    var contenido = chatInput.value.trim();
+    if (!contenido) return;
+
+    chatEnviar.disabled = true;
+
+    var fd = new FormData();
+    fd.append('contenido', contenido);
+
+    var headers = { 'Accept': 'application/json,text/html' };
+    if (csrfToken && csrfHeader) headers[csrfHeader] = csrfToken;
+
+    fetch(urlEnviar, {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: headers,
+      body: fd
+    })
+    .then(function(r) {
+      if (!r.ok && r.status !== 302) {
+        throw new Error('HTTP ' + r.status);
+      }
+      chatInput.value = '';
+      alertError.style.display = 'none';
+      refrescar();
+      setTimeout(function() { scrollAbajo(true); }, 100);
+    })
+    .catch(function(err) {
+      alertErrorTexto.textContent =
+        'No se ha podido enviar el mensaje. Intentalo de nuevo.';
+      alertError.style.display = '';
+    })
+    .finally(function() {
+      chatEnviar.disabled = false;
+      chatInput.focus();
+    });
+  }
+
+  chatForm.addEventListener('submit', function(e) {
+    e.preventDefault();
+    enviar();
   });
+
+  // Enter envia, Shift+Enter salto de linea
+  chatInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      enviar();
+    }
+  });
+
+  chatInput.focus();
+})();
 </script>
 </body>
 </html>

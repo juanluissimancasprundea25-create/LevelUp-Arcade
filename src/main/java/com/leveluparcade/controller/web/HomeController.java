@@ -87,10 +87,13 @@ public class HomeController {
 
         Map<String, Object> kpis = new HashMap<>();
 
-        // Contadores generales
-        kpis.put("totalClientes", clienteRepository.count());
+        // Contadores generales. Excluimos entidades soft-deleted para que
+        // el numero coincida con lo que el admin ve en cada listado:
+        //   - Cliente eliminado: usuario.email termina en "@borrado.local".
+        //   - Producto eliminado: sku empieza por "BORRADO-".
+        kpis.put("totalClientes", contarClientesActivosSafe());
         kpis.put("totalProveedores", proveedorRepository.count());
-        kpis.put("totalProductos", productoRepository.count());
+        kpis.put("totalProductos", contarProductosActivosSafe());
         kpis.put("totalPedidos", pedidoRepository.count());
         kpis.put("totalFacturas", facturaRepository.count());
 
@@ -167,13 +170,44 @@ public class HomeController {
     }
 
     private BigDecimal calcularTotalFacturadoSafe() {
+        // El "total facturado" es el dinero realmente ingresado: la suma
+        // de los totales de todos los pedidos que NO esten cancelados.
+        // Antes se sumaban facturas (PDF) emitidas, pero podia quedarse
+        // a 0 si los pedidos aun no habian generado factura, dando una
+        // cifra enganosa para el admin.
         try {
-            return facturaRepository.findAll().stream()
-                    .map(f -> f.getPedido() != null ? f.getPedido().getTotal() : BigDecimal.ZERO)
-                    .filter(t -> t != null)
+            return pedidoRepository.findAll().stream()
+                    .filter(p -> p.getEstado() != null
+                            && p.getEstado() != EstadoPedido.CANCELADO)
+                    .map(p -> p.getTotal() != null ? p.getTotal() : BigDecimal.ZERO)
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
         } catch (Exception ex) {
             return BigDecimal.ZERO;
+        }
+    }
+
+    private long contarClientesActivosSafe() {
+        try {
+            return clienteRepository.findAll().stream()
+                    .filter(c -> {
+                        if (c.getUsuario() == null) return true;
+                        String e = c.getUsuario().getEmail();
+                        return e == null || !e.endsWith("@borrado.local");
+                    })
+                    .count();
+        } catch (Exception ex) {
+            return clienteRepository.count();
+        }
+    }
+
+    private long contarProductosActivosSafe() {
+        try {
+            return productoRepository.findAll().stream()
+                    .filter(p -> p.getSku() == null
+                            || !p.getSku().startsWith("BORRADO-"))
+                    .count();
+        } catch (Exception ex) {
+            return productoRepository.count();
         }
     }
 }

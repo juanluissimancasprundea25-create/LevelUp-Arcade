@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -20,6 +21,13 @@ import java.util.List;
 public interface AuditoriaLogRepository extends JpaRepository<AuditoriaLog, Long> {
 
     Page<AuditoriaLog> findByUsuarioId(Long usuarioId, Pageable pageable);
+
+    /**
+     * Filtra eventos cuyos usuarios estan en el conjunto dado. Usado para
+     * buscar en auditoria por nombre / email (que primero se resuelve a
+     * una lista de ids).
+     */
+    Page<AuditoriaLog> findByUsuarioIdIn(Collection<Long> usuarioIds, Pageable pageable);
 
     Page<AuditoriaLog> findByAccion(String accion, Pageable pageable);
 

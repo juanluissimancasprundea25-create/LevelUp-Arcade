@@ -52,13 +52,20 @@ public class AuditoriaWebController {
     }
 
     /**
+     * Numero minimo de caracteres del prefijo para que la busqueda por
+     * nombre/email de usuario sea efectiva. Por debajo se ignora el
+     * filtro (evita listar medio sistema con 1-2 letras).
+     */
+    private static final int MIN_PREFIJO_USUARIO = 3;
+
+    /**
      * Listado paginado con filtros opcionales.
      * Solo se aplica un filtro a la vez (igual que el API): si hay
-     * usuarioId se ignoran los demas, etc.
+     * usuario se ignoran los demas, etc.
      */
     @GetMapping
     public String listar(
-            @RequestParam(value = "usuarioId", required = false) Long usuarioId,
+            @RequestParam(value = "usuario", required = false) String usuario,
             @RequestParam(value = "accion", required = false) String accion,
             @RequestParam(value = "entidad", required = false) String entidad,
             @RequestParam(value = "page", defaultValue = "0") int page,
@@ -68,9 +75,32 @@ public class AuditoriaWebController {
         Pageable pageable = PageRequest.of(
                 page, size, Sort.by(Sort.Direction.DESC, "fecha"));
 
+        // Aviso si el prefijo de usuario es demasiado corto: lo ignoramos
+        // como filtro pero lo enseñamos en pantalla.
+        String avisoUsuario = null;
+        String usuarioNorm = (usuario != null) ? usuario.trim() : null;
+        boolean filtraPorUsuario = usuarioNorm != null && !usuarioNorm.isBlank();
+
         Page<AuditoriaLog> pagina;
-        if (usuarioId != null) {
-            pagina = auditoriaService.filtrarPorUsuario(usuarioId, pageable);
+        if (filtraPorUsuario) {
+            if (usuarioNorm.length() < MIN_PREFIJO_USUARIO) {
+                avisoUsuario = "Escribe al menos " + MIN_PREFIJO_USUARIO
+                        + " caracteres para buscar por usuario.";
+                pagina = auditoriaService.listar(pageable);
+            } else {
+                List<Usuario> coincidencias =
+                        usuarioRepository.buscarPorPrefijoNombreOEmail(usuarioNorm);
+                if (coincidencias.isEmpty()) {
+                    avisoUsuario = "Ningun usuario coincide con \""
+                            + usuarioNorm + "\".";
+                    pagina = Page.empty(pageable);
+                } else {
+                    Set<Long> ids = coincidencias.stream()
+                            .map(Usuario::getId)
+                            .collect(Collectors.toSet());
+                    pagina = auditoriaService.filtrarPorUsuarios(ids, pageable);
+                }
+            }
         } else if (accion != null && !accion.isBlank()) {
             pagina = auditoriaService.filtrarPorAccion(accion.trim(), pageable);
         } else if (entidad != null && !entidad.isBlank()) {
@@ -98,7 +128,8 @@ public class AuditoriaWebController {
         model.addAttribute("pagina", pagina);
         model.addAttribute("logs", pagina.getContent());
         model.addAttribute("usuariosMap", usuariosMap);
-        model.addAttribute("usuarioIdFiltro", usuarioId);
+        model.addAttribute("usuarioFiltro", usuarioNorm);
+        model.addAttribute("avisoUsuario", avisoUsuario);
         model.addAttribute("accionFiltro", accion);
         model.addAttribute("entidadFiltro", entidad);
         model.addAttribute("seccionActiva", SECCION);

@@ -3,6 +3,8 @@ package com.leveluparcade.repository;
 import com.leveluparcade.entity.Rol;
 import com.leveluparcade.entity.Usuario;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -41,4 +43,21 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
      * Lista solo los usuarios activos con un rol concreto.
      */
     List<Usuario> findByRolAndActivoTrue(Rol rol);
+
+    /**
+     * Busca usuarios cuyo nombre, apellidos o email empiecen por el prefijo
+     * indicado (case-insensitive). Usado por el filtro de auditoria para
+     * permitir buscar por nombre en lugar de por id.
+     *
+     * <p>Se limita en el caller (no aqui) para no devolver listas enormes
+     * si el prefijo es muy generico.
+     */
+    @Query("""
+            SELECT u FROM Usuario u
+            WHERE LOWER(u.nombre)    LIKE LOWER(CONCAT(:prefijo, '%'))
+               OR LOWER(u.apellidos) LIKE LOWER(CONCAT(:prefijo, '%'))
+               OR LOWER(u.email)     LIKE LOWER(CONCAT(:prefijo, '%'))
+            ORDER BY u.nombre ASC, u.apellidos ASC
+            """)
+    List<Usuario> buscarPorPrefijoNombreOEmail(@Param("prefijo") String prefijo);
 }

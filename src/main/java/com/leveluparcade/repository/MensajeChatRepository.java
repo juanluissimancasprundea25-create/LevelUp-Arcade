@@ -4,6 +4,7 @@ import com.leveluparcade.entity.MensajeChat;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -59,4 +60,21 @@ public interface MensajeChatRepository extends JpaRepository<MensajeChat, Long> 
 
     /** No leidos en el buzon admin enviados por un cliente concreto. */
     long countByRemitenteIdAndDestinatarioIsNullAndLeidoFalse(Long remitenteId);
+
+    /**
+     * Marca como leidos todos los mensajes que el cliente indicado ha
+     * enviado al buzon admin (destinatario NULL) y que aun no se hayan
+     * leido. Usado cuando un admin abre la conversacion con ese cliente.
+     *
+     * @return numero de filas actualizadas.
+     */
+    @Modifying
+    @Query("""
+        UPDATE MensajeChat m
+           SET m.leido = true
+         WHERE m.remitente.id = :remitenteId
+           AND m.destinatario IS NULL
+           AND m.leido = false
+    """)
+    int marcarLeidosDelBuzonParaCliente(@Param("remitenteId") Long remitenteId);
 }
