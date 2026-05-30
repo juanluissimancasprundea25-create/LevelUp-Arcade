@@ -12,6 +12,7 @@ import com.leveluparcade.entity.Rol;
 import com.leveluparcade.entity.Usuario;
 import com.leveluparcade.exception.ResourceNotFoundException;
 import com.leveluparcade.repository.ClienteRepository;
+import com.leveluparcade.repository.PedidoRepository;
 import com.leveluparcade.repository.UsuarioRepository;
 import com.leveluparcade.security.SecurityHelper;
 import com.leveluparcade.service.ClienteService;
@@ -41,17 +42,20 @@ public class ClienteServiceImpl implements ClienteService {
 
     private final ClienteRepository clienteRepository;
     private final UsuarioRepository usuarioRepository;
+    private final PedidoRepository pedidoRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuditoriaPublisher auditoria;
     private final SecurityHelper securityHelper;
 
     public ClienteServiceImpl(ClienteRepository clienteRepository,
                               UsuarioRepository usuarioRepository,
+                              PedidoRepository pedidoRepository,
                               PasswordEncoder passwordEncoder,
                               AuditoriaPublisher auditoria,
                               SecurityHelper securityHelper) {
         this.clienteRepository = clienteRepository;
         this.usuarioRepository = usuarioRepository;
+        this.pedidoRepository = pedidoRepository;
         this.passwordEncoder = passwordEncoder;
         this.auditoria = auditoria;
         this.securityHelper = securityHelper;
@@ -60,7 +64,13 @@ public class ClienteServiceImpl implements ClienteService {
     @Override
     @Transactional(readOnly = true)
     public List<ClienteResponse> listarTodos() {
+        // Solo oculta clientes "eliminados" (soft delete): los
+        // identificamos porque al borrarlos les renombramos el email
+        // del usuario a "...@borrado.local". Los clientes que el admin
+        // haya marcado como inactivos editando siguen visibles para
+        // poder reactivarlos.
         return clienteRepository.findAll().stream()
+                .filter(c -> !esSoftDeleted(c))
                 .map(ClienteResponse::from)
                 .toList();
     }
@@ -72,8 +82,16 @@ public class ClienteServiceImpl implements ClienteService {
             return listarTodos();
         }
         return clienteRepository.buscarPorTexto(texto.trim()).stream()
+                .filter(c -> !esSoftDeleted(c))
                 .map(ClienteResponse::from)
                 .toList();
+    }
+
+    /** Marca de cliente "eliminado" mediante soft delete (email renombrado). */
+    private static boolean esSoftDeleted(Cliente c) {
+        if (c.getUsuario() == null) return false;
+        String email = c.getUsuario().getEmail();
+        return email != null && email.endsWith("@borrado.local");
     }
 
     @Override
@@ -88,10 +106,28 @@ public class ClienteServiceImpl implements ClienteService {
     @Transactional
     public ClienteCreadoResponse crear(ClienteCreateRequest req) {
 
-        if (usuarioRepository.existsByEmail(req.email())) {
-            throw new IllegalArgumentException(
-                "Ya existe un usuario con el email: " + req.email());
-        }
+        // Si ya existe un usuario con ese email, comprobamos si es un
+        // "huerfano" de un borrado antiguo (cuando aun se hacia hard
+        // delete del cliente sin limpiar el usuario asociado). En ese
+        // caso lo limpiamos sobre la marcha y permitimos el alta. Si no
+        // es huerfano (lo usa otro cliente / admin / empleado activo),
+        // rechazamos como antes.
+        usuarioRepository.findByEmail(req.email()).ifPresent(existente -> {
+            boolean tieneCliente = clienteRepository
+                    .findByUsuarioId(existente.getId()).isPresent();
+            boolean esCandidatoLimpieza =
+                    !tieneCliente
+                    && existente.getRol() == Rol.CLIENTE;
+            if (esCandidatoLimpieza) {
+                log.info("Limpieza de usuario huerfano (sin cliente) id={}, email={}",
+                        existente.getId(), existente.getEmail());
+                usuarioRepository.delete(existente);
+                usuarioRepository.flush();
+            } else {
+                throw new IllegalArgumentException(
+                    "Ya existe un usuario con el email: " + req.email());
+            }
+        });
         if (req.nif() != null && !req.nif().isBlank()
                 && clienteRepository.existsByNif(req.nif())) {
             throw new IllegalArgumentException(
@@ -180,14 +216,48 @@ public class ClienteServiceImpl implements ClienteService {
     public void eliminar(Long id) {
         Cliente cliente = clienteRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Cliente", id));
-        String emailEliminado = cliente.getUsuario().getEmail();
-        clienteRepository.delete(cliente);
-        log.info("Cliente eliminado: id={}", id);
 
+        Usuario usuario = cliente.getUsuario();
+        String emailOriginal = (usuario != null) ? usuario.getEmail() : "(sin usuario)";
+
+        // Si el cliente NO tiene pedidos podemos hacer un borrado real
+        // (cliente + usuario). En caso contrario, las FK de pedidos
+        // impedirian el delete, asi que hacemos "soft delete":
+        //   - liberamos el email del usuario renombrandolo
+        //   - liberamos el NIF del cliente
+        //   - marcamos el usuario como inactivo
+        // Asi el admin puede dar de alta otro cliente con el mismo email
+        // o el mismo NIF sin perder el historial de pedidos.
+        boolean tienePedidos = !pedidoRepository
+                .findByClienteIdOrderByFechaPedidoDesc(id).isEmpty();
+
+        if (!tienePedidos) {
+            clienteRepository.delete(cliente);
+            log.info("Cliente eliminado (hard): id={}, email={}", id, emailOriginal);
+            auditoria.publish(AuditoriaEvent.entidad(
+                    TipoEvento.CLIENTE_ELIMINADO, "Cliente",
+                    id, securityHelper.getUsuarioActualId(),
+                    "Eliminacion de cliente: " + emailOriginal));
+            return;
+        }
+
+        // Soft delete: tiene pedidos historicos, no podemos perder esa info.
+        if (usuario != null) {
+            String emailLiberado = "borrado-" + usuario.getId()
+                    + "-" + System.currentTimeMillis() + "@borrado.local";
+            usuario.setEmail(emailLiberado);
+            usuario.setActivo(false);
+            usuarioRepository.save(usuario);
+        }
+        cliente.setNif(null); // libera el NIF para que se pueda reutilizar
+        clienteRepository.save(cliente);
+
+        log.info("Cliente eliminado (soft, tiene pedidos): id={}, emailOriginal={}",
+                id, emailOriginal);
         auditoria.publish(AuditoriaEvent.entidad(
-            TipoEvento.CLIENTE_ELIMINADO, "Cliente",
-            id, securityHelper.getUsuarioActualId(),
-            "Eliminacion de cliente: " + emailEliminado));
+                TipoEvento.CLIENTE_ELIMINADO, "Cliente",
+                id, securityHelper.getUsuarioActualId(),
+                "Cliente desactivado (tenia pedidos asociados): " + emailOriginal));
     }
 
     private String nullSiVacio(String s) {

@@ -5,6 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 
 /**
  * Servicio de consulta del log de auditoria.
@@ -18,6 +19,12 @@ public interface AuditoriaService {
     Page<AuditoriaLog> listar(Pageable pageable);
 
     Page<AuditoriaLog> filtrarPorUsuario(Long usuarioId, Pageable pageable);
+
+    /**
+     * Filtra el log por un conjunto de ids de usuario. Util cuando el
+     * filtro de UI es por nombre (que mapea a varios ids).
+     */
+    Page<AuditoriaLog> filtrarPorUsuarios(Collection<Long> usuarioIds, Pageable pageable);
 
     Page<AuditoriaLog> filtrarPorAccion(String accion, Pageable pageable);
 

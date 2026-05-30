@@ -8,6 +8,7 @@ import com.leveluparcade.repository.CategoriaRepository;
 import com.leveluparcade.repository.ProductoRepository;
 import com.leveluparcade.repository.ProveedorRepository;
 import com.leveluparcade.service.ImagenProductoService;
+import com.leveluparcade.service.ProductoService;
 import jakarta.validation.Valid;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -54,15 +55,18 @@ public class ProductoWebController {
     private final CategoriaRepository categoriaRepository;
     private final ProveedorRepository proveedorRepository;
     private final ImagenProductoService imagenProductoService;
+    private final ProductoService productoService;
 
     public ProductoWebController(ProductoRepository productoRepository,
                                  CategoriaRepository categoriaRepository,
                                  ProveedorRepository proveedorRepository,
-                                 ImagenProductoService imagenProductoService) {
+                                 ImagenProductoService imagenProductoService,
+                                 ProductoService productoService) {
         this.productoRepository = productoRepository;
         this.categoriaRepository = categoriaRepository;
         this.proveedorRepository = proveedorRepository;
         this.imagenProductoService = imagenProductoService;
+        this.productoService = productoService;
     }
 
     /** Listado con filtros opcionales por texto, categoria y bajo stock. */
@@ -74,6 +78,15 @@ public class ProductoWebController {
             Model model) {
 
         List<Producto> productos = productoRepository.findAll();
+
+        // Solo oculta del listado los productos "eliminados" (soft delete):
+        // los identificamos porque al borrarlos les renombramos el SKU a
+        // "BORRADO-{id}-{timestamp}". Los productos que el admin haya
+        // marcado como inactivos manualmente (editando) siguen visibles
+        // aqui para poder reactivarlos.
+        productos = productos.stream()
+                .filter(p -> p.getSku() == null || !p.getSku().startsWith("BORRADO-"))
+                .toList();
 
         if (q != null && !q.isBlank()) {
             String filtro = q.toLowerCase().trim();
@@ -287,18 +300,30 @@ public class ProductoWebController {
         Producto producto = productoRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Producto", id));
         String imagen = producto.getImagenUrl();
+        String nombre = producto.getNombre();
+
         try {
-            productoRepository.delete(producto);
-            // Borrar imagen asociada en disco (best effort)
-            imagenProductoService.borrarSiExiste(imagen);
-            ra.addFlashAttribute("flashOk", "Producto eliminado.");
-            return "redirect:/admin/productos";
+            productoService.eliminar(id);
         } catch (Exception ex) {
             ra.addFlashAttribute("flashError",
-                    "No se puede eliminar el producto: puede tener pedidos asociados. " +
-                    "Desactivelo en su lugar.");
+                    "No se ha podido eliminar el producto: " + ex.getMessage());
             return "redirect:/admin/productos/" + id;
         }
+
+        // Si la entidad ya no existe -> fue un borrado real -> limpiamos
+        // la imagen de disco. Si sigue existiendo es un soft delete y la
+        // imagen se conserva para que la sigan viendo los pedidos historicos.
+        boolean fueHardDelete = !productoRepository.existsById(id);
+        if (fueHardDelete) {
+            imagenProductoService.borrarSiExiste(imagen);
+            ra.addFlashAttribute("flashOk",
+                    "Producto eliminado: " + nombre + ".");
+        } else {
+            ra.addFlashAttribute("flashOk",
+                    "Producto eliminado: " + nombre
+                    + ". Se ha conservado el registro porque tiene pedidos asociados.");
+        }
+        return "redirect:/admin/productos";
     }
 
     // ---------- helpers ----------

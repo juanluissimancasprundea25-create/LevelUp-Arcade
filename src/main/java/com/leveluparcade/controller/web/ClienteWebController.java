@@ -157,8 +157,13 @@ public class ClienteWebController {
 
     @PostMapping("/{id}/eliminar")
     public String eliminar(@PathVariable Long id, RedirectAttributes redirect) {
-        clienteService.eliminar(id);
-        redirect.addFlashAttribute("flashOk", "Cliente eliminado correctamente.");
+        try {
+            clienteService.eliminar(id);
+            redirect.addFlashAttribute("flashOk", "Cliente eliminado correctamente.");
+        } catch (Exception ex) {
+            redirect.addFlashAttribute("flashError",
+                    "No se ha podido eliminar el cliente: " + ex.getMessage());
+        }
         return "redirect:/admin/clientes";
     }
 }

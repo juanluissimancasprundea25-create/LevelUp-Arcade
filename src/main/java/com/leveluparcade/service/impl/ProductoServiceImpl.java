@@ -12,6 +12,7 @@ import com.leveluparcade.entity.Producto;
 import com.leveluparcade.entity.Proveedor;
 import com.leveluparcade.exception.ResourceNotFoundException;
 import com.leveluparcade.repository.CategoriaRepository;
+import com.leveluparcade.repository.LineaPedidoRepository;
 import com.leveluparcade.repository.ProductoRepository;
 import com.leveluparcade.repository.ProveedorRepository;
 import com.leveluparcade.security.SecurityHelper;
@@ -40,17 +41,20 @@ public class ProductoServiceImpl implements ProductoService {
     private final ProductoRepository productoRepository;
     private final CategoriaRepository categoriaRepository;
     private final ProveedorRepository proveedorRepository;
+    private final LineaPedidoRepository lineaPedidoRepository;
     private final AuditoriaPublisher auditoria;
     private final SecurityHelper securityHelper;
 
     public ProductoServiceImpl(ProductoRepository productoRepository,
                                CategoriaRepository categoriaRepository,
                                ProveedorRepository proveedorRepository,
+                               LineaPedidoRepository lineaPedidoRepository,
                                AuditoriaPublisher auditoria,
                                SecurityHelper securityHelper) {
         this.productoRepository = productoRepository;
         this.categoriaRepository = categoriaRepository;
         this.proveedorRepository = proveedorRepository;
+        this.lineaPedidoRepository = lineaPedidoRepository;
         this.auditoria = auditoria;
         this.securityHelper = securityHelper;
     }
@@ -231,23 +235,38 @@ public class ProductoServiceImpl implements ProductoService {
                 .orElseThrow(() -> new ResourceNotFoundException("Producto", id));
 
         String nombreEliminado = p.getNombre();
-        String skuEliminado = p.getSku();
+        String skuOriginal = p.getSku();
 
-        try {
+        // Si el producto NO esta referenciado por ninguna linea de pedido
+        // podemos borrarlo de verdad. En caso contrario, se hace "soft
+        // delete": se libera el SKU (renombrandolo) y se marca como
+        // inactivo. Asi se preserva la integridad del historial y a la vez
+        // el admin puede dar de alta otro producto con el mismo SKU.
+        long lineas = lineaPedidoRepository.countByProductoId(id);
+
+        if (lineas == 0) {
             productoRepository.delete(p);
             productoRepository.flush();
-        } catch (org.springframework.dao.DataIntegrityViolationException ex) {
-            throw new IllegalStateException(
-                "No se puede eliminar el producto '" + nombreEliminado +
-                "' porque esta referenciado por pedidos existentes. " +
-                "Desactivelo en su lugar.", ex);
+            log.info("Producto eliminado (hard): id={}", id);
+            auditoria.publish(AuditoriaEvent.entidad(
+                TipoEvento.PRODUCTO_ELIMINADO, "Producto",
+                id, securityHelper.getUsuarioActualId(),
+                "Eliminacion de producto: " + nombreEliminado
+                        + " (SKU " + skuOriginal + ")"));
+            return;
         }
-        log.info("Producto eliminado: id={}", id);
 
+        // Soft delete: hay pedidos historicos referenciandolo.
+        p.setActivo(false);
+        p.setSku("BORRADO-" + id + "-" + System.currentTimeMillis());
+        productoRepository.save(p);
+
+        log.info("Producto eliminado (soft, {} lineas referencian): id={}", lineas, id);
         auditoria.publish(AuditoriaEvent.entidad(
             TipoEvento.PRODUCTO_ELIMINADO, "Producto",
             id, securityHelper.getUsuarioActualId(),
-            "Eliminacion de producto: " + nombreEliminado + " (SKU " + skuEliminado + ")"));
+            "Producto desactivado (tenia " + lineas + " linea(s) de pedido): "
+                    + nombreEliminado + " (SKU original " + skuOriginal + ")"));
     }
 
     private Categoria resolverCategoria(Long categoriaId) {

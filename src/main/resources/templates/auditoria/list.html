@@ -30,9 +30,11 @@
         <div class="card">
           <div class="card-header">
             <form th:action="@{/admin/auditoria}" method="get" class="form-inline">
-              <label class="mr-2">Usuario ID:</label>
-              <input type="number" name="usuarioId" th:value="${usuarioIdFiltro}"
-                     class="form-control mr-3" style="width: 100px;"/>
+              <label class="mr-2">Usuario:</label>
+              <input type="text" name="usuario" th:value="${usuarioFiltro}"
+                     class="form-control mr-3" style="width: 220px;"
+                     placeholder="nombre, apellidos o email"
+                     minlength="3" autocomplete="off"/>
 
               <label class="mr-2">Accion:</label>
               <input type="text" name="accion" th:value="${accionFiltro}"
@@ -47,12 +49,19 @@
               <button type="submit" class="btn btn-default">
                 <i class="fas fa-filter"></i> Filtrar
               </button>
-              <a th:if="${usuarioIdFiltro != null or accionFiltro != null or entidadFiltro != null}"
+              <a th:if="${(usuarioFiltro != null and !#strings.isEmpty(usuarioFiltro))
+                          or (accionFiltro != null and !#strings.isEmpty(accionFiltro))
+                          or (entidadFiltro != null and !#strings.isEmpty(entidadFiltro))}"
                  th:href="@{/admin/auditoria}" class="btn btn-link ml-2">Limpiar</a>
               <span class="ml-auto text-muted small">
-                Solo se aplica el primer filtro relleno.
+                Solo se aplica el primer filtro relleno. Minimo 3 letras para buscar por usuario.
               </span>
             </form>
+
+            <div th:if="${avisoUsuario}" class="alert alert-warning mt-2 mb-0 py-2">
+              <i class="fas fa-info-circle mr-1"></i>
+              <span th:text="${avisoUsuario}"></span>
+            </div>
           </div>
 
           <div class="card-body table-responsive p-0">
@@ -130,11 +139,11 @@
             <ul class="pagination pagination-sm m-0 float-right">
               <li class="page-item" th:classappend="${pagina.first} ? 'disabled'">
                 <a class="page-link"
-                   th:href="@{/admin/auditoria(page=0, usuarioId=${usuarioIdFiltro}, accion=${accionFiltro}, entidad=${entidadFiltro})}">««</a>
+                   th:href="@{/admin/auditoria(page=0, usuario=${usuarioFiltro}, accion=${accionFiltro}, entidad=${entidadFiltro})}">««</a>
               </li>
               <li class="page-item" th:classappend="${pagina.first} ? 'disabled'">
                 <a class="page-link"
-                   th:href="@{/admin/auditoria(page=${pagina.number - 1}, usuarioId=${usuarioIdFiltro}, accion=${accionFiltro}, entidad=${entidadFiltro})}">«</a>
+                   th:href="@{/admin/auditoria(page=${pagina.number - 1}, usuario=${usuarioFiltro}, accion=${accionFiltro}, entidad=${entidadFiltro})}">«</a>
               </li>
               <li class="page-item disabled">
                 <span class="page-link"
@@ -142,11 +151,11 @@
               </li>
               <li class="page-item" th:classappend="${pagina.last} ? 'disabled'">
                 <a class="page-link"
-                   th:href="@{/admin/auditoria(page=${pagina.number + 1}, usuarioId=${usuarioIdFiltro}, accion=${accionFiltro}, entidad=${entidadFiltro})}">»</a>
+                   th:href="@{/admin/auditoria(page=${pagina.number + 1}, usuario=${usuarioFiltro}, accion=${accionFiltro}, entidad=${entidadFiltro})}">»</a>
               </li>
               <li class="page-item" th:classappend="${pagina.last} ? 'disabled'">
                 <a class="page-link"
-                   th:href="@{/admin/auditoria(page=${pagina.totalPages - 1}, usuarioId=${usuarioIdFiltro}, accion=${accionFiltro}, entidad=${entidadFiltro})}">»»</a>
+                   th:href="@{/admin/auditoria(page=${pagina.totalPages - 1}, usuario=${usuarioFiltro}, accion=${accionFiltro}, entidad=${entidadFiltro})}">»»</a>
               </li>
             </ul>
             <div class="float-left text-muted small">
