@@ -61,3 +61,74 @@
     border-color: var(--levelup-purple-dark);
     color: #fff;
 }
+/* ============================================================
+   A11Y - Mejoras de accesibilidad (Lighthouse)
+   Se añadieron para subir el score de Accessibility del proyecto
+   ============================================================ */
+
+/* 1) Bootstrap pinta texto blanco sobre bg-warning (#ffc107), lo
+      que tiene ~1.6:1 de contraste (WCAG falla). Lo forzamos a
+      negro, que pasa 4.5:1 holgadamente. Mismo apaño para
+      btn-warning, badge-warning y .alert-warning con icono. */
+.bg-warning,
+.bg-warning a,
+.bg-warning .small-box-footer,
+.btn-warning,
+.badge-warning {
+    color: #1f2d3d !important;
+}
+.bg-warning .small-box-footer:hover { color: #000 !important; }
+
+/* 2) text-muted por defecto (#6c757d) en fondos muy claros queda
+      en ~4.4:1 (borderline / fail segun fondo). Lo bajamos a un
+      gris mas oscuro que pasa AA en blanco y en #f4f6f9. */
+.text-muted { color: #5a6470 !important; }
+
+/* 3) Focus visible. Por defecto Bootstrap apenas marca el focus
+      en botones/links, lo que perjudica el audit "Interactive
+      elements indicate focus". Anadimos outline propio. */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[role="button"]:focus-visible,
+.nav-link:focus-visible,
+.btn:focus-visible {
+    outline: 3px solid var(--levelup-purple);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 2px rgba(255,255,255,0.7);
+}
+
+/* 4) Utilidad screen-reader-only. La usamos en aria-label de
+      iconos solitarios cuando queremos texto invisible pero
+      anunciado por lectores de pantalla. */
+.visually-hidden {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0,0,0,0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+}
+
+/* 5) En el listado tipo KPI del dashboard usamos <h2> en vez de
+      <h3> para no romper la jerarquia de encabezados. Como el
+      tamano visual ya no coincide con el de h3, forzamos los
+      h2 dentro de .small-box .inner para que sigan viendose
+      grandes como antes. */
+.small-box .inner h2 {
+    font-size: 2.2rem;
+    font-weight: 700;
+    margin: 0 0 5px 0;
+    line-height: 1.1;
+}
+
+/* 6) Los iconos meramente decorativos que van junto a un texto
+      deberian llevar aria-hidden="true". Como hay muchos en el
+      proyecto, los marcamos visualmente igual con CSS y
+      anadimos aria-hidden donde podemos en plantillas.
+      No hace nada extra en CSS, este bloque queda como recordatorio. */

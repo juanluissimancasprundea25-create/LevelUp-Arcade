@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{tienda/fragments/head :: head('Asistente IA')}"></head>
+<body>
+
+<div th:replace="~{tienda/fragments/header :: header}"></div>
+
+<main class="container my-5">
+    <div class="row">
+
+        <div class="col-lg-3 mb-4">
+            <div th:replace="~{tienda/cuenta/_sidebar :: sidebar}"></div>
+        </div>
+
+        <div class="col-lg-9">
+            <h2 class="tienda-titulo mb-3">
+                <i class="fas fa-robot mr-2" aria-hidden="true"
+                   style="color: var(--levelup-purple);"></i>
+                Asistente IA
+            </h2>
+            <p class="text-muted">
+                Pregunta lo que necesites: recomendaciones de juegos, como
+                funciona la web, dudas sobre devoluciones, generos... Para
+                cosas concretas de tu cuenta o pedidos sigue usando el
+                <a th:href="@{/cuenta/chat}">chat con soporte</a>.
+            </p>
+
+            <div class="card cuenta-card">
+                <div class="card-body p-0 d-flex flex-column" style="height: 70vh;">
+
+                    <!-- Cabecera -->
+                    <div class="px-3 py-2 border-bottom d-flex align-items-center">
+                        <i class="fas fa-robot mr-2" aria-hidden="true"
+                           style="color: var(--levelup-purple);"></i>
+                        <div class="flex-grow-1">
+                            <strong>Asistente IA de LevelUp Arcade</strong>
+                            <small class="text-muted d-block">
+                                Respuestas automaticas. No sustituye al equipo de soporte.
+                            </small>
+                        </div>
+                        <button type="button" id="btn-limpiar"
+                                class="btn btn-sm btn-link text-muted"
+                                aria-label="Borrar conversacion">
+                            <i class="fas fa-trash-alt mr-1" aria-hidden="true"></i>
+                            Limpiar
+                        </button>
+                    </div>
+
+                    <!-- Lista de mensajes scrollable -->
+                    <div id="chat-mensajes" class="flex-grow-1 p-3"
+                         style="overflow-y: auto; background: #f8f9fc;"
+                         role="log" aria-live="polite" aria-label="Conversacion con el asistente">
+                        <!-- placeholder cuando esta vacio -->
+                        <div id="chat-vacio" class="text-center text-muted py-5">
+                            <i class="fas fa-robot fa-3x mb-2" aria-hidden="true"
+                               style="opacity: 0.4;"></i>
+                            <p class="mb-1">Hola! Soy el asistente IA de LevelUp Arcade.</p>
+                            <p class="small mb-3">Prueba a preguntarme algo como:</p>
+                            <div class="d-flex flex-wrap justify-content-center" style="gap: 0.5rem;">
+                                <button type="button" class="btn btn-sm btn-outline-secondary sugerencia"
+                                        data-pregunta="Que juegos recomiendas para alguien al que le gusta la estrategia por turnos?">
+                                    Recomendar un juego de estrategia
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary sugerencia"
+                                        data-pregunta="Como funciona la devolucion de un pedido?">
+                                    Devoluciones
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary sugerencia"
+                                        data-pregunta="Diferencia entre un RPG y un JRPG?">
+                                    Que es un JRPG?
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Indicador escribiendo -->
+                    <div id="chat-cargando" class="px-3 py-2 border-top text-muted small"
+                         style="display: none;">
+                        <i class="fas fa-circle-notch fa-spin mr-2" aria-hidden="true"></i>
+                        El asistente esta pensando...
+                    </div>
+
+                    <!-- Formulario -->
+                    <form id="form-pregunta" class="p-3 border-top">
+                        <div class="input-group">
+                            <label for="input-pregunta" class="visually-hidden">Tu pregunta</label>
+                            <input type="text" id="input-pregunta" class="form-control"
+                                   placeholder="Escribe tu pregunta..."
+                                   autocomplete="off" maxlength="1000" required/>
+                            <div class="input-group-append">
+                                <button type="submit" id="btn-enviar"
+                                        class="btn btn-tienda" aria-label="Enviar pregunta">
+                                    <i class="fas fa-paper-plane" aria-hidden="true"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <small class="text-muted d-block mt-1">
+                            <i class="fas fa-info-circle mr-1" aria-hidden="true"></i>
+                            El historial se borra al cerrar la pestaña.
+                        </small>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<div th:replace="~{tienda/fragments/footer :: footer}"></div>
+
+<style>
+  .asistente-burbuja {
+    max-width: 78%;
+    padding: 0.55rem 0.9rem;
+    border-radius: 14px;
+    margin-bottom: 0.6rem;
+    word-wrap: break-word;
+    line-height: 1.4;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+    animation: asistFade 0.2s ease-out;
+  }
+  @keyframes asistFade {
+    from { opacity: 0; transform: translateY(4px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .asistente-row { display: flex; }
+  .asistente-row.usuario { justify-content: flex-end; }
+  .asistente-row.ia      { justify-content: flex-start; }
+
+  .asistente-burbuja.usuario {
+    background: var(--levelup-purple);
+    color: #fff;
+    border-bottom-right-radius: 4px;
+  }
+  .asistente-burbuja.ia {
+    background: #fff;
+    color: #1f2937;
+    border: 1px solid #e5e7eb;
+    border-bottom-left-radius: 4px;
+  }
+  .asistente-burbuja.error {
+    background: #fef2f2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+    border-bottom-left-radius: 4px;
+  }
+  .asistente-meta {
+    font-size: 0.7rem;
+    opacity: 0.7;
+    margin-bottom: 0.2rem;
+    display: block;
+  }
+  .sugerencia { white-space: normal; text-align: left; }
+</style>
+
+<script th:inline="javascript">
+(function() {
+  const urlPreguntar = /*[[@{/cuenta/asistente/preguntar}]]*/ '';
+  const STORAGE_KEY = 'asistente_historial';
+
+  const chatBox    = document.getElementById('chat-mensajes');
+  const chatVacio  = document.getElementById('chat-vacio');
+  const cargando   = document.getElementById('chat-cargando');
+  const form       = document.getElementById('form-pregunta');
+  const input      = document.getElementById('input-pregunta');
+  const btnEnviar  = document.getElementById('btn-enviar');
+  const btnLimpiar = document.getElementById('btn-limpiar');
+
+  function escapeHtml(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
+  function cargarHistorial() {
+    try {
+      const raw = sessionStorage.getItem(STORAGE_KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch (e) {
+      return [];
+    }
+  }
+  function guardarHistorial(historial) {
+    try { sessionStorage.setItem(STORAGE_KEY, JSON.stringify(historial)); }
+    catch (e) { /* ignorar quota */ }
+  }
+
+  function renderHistorial() {
+    const historial = cargarHistorial();
+    // limpia solo las burbujas, no el placeholder
+    chatBox.querySelectorAll('.asistente-row').forEach(n => n.remove());
+
+    if (historial.length === 0) {
+      chatVacio.style.display = '';
+      return;
+    }
+    chatVacio.style.display = 'none';
+
+    historial.forEach(m => añadirBurbuja(m.tipo, m.texto, false));
+    scrollAbajo();
+  }
+
+  function añadirBurbuja(tipo, texto, persistir) {
+    chatVacio.style.display = 'none';
+
+    const row = document.createElement('div');
+    row.className = 'asistente-row ' + (tipo === 'usuario' ? 'usuario' : 'ia');
+    const burb = document.createElement('div');
+    burb.className = 'asistente-burbuja ' + tipo;
+
+    if (tipo !== 'usuario') {
+      const meta = document.createElement('span');
+      meta.className = 'asistente-meta';
+      meta.textContent = tipo === 'error' ? 'Error' : 'Asistente IA';
+      burb.appendChild(meta);
+    }
+
+    const cuerpo = document.createElement('div');
+    cuerpo.innerHTML = escapeHtml(texto).replace(/\n/g, '<br>');
+    burb.appendChild(cuerpo);
+
+    row.appendChild(burb);
+    chatBox.appendChild(row);
+
+    if (persistir && tipo !== 'error') {
+      const h = cargarHistorial();
+      h.push({ tipo: tipo, texto: texto });
+      guardarHistorial(h);
+    }
+    scrollAbajo();
+  }
+
+  function scrollAbajo() {
+    chatBox.scrollTop = chatBox.scrollHeight;
+  }
+
+  async function enviarPregunta(pregunta) {
+    btnEnviar.disabled = true;
+    input.disabled = true;
+    cargando.style.display = '';
+
+    try {
+      const resp = await fetch(urlPreguntar, {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({ pregunta: pregunta })
+      });
+      const data = await resp.json().catch(() => ({}));
+      if (resp.ok && data.respuesta) {
+        añadirBurbuja('ia', data.respuesta, true);
+      } else {
+        añadirBurbuja('error', data.error || 'No se ha podido obtener respuesta.', false);
+      }
+    } catch (e) {
+      añadirBurbuja('error', 'Error de conexion con el asistente.', false);
+    } finally {
+      cargando.style.display = 'none';
+      btnEnviar.disabled = false;
+      input.disabled = false;
+      input.focus();
+    }
+  }
+
+  form.addEventListener('submit', function(e) {
+    e.preventDefault();
+    const pregunta = input.value.trim();
+    if (!pregunta) return;
+    añadirBurbuja('usuario', pregunta, true);
+    input.value = '';
+    enviarPregunta(pregunta);
+  });
+
+  btnLimpiar.addEventListener('click', function() {
+    if (cargarHistorial().length === 0) return;
+    if (!confirm('Borrar la conversacion actual?')) return;
+    sessionStorage.removeItem(STORAGE_KEY);
+    renderHistorial();
+  });
+
+  // Botones de sugerencia inicial
+  document.querySelectorAll('.sugerencia').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const p = this.getAttribute('data-pregunta');
+      input.value = p;
+      form.dispatchEvent(new Event('submit'));
+    });
+  });
+
+  renderHistorial();
+  input.focus();
+})();
+</script>
+
+</body>
+</html>
