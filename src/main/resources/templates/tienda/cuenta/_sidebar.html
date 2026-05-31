@@ -31,7 +31,12 @@
         <a th:href="@{/cuenta/chat}"
            class="list-group-item list-group-item-action"
            th:classappend="${seccionCuenta == 'chat'} ? 'active' : ''">
-            <i class="fas fa-comments mr-2"></i> Chat soporte
+            <i class="fas fa-comments mr-2" aria-hidden="true"></i> Chat soporte
+        </a>
+        <a th:href="@{/cuenta/asistente}"
+           class="list-group-item list-group-item-action"
+           th:classappend="${seccionCuenta == 'asistente'} ? 'active' : ''">
+            <i class="fas fa-robot mr-2" aria-hidden="true"></i> Asistente IA
         </a>
         <a th:href="@{/cuenta/perfil}"
            class="list-group-item list-group-item-action"

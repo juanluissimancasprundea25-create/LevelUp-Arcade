@@ -79,4 +79,43 @@ public class LlmServiceImpl implements LlmService {
         // Limpieza: la IA a veces devuelve comillas o punto final
         return respuesta.replaceAll("[\"'.]", "").trim();
     }
+
+    /**
+     * Prompt de sistema especifico para la atencion al cliente. Es mas
+     * abierto que SYSTEM_PROMPT_BASE para permitir conversacion natural,
+     * pero pone limites claros: no inventar precios ni stock, no
+     * comprometerse en nombre de la empresa, derivar al admin cuando
+     * la consulta requiere accion humana.
+     */
+    private static final String SYSTEM_PROMPT_CLIENTE =
+        "Eres el asistente virtual de la tienda online LevelUp Arcade, " +
+        "especializada en videojuegos, consolas y merchandising gamer. " +
+        "Hablas en castellano neutro, eres amable y vas al grano: " +
+        "respuestas de 1 a 4 frases salvo que el cliente pida mas detalle. " +
+        "NO inventes precios, stock, fechas de salida, plazos de envio " +
+        "ni promociones concretas: si no lo sabes, di que lo confirme " +
+        "el equipo de soporte. " +
+        "Puedes recomendar generos o tipos de juego segun gustos, " +
+        "explicar como funciona la web (catalogo, carrito, pedidos, " +
+        "devoluciones, facturas, chat con soporte) y dar consejos " +
+        "generales de gaming. " +
+        "Si la consulta requiere accion administrativa (cambiar un " +
+        "pedido, reembolso, problema con una cuenta), indica al cliente " +
+        "que escriba al equipo de soporte desde el chat. " +
+        "No uses emojis ni markdown.";
+
+    @Override
+    public String responderConsultaCliente(String pregunta) {
+        if (pregunta == null || pregunta.isBlank()) {
+            throw new IllegalArgumentException("La pregunta no puede estar vacia");
+        }
+        // Limite defensivo para no enviar prompts gigantes a la API.
+        String preguntaLimpia = pregunta.trim();
+        if (preguntaLimpia.length() > 1000) {
+            preguntaLimpia = preguntaLimpia.substring(0, 1000);
+        }
+
+        log.info("Consulta IA de cliente: {} caracteres", preguntaLimpia.length());
+        return client.chat(SYSTEM_PROMPT_CLIENTE, preguntaLimpia);
+    }
 }

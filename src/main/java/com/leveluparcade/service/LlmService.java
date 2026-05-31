@@ -28,4 +28,15 @@ public interface LlmService {
      */
     String sugerirCategoria(String nombreProducto, String descripcion,
                             java.util.List<String> categoriasExistentes);
+
+    /**
+     * Responde una pregunta libre de un CLIENTE de la tienda.
+     * Esta pensado para FAQ generica, recomendaciones de juegos,
+     * consultas sobre como usar la web, etc. NO para soporte
+     * personalizado (eso lo hace el chat con el admin).
+     *
+     * @param pregunta texto libre del cliente
+     * @return respuesta breve (1-4 frases) lista para mostrar en chat
+     */
+    String responderConsultaCliente(String pregunta);
 }

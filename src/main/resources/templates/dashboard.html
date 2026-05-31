@@ -33,7 +33,7 @@
           <div class="col-lg-3 col-6">
             <div class="small-box bg-info">
               <div class="inner">
-                <h3 th:text="${kpis.totalClientes}">0</h3>
+                <h2 th:text="${kpis.totalClientes}">0</h2>
                 <p>Clientes</p>
               </div>
               <div class="icon"><i class="fas fa-users"></i></div>
@@ -46,7 +46,7 @@
           <div class="col-lg-3 col-6">
             <div class="small-box bg-warning">
               <div class="inner">
-                <h3 th:text="${kpis.totalProveedores}">0</h3>
+                <h2 th:text="${kpis.totalProveedores}">0</h2>
                 <p>Proveedores</p>
               </div>
               <div class="icon"><i class="fas fa-truck"></i></div>
@@ -59,7 +59,7 @@
           <div class="col-lg-3 col-6">
             <div class="small-box bg-success">
               <div class="inner">
-                <h3 th:text="${kpis.totalProductos}">0</h3>
+                <h2 th:text="${kpis.totalProductos}">0</h2>
                 <p>Productos
                   <span th:if="${kpis.productosBajoStock > 0}"
                         class="badge badge-light ml-1"
@@ -76,7 +76,7 @@
           <div class="col-lg-3 col-6">
             <div class="small-box" style="background: #7f77dd; color: white;">
               <div class="inner">
-                <h3 th:text="${#numbers.formatDecimal(kpis.totalFacturado, 1, 2)} + ' EUR'">0 EUR</h3>
+                <h2 th:text="${#numbers.formatDecimal(kpis.totalFacturado, 1, 2)} + ' EUR'">0 EUR</h2>
                 <p>Total facturado</p>
               </div>
               <div class="icon"><i class="fas fa-file-invoice-dollar"></i></div>

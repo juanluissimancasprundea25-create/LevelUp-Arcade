@@ -13,7 +13,7 @@
         <div class="row mb-2">
           <div class="col-sm-8">
             <h1>
-              <i class="fas fa-history"></i> Auditoria
+              <i class="fas fa-history" aria-hidden="true"></i> Auditoria
             </h1>
           </div>
           <div class="col-sm-4 text-right">
@@ -47,7 +47,7 @@
                      placeholder="ej. Cliente"/>
 
               <button type="submit" class="btn btn-default">
-                <i class="fas fa-filter"></i> Filtrar
+                <i class="fas fa-filter" aria-hidden="true"></i> Filtrar
               </button>
               <a th:if="${(usuarioFiltro != null and !#strings.isEmpty(usuarioFiltro))
                           or (accionFiltro != null and !#strings.isEmpty(accionFiltro))
@@ -59,7 +59,7 @@
             </form>
 
             <div th:if="${avisoUsuario}" class="alert alert-warning mt-2 mb-0 py-2">
-              <i class="fas fa-info-circle mr-1"></i>
+              <i class="fas fa-info-circle mr-1" aria-hidden="true"></i>
               <span th:text="${avisoUsuario}"></span>
             </div>
           </div>
@@ -99,12 +99,12 @@
                       <small class="text-muted" th:text="${u.email}">email@dominio</small>
                     </th:block>
                     <span th:if="${u == null}" class="text-muted small">
-                      <i class="fas fa-user-slash"></i>
+                      <i class="fas fa-user-slash" aria-hidden="true"></i>
                       Usuario #<span th:text="${l.usuarioId}"></span> (eliminado)
                     </span>
                   </th:block>
                   <span th:if="${l.usuarioId == null}" class="text-muted">
-                    <i class="fas fa-cog"></i> sistema
+                    <i class="fas fa-cog" aria-hidden="true"></i> sistema
                   </span>
                 </td>
 

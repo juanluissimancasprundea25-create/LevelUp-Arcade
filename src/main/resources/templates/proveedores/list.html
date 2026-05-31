@@ -15,7 +15,7 @@
           <div class="col-sm-6"><h1>Proveedores</h1></div>
           <div class="col-sm-6 text-right">
             <a th:href="@{/admin/proveedores/nuevo}" class="btn btn-primary">
-              <i class="fas fa-plus"></i> Nuevo proveedor
+              <i class="fas fa-plus" aria-hidden="true"></i> Nuevo proveedor
             </a>
           </div>
         </div>
@@ -38,11 +38,12 @@
           <div class="card-header">
             <form th:action="@{/admin/proveedores}" method="get" class="form-inline">
               <div class="input-group" style="width: 320px;">
-                <input type="text" name="q" th:value="${q}" class="form-control"
+                <label for="q-proveedores" class="visually-hidden">Buscar proveedores</label>
+                <input type="text" id="q-proveedores" name="q" th:value="${q}" class="form-control"
                        placeholder="Buscar por nombre, CIF, ciudad..."/>
                 <div class="input-group-append">
-                  <button class="btn btn-default" type="submit">
-                    <i class="fas fa-search"></i>
+                  <button class="btn btn-default" type="submit" aria-label="Buscar">
+                    <i class="fas fa-search" aria-hidden="true"></i>
                   </button>
                 </div>
               </div>
@@ -87,12 +88,12 @@
                 </td>
                 <td class="text-right">
                   <a th:href="@{/admin/proveedores/{id}(id=${p.id})}"
-                     class="btn btn-sm btn-info" title="Ver">
-                    <i class="fas fa-eye"></i>
+                     class="btn btn-sm btn-info" title="Ver" aria-label="Ver">
+                    <i class="fas fa-eye" aria-hidden="true"></i>
                   </a>
                   <a th:href="@{/admin/proveedores/{id}/editar(id=${p.id})}"
-                     class="btn btn-sm btn-warning" title="Editar">
-                    <i class="fas fa-edit"></i>
+                     class="btn btn-sm btn-warning" title="Editar" aria-label="Editar">
+                    <i class="fas fa-edit" aria-hidden="true"></i>
                   </a>
                 </td>
               </tr>
