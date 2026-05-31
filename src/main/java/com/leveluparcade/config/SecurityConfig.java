@@ -37,6 +37,7 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/api/publico/**").permitAll()
                 .requestMatchers("/api/facturas/verificar/**").permitAll()
                 .anyRequest().authenticated()
             )
