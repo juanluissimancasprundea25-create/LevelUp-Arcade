@@ -136,7 +136,11 @@ export function ProductoFormModal({ open, onClose, producto, onSaved }) {
       set('descripcion', data.resultado);
       toast.ok(`Descripción generada (${data.modelo})`);
     } catch (e) {
-      toast.err(e.response?.data?.mensaje || 'La IA no respondió');
+      const msg = e.response?.data?.message
+               || e.response?.data?.mensaje
+               || e.response?.data?.error
+               || 'La IA no respondió';
+      toast.err(msg);
     } finally {
       setIaBusy(null);
     }
@@ -153,7 +157,6 @@ export function ProductoFormModal({ open, onClose, producto, onSaved }) {
         nombreProducto: form.nombre.trim(),
         descripcion: form.descripcion.trim() || null,
       });
-      // La IA devuelve el NOMBRE de una categoría. Buscamos su id.
       const sugerida = (categorias.data || []).find(
         c => c.nombre.toLowerCase() === (data.resultado || '').trim().toLowerCase()
       );
@@ -164,7 +167,11 @@ export function ProductoFormModal({ open, onClose, producto, onSaved }) {
         toast.info(`Sugerencia: "${data.resultado}" (no existe, créala antes)`);
       }
     } catch (e) {
-      toast.err(e.response?.data?.mensaje || 'La IA no respondió');
+      const msg = e.response?.data?.message
+               || e.response?.data?.mensaje
+               || e.response?.data?.error
+               || 'La IA no respondió';
+      toast.err(msg);
     } finally {
       setIaBusy(null);
     }
