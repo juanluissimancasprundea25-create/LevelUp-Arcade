@@ -9,6 +9,10 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.leveluparcade.entity.Usuario;
+import com.leveluparcade.repository.UsuarioRepository;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 
 import java.util.Map;
 
@@ -18,11 +22,14 @@ public class AuthController {
 
     private final AuthService authService;
     private final PasswordResetService passwordResetService;
+    private final UsuarioRepository usuarioRepository;
 
     public AuthController(AuthService authService,
-                          PasswordResetService passwordResetService) {
+                        PasswordResetService passwordResetService,
+                        UsuarioRepository usuarioRepository) {
         this.authService = authService;
         this.passwordResetService = passwordResetService;
+        this.usuarioRepository = usuarioRepository;
     }
 
     @PostMapping("/login")
@@ -57,6 +64,30 @@ public class AuthController {
             "mensaje", "Contrasena actualizada correctamente. Ya puede iniciar sesion."
         ));
     }
+
+    @GetMapping("/me")
+public ResponseEntity<Map<String, Object>> me(Authentication auth) {
+    if (auth == null || !auth.isAuthenticated()) {
+        return ResponseEntity.status(401).build();
+    }
+
+    String email = auth.getName();
+    Usuario u = usuarioRepository.findByEmail(email).orElse(null);
+
+    String rolPlano = auth.getAuthorities().stream()
+            .map(GrantedAuthority::getAuthority)
+            .findFirst()
+            .orElse("ROLE_NONE")
+            .replaceFirst("^ROLE_", "");
+
+    Map<String, Object> body = new java.util.HashMap<>();
+    body.put("email",  email);
+    body.put("rol",    rolPlano);
+    body.put("nombre", u != null ? u.getNombre() : email.split("@")[0]);
+    body.put("id",     u != null ? u.getId()     : null);
+
+    return ResponseEntity.ok(body);
+}
 
     // DTO LOGIN REQUEST
     @Data

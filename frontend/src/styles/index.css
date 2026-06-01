@@ -1,0 +1,134 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html, body, #root { height: 100%; }
+  body {
+    @apply bg-cockpit-bg text-slate-100 font-display antialiased;
+    overflow: hidden; /* el cockpit gestiona su propio scroll */
+    -webkit-font-smoothing: antialiased;
+  }
+  /* Cursor temático opcional, suave para no estorbar formularios */
+  body, button, a { cursor: default; }
+  input, textarea { cursor: text; }
+}
+
+@layer components {
+  /* PANEL HUD: cristal oscuro + borde neón + esquinas recortadas */
+  .hud-panel {
+    position: relative;
+    background: linear-gradient(135deg, rgba(15, 18, 38, 0.78) 0%, rgba(8, 10, 24, 0.72) 100%);
+    border: 1px solid theme('colors.cockpit.line');
+    backdrop-filter: blur(14px) saturate(140%);
+    -webkit-backdrop-filter: blur(14px) saturate(140%);
+    box-shadow:
+      0 0 0 1px rgba(168, 85, 247, 0.08) inset,
+      0 0 32px rgba(168, 85, 247, 0.12),
+      0 8px 40px rgba(0, 0, 0, 0.6);
+    clip-path: polygon(
+      14px 0, 100% 0, 100% calc(100% - 14px),
+      calc(100% - 14px) 100%, 0 100%, 0 14px
+    );
+  }
+  .hud-panel::before {
+    /* línea de scan diagonal sutil */
+    content: '';
+    position: absolute; inset: 0; pointer-events: none;
+    background: linear-gradient(
+      135deg, transparent 0%, rgba(168, 85, 247, 0.04) 50%, transparent 100%
+    );
+    mix-blend-mode: screen;
+  }
+
+  /* Botón HUD: clip + glow + hover de carga */
+  .hud-btn {
+    @apply relative inline-flex items-center justify-center gap-2 px-6 py-3
+           font-display tracking-[0.25em] text-sm uppercase
+           text-cockpit-neon transition-all duration-200;
+    background: linear-gradient(180deg, rgba(168, 85, 247, 0.08), rgba(168, 85, 247, 0.02));
+    border: 1px solid rgba(168, 85, 247, 0.45);
+    clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+    box-shadow: 0 0 16px rgba(168, 85, 247, 0.15), 0 0 0 1px rgba(168, 85, 247, 0.1) inset;
+  }
+  .hud-btn:hover {
+    @apply text-white;
+    background: linear-gradient(180deg, rgba(168, 85, 247, 0.22), rgba(168, 85, 247, 0.08));
+    box-shadow: 0 0 28px rgba(168, 85, 247, 0.45), 0 0 0 1px rgba(168, 85, 247, 0.4) inset;
+  }
+  .hud-btn:disabled { @apply opacity-40 cursor-not-allowed; box-shadow: none; }
+
+  .hud-btn--cyan {
+    @apply text-cockpit-cyan;
+    background: linear-gradient(180deg, rgba(34, 211, 238, 0.08), rgba(34, 211, 238, 0.02));
+    border-color: rgba(34, 211, 238, 0.45);
+    box-shadow: 0 0 16px rgba(34, 211, 238, 0.15), 0 0 0 1px rgba(34, 211, 238, 0.1) inset;
+  }
+  .hud-btn--cyan:hover {
+    background: linear-gradient(180deg, rgba(34, 211, 238, 0.22), rgba(34, 211, 238, 0.08));
+    box-shadow: 0 0 28px rgba(34, 211, 238, 0.45);
+  }
+
+  /* Input HUD */
+  .hud-input {
+    @apply w-full bg-transparent text-slate-100 px-4 py-3
+           font-mono tracking-wider placeholder:text-slate-500
+           focus:outline-none transition-all duration-200;
+    border: 1px solid rgba(168, 85, 247, 0.25);
+    border-bottom: 2px solid rgba(168, 85, 247, 0.45);
+    clip-path: polygon(8px 0, 100% 0, 100% 100%, 0 100%, 0 8px);
+    background: rgba(8, 10, 24, 0.5);
+  }
+  .hud-input:focus {
+    border-color: rgba(168, 85, 247, 0.8);
+    border-bottom-color: rgba(34, 211, 238, 0.9);
+    box-shadow: 0 0 22px rgba(168, 85, 247, 0.25);
+  }
+
+  /* Etiquetas estilo telemetría */
+  .hud-label {
+    @apply text-[10px] tracking-[0.4em] uppercase text-cockpit-neon/70 font-display;
+  }
+
+  /* Texto telemétrico monoespaciado */
+  .hud-readout {
+    @apply font-mono text-xs tracking-wider text-cockpit-cyan/90;
+  }
+
+  /* Scanlines overlay opcional para look CRT */
+  .crt-scanlines::after {
+    content: '';
+    position: fixed; inset: 0; pointer-events: none; z-index: 50;
+    background:
+      repeating-linear-gradient(
+        to bottom,
+        rgba(255,255,255,0.02) 0px,
+        rgba(255,255,255,0.02) 1px,
+        transparent 1px,
+        transparent 3px
+      );
+    mix-blend-mode: overlay;
+    opacity: 0.6;
+  }
+}
+
+/* Animaciones reutilizables */
+@keyframes warp-streak {
+  0%   { transform: scaleY(1) translateY(0); opacity: 0; }
+  20%  { opacity: 1; }
+  100% { transform: scaleY(40) translateY(-30%); opacity: 0; }
+}
+
+/* Sombra/contorno para títulos grandes sobre el cockpit 3D */
+@layer utilities {
+  .hud-title-shadow {
+    text-shadow:
+      0 0 18px rgba(2, 4, 8, 0.95),
+      0 0 32px rgba(2, 4, 8, 0.75),
+      0 2px 8px rgba(168, 85, 247, 0.35);
+  }
+}
+
+/* Quitar el splash boot cuando React monta */
+.boot-splash { transition: opacity 0.4s; }
+.boot-splash.hidden { opacity: 0; pointer-events: none; }
