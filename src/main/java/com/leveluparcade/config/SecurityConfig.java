@@ -33,6 +33,13 @@ public class SecurityConfig {
     @Order(1)
     public SecurityFilterChain apiSecurityFilterChain(HttpSecurity http) throws Exception {
         http
+        // CSRF deshabilitado a proposito en /api/**:
+//  - La API es stateless: cada peticion lleva el JWT en el header
+//    Authorization, no usa cookies de sesion.
+//  - CSRF protege ataques que abusan de cookies enviadas automaticamente
+//    por el navegador. Sin cookies de sesion no hay vector de ataque.
+//  - El JWT esta en sessionStorage, que NO se manda solo: el SPA lo
+//    adjunta explicitamente via interceptor de Axios.
             .securityMatcher("/api/**")
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
@@ -52,6 +59,9 @@ public class SecurityConfig {
     @Order(2)
     public SecurityFilterChain adminSecurityFilterChain(HttpSecurity http) throws Exception {
         http
+        // CSRF deshabilitado en /admin/**: los endpoints admin solo se invocan
+// via API REST con JWT (la SPA cockpit). Los formularios Thymeleaf
+// clasicos de admin se sirven desde otra cadena con CSRF activo.
             .securityMatcher("/admin/**")
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
@@ -84,6 +94,12 @@ public class SecurityConfig {
      *
      * <p>Esta cadena tambien protege /cuenta/** (solo CLIENTE).
      */
+    // CSRF activo en la cadena publica: los formularios Thymeleaf
+// (login, registro, recuperar password) usan sesion HTTP y cookies,
+// por lo que NECESITAN proteccion CSRF. Spring inyecta el token en
+// los formularios via el atributo th:action automaticamente.
+// (si esto rompe formularios, anade <input type="hidden"
+//  th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>)
     @Bean
     @Order(3)
     public SecurityFilterChain authSecurityFilterChain(HttpSecurity http) throws Exception {
