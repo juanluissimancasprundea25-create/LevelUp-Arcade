@@ -1,18 +1,14 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Search, X, Package, Filter, ArrowDownAZ, ArrowDown01, ArrowUp01 } from 'lucide-react';
 import { api } from '../lib/api.js';
 import { useFetch } from '../lib/hooks.js';
 import { HeaderTienda } from '../components/tienda/HeaderTienda.jsx';
 import { ProductoCard } from '../components/tienda/ProductoCard.jsx';
+import { useCockpit } from '../scenes/cockpitStore.js';
 
 /**
  * Catálogo público de la tienda. URL: /cockpit/tienda
- *
- *  - Usa endpoints públicos (/api/publico/productos y /api/publico/categorias)
- *  - Filtros: búsqueda libre + categoría
- *  - Orden: por nombre, precio ascendente o descendente
- *  - Grid responsive (1/2/3/4 columnas)
  */
 
 const ORDENES = {
@@ -25,6 +21,10 @@ export default function Tienda() {
   const [busqueda, setBusqueda] = useState('');
   const [catId, setCatId] = useState('');
   const [orden, setOrden] = useState('nombre');
+
+  // Pose 3D: aleja la maquina arcade del area de contenido
+  const setScene = useCockpit((s) => s.setScene);
+  useEffect(() => { setScene('tienda'); }, [setScene]);
 
   // Endpoints públicos
   const productos  = useFetch('/publico/productos');
@@ -81,7 +81,6 @@ export default function Tienda() {
           className="hud-panel p-4 mb-5"
         >
           <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_auto] gap-3">
-            {/* Buscador */}
             <div className="relative">
               <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
               <input
@@ -102,7 +101,6 @@ export default function Tienda() {
               )}
             </div>
 
-            {/* Categoría */}
             <select
               value={catId}
               onChange={(e) => setCatId(e.target.value)}
@@ -114,7 +112,6 @@ export default function Tienda() {
               ))}
             </select>
 
-            {/* Orden */}
             <select
               value={orden}
               onChange={(e) => setOrden(e.target.value)}
@@ -144,7 +141,6 @@ export default function Tienda() {
           </div>
         </motion.div>
 
-        {/* Grid de productos */}
         {productos.loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {Array.from({ length: 8 }).map((_, i) => (

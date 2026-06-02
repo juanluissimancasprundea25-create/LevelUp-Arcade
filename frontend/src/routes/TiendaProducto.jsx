@@ -9,14 +9,10 @@ import { api } from '../lib/api.js';
 import { useCarrito } from '../lib/carrito.js';
 import { useToast } from '../components/admin/Toast.jsx';
 import { HeaderTienda } from '../components/tienda/HeaderTienda.jsx';
+import { useCockpit } from '../scenes/cockpitStore.js';
 
 /**
  * Ficha de detalle de un producto público. URL: /cockpit/tienda/producto/:id
- *
- *  - Layout dos columnas (imagen grande izq, info dcha)
- *  - Selector de cantidad con +/- limitado por stock
- *  - Botón principal "Añadir al carrito"
- *  - Bloque de información (envío, devoluciones, stock)
  */
 export default function TiendaProducto() {
   const { id } = useParams();
@@ -28,6 +24,10 @@ export default function TiendaProducto() {
   const [imgError, setImgError] = useState(false);
   const { añadir } = useCarrito();
   const toast = useToast();
+
+  // Pose 3D: aleja la maquina arcade del area de contenido
+  const setScene = useCockpit((s) => s.setScene);
+  useEffect(() => { setScene('tienda'); }, [setScene]);
 
   useEffect(() => {
     let cancelado = false;
@@ -63,12 +63,7 @@ export default function TiendaProducto() {
       <HeaderTienda />
 
       <main className="flex-1 max-w-6xl mx-auto w-full px-4 sm:px-6 py-6">
-        {/* Migas */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="mb-4"
-        >
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mb-4">
           <Link
             to="/cockpit/tienda"
             className="inline-flex items-center gap-1.5 text-xs tracking-widest uppercase text-cockpit-cyan hover:text-white transition-colors"
@@ -102,7 +97,6 @@ export default function TiendaProducto() {
             transition={{ duration: 0.4 }}
             className="grid grid-cols-1 md:grid-cols-2 gap-6"
           >
-            {/* Imagen */}
             <div className="hud-panel aspect-square overflow-hidden grid place-items-center bg-black/40">
               {producto.imagenUrl && !imgError ? (
                 <img
@@ -116,7 +110,6 @@ export default function TiendaProducto() {
               )}
             </div>
 
-            {/* Info */}
             <div className="flex flex-col">
               {producto.categoriaNombre && (
                 <Link
@@ -133,7 +126,6 @@ export default function TiendaProducto() {
               </h1>
               <p className="hud-readout text-slate-500 text-xs mt-1">SKU · {producto.sku}</p>
 
-              {/* Precio + estado */}
               <div className="mt-5 flex items-end gap-3 flex-wrap">
                 <span className="font-display text-4xl text-cockpit-cyan">
                   {Number(producto.precio).toFixed(2)} €
@@ -153,7 +145,6 @@ export default function TiendaProducto() {
                 )}
               </div>
 
-              {/* Descripción */}
               {producto.descripcion && (
                 <div className="mt-5 hud-panel p-4 !bg-black/30">
                   <p className="hud-label mb-2">// DESCRIPCIÓN</p>
@@ -163,7 +154,6 @@ export default function TiendaProducto() {
                 </div>
               )}
 
-              {/* Cantidad + añadir */}
               {!sinStock && (
                 <div className="mt-5 flex flex-wrap items-center gap-3">
                   <div className="flex items-center border border-cockpit-line">
@@ -204,7 +194,6 @@ export default function TiendaProducto() {
                 </div>
               )}
 
-              {/* Garantías */}
               <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-2">
                 <Garantia icon={Truck} label="Envío 24-72h" />
                 <Garantia icon={ShieldCheck} label="Pago seguro" />
