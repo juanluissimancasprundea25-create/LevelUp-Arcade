@@ -8,21 +8,35 @@ import { ArcadeMachine } from './ArcadeMachine.jsx';
 import { useCockpit } from './cockpitStore.js';
 
 /**
- * Componente que sólo vive dentro del <Canvas> y mueve la cámara
- * con GSAP según la "escena" actual del store. Cada ruta de la SPA
- * lanza un cambio de escena y la cámara hace tween a su pose.
+ * Componente que solo vive dentro del <Canvas> y mueve la camara
+ * con GSAP segun la "escena" actual del store. Cada ruta de la SPA
+ * lanza un cambio de escena y la camara hace tween a su pose.
+ *
+ * Las poses estan ajustadas para que la maquina arcade (situada
+ * en world coords ~ [2.2, -0.3, -1.5]) quede SIEMPRE fuera del
+ * area central del contenido HUD. En rutas con mucho texto encima
+ * (tienda, checkout) la camara mira fuerte al cielo izquierdo para
+ * dejar el centro limpio.
  */
 function CameraDirector() {
   const cameraRef = useRef();
   const scene = useCockpit((s) => s.scene);
 
   // Poses por escena: [posX, posY, posZ, lookX, lookY, lookZ]
+  // - landing: maquina visible decorativa a la derecha
+  // - login:   ligeramente desplazada para hueco al formulario
+  // - tienda:  camara mira al starfield, maquina fuera de plano
+  // - checkout: igual que tienda pero un toque mas amplia
+  // - warp:    transicion hyperdrive
+  // - dashboard: vista zenital para el panel admin
   const poses = {
-  landing:   { pos: [-1.2, 0.5, 7.5], look: [1.5, 0.2, 0] },
-  login:     { pos: [-0.5, 0.6, 5.5], look: [2.5, 0.4, 0] },
-  warp:      { pos: [0, 0.5, 1.2],    look: [0, 0.5, -10] },
-  dashboard: { pos: [0, 2.2, 9],      look: [0, 0, -2] },
-};
+    landing:   { pos: [-1.2, 0.5, 7.5],  look: [1.5, 0.2, 0]  },
+    login:     { pos: [-0.5, 0.6, 5.5],  look: [2.5, 0.4, 0]  },
+    tienda:    { pos: [-3.5, 1.2, 9.0],  look: [-5.0, 0.8, -4] },
+    checkout:  { pos: [-4.0, 1.5, 10.0], look: [-6.0, 1.0, -5] },
+    warp:      { pos: [0, 0.5, 1.2],     look: [0, 0.5, -10]  },
+    dashboard: { pos: [0, 2.2, 9],       look: [0, 0, -2]     },
+  };
 
   useEffect(() => {
     if (!cameraRef.current) return;
@@ -35,7 +49,6 @@ function CameraDirector() {
       duration: isWarp ? 0.9 : 1.6,
       ease: isWarp ? 'power4.in' : 'power3.inOut',
     });
-    // Look-at animado via objeto auxiliar
     const lookProxy = { x: 0, y: 0.3, z: 0 };
     gsap.to(lookProxy, {
       x: pose.look[0], y: pose.look[1], z: pose.look[2],
@@ -75,7 +88,6 @@ export function CockpitScene() {
 
         <ArcadeMachine position={[2.2, -0.3, -1.5]} scale={0.7} />
 
-        {/* Entorno HDRI sintético muy ligero para reflejos metálicos. */}
         <Environment preset="night" />
       </Suspense>
     </Canvas>
