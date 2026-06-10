@@ -3,13 +3,16 @@ import { motion } from 'framer-motion';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 
 /**
- * Donut de distribución de pedidos por estado.
+ * Donut de distribucion de pedidos por estado.
  * Espera `pedidos: PedidoResponse[]` y agrega por `estado`.
+ *
+ * Muestra el numero total en el centro y la leyenda con
+ * conteo + porcentaje por estado.
  */
 const COLOR_ESTADO = {
-  PENDIENTE: '#fbbf24',  // ámbar
+  PENDIENTE: '#fbbf24',  // ambar
   PAGADO:    '#22d3ee',  // cyan
-  ENVIADO:   '#a855f7',  // neón
+  ENVIADO:   '#a855f7',  // neon
   ENTREGADO: '#34d399',  // verde
   CANCELADO: '#ef4444',  // rojo
 };
@@ -25,6 +28,15 @@ export function EstadoPedidosDonut({ pedidos, loading }) {
   }, [pedidos]);
 
   const total = data.reduce((s, d) => s + d.value, 0);
+
+  // Calcula % por estado, redondeado a un decimal si <10%, entero si >=10%
+  function formatearPorcentaje(valor) {
+    if (total === 0) return '0%';
+    const pct = (valor / total) * 100;
+    return pct < 10
+      ? `${pct.toFixed(1)}%`
+      : `${Math.round(pct)}%`;
+  }
 
   return (
     <motion.div
@@ -61,6 +73,10 @@ export function EstadoPedidosDonut({ pedidos, loading }) {
                 ))}
               </Pie>
               <Tooltip
+                formatter={(value, name) => [
+                  `${value} (${formatearPorcentaje(value)})`,
+                  name,
+                ]}
                 contentStyle={{
                   background: 'rgba(8,10,24,0.95)',
                   border: '1px solid rgba(168,85,247,0.5)',
@@ -81,16 +97,21 @@ export function EstadoPedidosDonut({ pedidos, loading }) {
         </div>
       )}
 
-      {/* Leyenda */}
+      {/* Leyenda con conteo y porcentaje */}
       <div className="mt-4 grid grid-cols-2 gap-1.5 text-[10px] tracking-wider">
         {data.map((d) => (
           <div key={d.name} className="flex items-center gap-2">
             <span
-              className="w-2 h-2 rounded-full"
+              className="w-2 h-2 rounded-full shrink-0"
               style={{ background: COLOR_ESTADO[d.name] || '#888' }}
             />
-            <span className="text-slate-300 uppercase">{d.name}</span>
-            <span className="ml-auto font-mono text-slate-400">{d.value}</span>
+            <span className="text-slate-300 uppercase truncate">{d.name}</span>
+            <span className="ml-auto font-mono text-slate-400 shrink-0">
+              {d.value}
+              <span className="text-cockpit-cyan ml-1.5">
+                {formatearPorcentaje(d.value)}
+              </span>
+            </span>
           </div>
         ))}
       </div>

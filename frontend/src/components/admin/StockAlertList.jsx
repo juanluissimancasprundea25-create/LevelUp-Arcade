@@ -5,6 +5,10 @@ import { Link } from 'react-router-dom';
 /**
  * Lista de productos en alerta de stock bajo. Espera `productos` ya
  * filtrados (los que tienen bajoStock=true). Muestra top 6.
+ *
+ * Cada item enlaza a `/cockpit/admin/productos?stockId={id}` para que
+ * el listado de productos abra automaticamente el modal de ajuste de
+ * stock de ese producto.
  */
 export function StockAlertList({ productos, loading }) {
   const items = productos ? productos.slice(0, 6) : [];
@@ -30,7 +34,7 @@ export function StockAlertList({ productos, loading }) {
           // ALERTA DE STOCK
         </p>
         <span className="hud-readout">
-          {loading ? '…' : `${productos?.length || 0} items`}
+          {loading ? '...' : `${productos?.length || 0} items`}
         </span>
       </div>
 
@@ -50,9 +54,10 @@ export function StockAlertList({ productos, loading }) {
           {items.map((p) => (
             <li key={p.id}>
               <Link
-                to={`/cockpit/admin/productos/${p.id}`}
+                to={`/cockpit/admin/productos?stockId=${p.id}`}
                 className="flex items-center gap-3 px-3 py-2 border-l-2 border-cockpit-amber/60
                            bg-cockpit-amber/5 hover:bg-cockpit-amber/15 transition-colors group"
+                title="Ajustar stock de este producto"
               >
                 <span className="flex-1 min-w-0">
                   <span className="block text-xs text-white truncate">{p.nombre}</span>
@@ -77,7 +82,7 @@ export function StockAlertList({ productos, loading }) {
           className="block mt-3 text-center text-[10px] tracking-[0.3em] uppercase
                      text-cockpit-amber hover:text-white transition-colors"
         >
-          Ver {productos.length - 6} más →
+          Ver {productos.length - 6} mas
         </Link>
       )}
     </motion.div>

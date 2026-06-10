@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { Package, Users, Truck, ShoppingCart, RefreshCw } from 'lucide-react';
+import { Package, Users, ShoppingCart, RefreshCw } from 'lucide-react';
 import { useFetch } from '../../lib/hooks.js';
 import { useAuth } from '../../lib/auth.jsx';
 import { KpiCard } from '../../components/admin/KpiCard.jsx';
@@ -13,11 +13,10 @@ export default function DashboardHome() {
   const { user } = useAuth();
 
   // Llamadas paralelas a la API real. Si alguna falla, el resto
-  // sigue mostrándose con sus datos.
+  // sigue mostrandose con sus datos.
   const productos    = useFetch('/productos');
   const stockBajo    = useFetch('/productos', { params: { bajoStock: true } });
   const clientes     = useFetch('/clientes');
-  const proveedores  = useFetch('/proveedores');
   const pedidos      = useFetch('/pedidos');
 
   const cargandoAlgo = productos.loading || pedidos.loading;
@@ -26,7 +25,6 @@ export default function DashboardHome() {
     productos.refresh();
     stockBajo.refresh();
     clientes.refresh();
-    proveedores.refresh();
     pedidos.refresh();
   }
 
@@ -71,7 +69,7 @@ export default function DashboardHome() {
         </button>
       </motion.header>
 
-      {/* KPIs */}
+      {/* KPIs (4 tarjetas: productos, stock bajo, clientes, pedidos) */}
       <section className="grid grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
         <KpiCard
           label="// PRODUCTOS"
@@ -87,7 +85,7 @@ export default function DashboardHome() {
           icon={Package}
           tone={stockTone}
           loading={stockBajo.loading}
-          footer={stockBajoCount === 0 ? 'nivel nominal' : 'requieren atención'}
+          footer={stockBajoCount === 0 ? 'nivel nominal' : 'requieren atencion'}
           delay={0.1}
         />
         <KpiCard
@@ -107,29 +105,20 @@ export default function DashboardHome() {
         />
       </section>
 
-      {/* Fila secundaria: ingresos + proveedores compacto */}
-      <section className="grid grid-cols-1 xl:grid-cols-3 gap-4 mb-6">
-        <div className="xl:col-span-2">
-          <IngresosMes pedidos={pedidos.data} loading={pedidos.loading} />
-        </div>
-        <KpiCard
-          label="// PROVEEDORES"
-          value={proveedores.data?.length ?? 0}
-          icon={Truck}
-          loading={proveedores.loading}
-          delay={0.2}
-        />
+      {/* Ingresos del mes ocupa todo el ancho ahora */}
+      <section className="mb-6">
+        <IngresosMes pedidos={pedidos.data} loading={pedidos.loading} />
       </section>
 
-      {/* Fila de gráficos */}
+      {/* Fila de graficos */}
       <section className="grid grid-cols-1 xl:grid-cols-3 gap-4">
         <EstadoPedidosDonut pedidos={pedidos.data} loading={pedidos.loading} />
         <StockAlertList productos={stockBajo.data} loading={stockBajo.loading} />
         <CategoriasBar productos={productos.data} loading={productos.loading} />
       </section>
 
-      {/* Si alguna llamada falló, lo decimos sin romper la página */}
-      {[productos, stockBajo, clientes, proveedores, pedidos]
+      {/* Si alguna llamada fallo, lo decimos sin romper la pagina */}
+      {[productos, stockBajo, clientes, pedidos]
         .filter(q => q.error)
         .map((q, i) => (
           <div
@@ -137,7 +126,7 @@ export default function DashboardHome() {
             className="mt-4 px-3 py-2 border border-cockpit-danger/60 text-cockpit-danger
                        text-xs tracking-wider bg-cockpit-danger/10"
           >
-            ⚠ Error al cargar datos: {q.error}
+            Error al cargar datos: {q.error}
           </div>
         ))}
     </div>
