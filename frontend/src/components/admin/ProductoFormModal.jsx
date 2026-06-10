@@ -1,22 +1,25 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { HudModal } from './HudModal.jsx';
-import { Sparkles, Tag, Loader2 } from 'lucide-react';
+import { Sparkles, Tag, Loader2, Upload, ImageOff, X } from 'lucide-react';
 import { api } from '../../lib/api.js';
 import { useFetch } from '../../lib/hooks.js';
 import { useToast } from './Toast.jsx';
 import { useAuth } from '../../lib/auth.jsx';
 
 /**
- * Modal de creación / edición de producto.
+ * Modal de creacion / edicion de producto.
  *
- *  - Si `producto` viene null → modo CREAR (POST /productos)
- *  - Si `producto` trae un id → modo EDITAR (PUT /productos/{id})
+ *  - Si `producto` viene null -> modo CREAR (POST /productos)
+ *  - Si `producto` trae un id -> modo EDITAR (PUT /productos/{id})
+ *
+ * Imagen: se sube un archivo (.jpg, .png, .webp). El backend lo procesa
+ * y devuelve un path tipo "/img/productos/{uuid}.jpg" que se guarda en
+ * `imagenUrl`. Las URLs externas previas (Steam CDN, etc.) siguen siendo
+ * validas y se conservan si no se sube nada nuevo.
  *
  * Incluye botones de IA (solo ADMIN):
- *  - Generar descripción → POST /llm/descripcion-producto
- *  - Sugerir categoría   → POST /llm/sugerir-categoria
- *
- * Tras guardar, llama a onSaved(producto) y cierra.
+ *  - Generar descripcion -> POST /llm/descripcion-producto
+ *  - Sugerir categoria   -> POST /llm/sugerir-categoria
  */
 
 const empty = {
@@ -32,11 +35,16 @@ const empty = {
   activo: true,
 };
 
+const TIPOS_ACEPTADOS = ['image/jpeg', 'image/png', 'image/webp'];
+const MAX_BYTES = 5 * 1024 * 1024; // 5 MB
+
 export function ProductoFormModal({ open, onClose, producto, onSaved }) {
   const [form, setForm] = useState(empty);
   const [errors, setErrors] = useState({});
   const [busy, setBusy] = useState(false);
-  const [iaBusy, setIaBusy] = useState(null); // 'descripcion' | 'categoria' | null
+  const [iaBusy, setIaBusy] = useState(null);
+  const [subiendoImagen, setSubiendoImagen] = useState(false);
+  const fileInputRef = useRef(null);
   const toast = useToast();
   const { user } = useAuth();
   const esEdicion = !!producto?.id;
@@ -45,7 +53,7 @@ export function ProductoFormModal({ open, onClose, producto, onSaved }) {
   const categorias  = useFetch('/categorias');
   const proveedores = useFetch('/proveedores');
 
-  // Cargar producto en edición o reset en creación
+  // Cargar producto en edicion o reset en creacion
   useEffect(() => {
     if (!open) return;
     if (producto) {
@@ -75,18 +83,58 @@ export function ProductoFormModal({ open, onClose, producto, onSaved }) {
   function validar() {
     const e = {};
     if (!/^[A-Z0-9-]{3,50}$/.test(form.sku.trim())) {
-      e.sku = 'SKU: solo MAYÚSCULAS, dígitos y guiones (3-50)';
+      e.sku = 'SKU: solo MAYUSCULAS, digitos y guiones (3-50)';
     }
     if (!form.nombre.trim()) e.nombre = 'El nombre es obligatorio';
-    if (form.precio === '' || Number(form.precio) < 0) e.precio = 'Precio inválido';
-    if (form.stock === '' || Number(form.stock) < 0) e.stock = 'Stock inválido';
+    if (form.precio === '' || Number(form.precio) < 0) e.precio = 'Precio invalido';
+    if (form.stock === '' || Number(form.stock) < 0) e.stock = 'Stock invalido';
     setErrors(e);
     return Object.keys(e).length === 0;
   }
 
+  // === Subida de imagen ===
+  async function onArchivoElegido(ev) {
+    const file = ev.target.files?.[0];
+    if (!file) return;
+
+    // Reset del input para que el mismo archivo pueda re-elegirse luego
+    ev.target.value = '';
+
+    if (!TIPOS_ACEPTADOS.includes(file.type)) {
+      toast.err('Formato no admitido. Usa JPG, PNG o WEBP.');
+      return;
+    }
+    if (file.size > MAX_BYTES) {
+      toast.err('La imagen supera el limite de 5 MB.');
+      return;
+    }
+
+    setSubiendoImagen(true);
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      const { data } = await api.post('/productos/imagen', fd, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      set('imagenUrl', data.imagenUrl);
+      toast.ok('Imagen subida');
+    } catch (err) {
+      const msg = err.response?.data?.mensaje
+               || err.response?.data?.message
+               || 'No se pudo subir la imagen';
+      toast.err(msg);
+    } finally {
+      setSubiendoImagen(false);
+    }
+  }
+
+  function quitarImagen() {
+    set('imagenUrl', '');
+  }
+
   async function handleSubmit(ev) {
     ev.preventDefault();
-    if (busy) return;
+    if (busy || subiendoImagen) return;
     if (!validar()) return;
 
     setBusy(true);
@@ -134,12 +182,12 @@ export function ProductoFormModal({ open, onClose, producto, onSaved }) {
         categoria: categoriaNombre,
       });
       set('descripcion', data.resultado);
-      toast.ok(`Descripción generada (${data.modelo})`);
+      toast.ok(`Descripcion generada (${data.modelo})`);
     } catch (e) {
       const msg = e.response?.data?.message
                || e.response?.data?.mensaje
                || e.response?.data?.error
-               || 'La IA no respondió';
+               || 'La IA no respondio';
       toast.err(msg);
     } finally {
       setIaBusy(null);
@@ -162,26 +210,28 @@ export function ProductoFormModal({ open, onClose, producto, onSaved }) {
       );
       if (sugerida) {
         set('categoriaId', sugerida.id);
-        toast.ok(`Categoría sugerida: ${sugerida.nombre}`);
+        toast.ok(`Categoria sugerida: ${sugerida.nombre}`);
       } else {
-        toast.info(`Sugerencia: "${data.resultado}" (no existe, créala antes)`);
+        toast.info(`Sugerencia: "${data.resultado}" (no existe, creala antes)`);
       }
     } catch (e) {
       const msg = e.response?.data?.message
                || e.response?.data?.mensaje
                || e.response?.data?.error
-               || 'La IA no respondió';
+               || 'La IA no respondio';
       toast.err(msg);
     } finally {
       setIaBusy(null);
     }
   }
 
+  const tieneImagen = !!form.imagenUrl;
+
   return (
     <HudModal
       open={open}
       onClose={onClose}
-      title={esEdicion ? `Editar · ${producto?.nombre}` : 'Nuevo producto'}
+      title={esEdicion ? `Editar . ${producto?.nombre}` : 'Nuevo producto'}
       subtitle={esEdicion ? 'EDITAR' : 'ALTA'}
       size="lg"
     >
@@ -215,10 +265,10 @@ export function ProductoFormModal({ open, onClose, producto, onSaved }) {
           {errors.nombre && <p className="text-xs text-cockpit-danger mt-1">{errors.nombre}</p>}
         </label>
 
-        {/* Descripción + IA (ocupa 2 cols) */}
+        {/* Descripcion + IA (ocupa 2 cols) */}
         <label className="block md:col-span-2">
           <div className="flex items-center justify-between">
-            <span className="hud-label">Descripción</span>
+            <span className="hud-label">Descripcion</span>
             {puedeIA && (
               <button
                 type="button"
@@ -230,14 +280,14 @@ export function ProductoFormModal({ open, onClose, producto, onSaved }) {
                 {iaBusy === 'descripcion'
                   ? <Loader2 size={12} className="animate-spin" />
                   : <Sparkles size={12} />}
-                IA · Generar
+                IA . Generar
               </button>
             )}
           </div>
           <textarea
             value={form.descripcion}
             onChange={(e) => set('descripcion', e.target.value)}
-            placeholder="Describe el producto…"
+            placeholder="Describe el producto..."
             rows={4}
             className="hud-input mt-1.5 resize-none font-sans"
             disabled={busy}
@@ -247,7 +297,7 @@ export function ProductoFormModal({ open, onClose, producto, onSaved }) {
 
         {/* Precio */}
         <label className="block">
-          <span className="hud-label">Precio (€) *</span>
+          <span className="hud-label">Precio (EUR) *</span>
           <input
             type="number" step="0.01" min="0"
             value={form.precio}
@@ -259,7 +309,7 @@ export function ProductoFormModal({ open, onClose, producto, onSaved }) {
           {errors.precio && <p className="text-xs text-cockpit-danger mt-1">{errors.precio}</p>}
         </label>
 
-        {/* Estado activo (solo en edición) */}
+        {/* Estado activo (solo en edicion) */}
         {esEdicion ? (
           <label className="block">
             <span className="hud-label">Estado</span>
@@ -285,7 +335,7 @@ export function ProductoFormModal({ open, onClose, producto, onSaved }) {
             </div>
           </label>
         ) : (
-          <div /> /* placeholder columna */
+          <div />
         )}
 
         {/* Stock */}
@@ -301,9 +351,9 @@ export function ProductoFormModal({ open, onClose, producto, onSaved }) {
           {errors.stock && <p className="text-xs text-cockpit-danger mt-1">{errors.stock}</p>}
         </label>
 
-        {/* Stock mínimo */}
+        {/* Stock minimo */}
         <label className="block">
-          <span className="hud-label">Stock mínimo</span>
+          <span className="hud-label">Stock minimo</span>
           <input
             type="number" min="0"
             value={form.stockMinimo}
@@ -313,10 +363,10 @@ export function ProductoFormModal({ open, onClose, producto, onSaved }) {
           />
         </label>
 
-        {/* Categoría + IA sugerir */}
+        {/* Categoria + IA sugerir */}
         <label className="block">
           <div className="flex items-center justify-between">
-            <span className="hud-label">Categoría</span>
+            <span className="hud-label">Categoria</span>
             {puedeIA && (
               <button
                 type="button"
@@ -328,7 +378,7 @@ export function ProductoFormModal({ open, onClose, producto, onSaved }) {
                 {iaBusy === 'categoria'
                   ? <Loader2 size={12} className="animate-spin" />
                   : <Tag size={12} />}
-                IA · Sugerir
+                IA . Sugerir
               </button>
             )}
           </div>
@@ -338,7 +388,7 @@ export function ProductoFormModal({ open, onClose, producto, onSaved }) {
             className="hud-input mt-1.5"
             disabled={busy || categorias.loading}
           >
-            <option value="">— sin categoría —</option>
+            <option value="">-- sin categoria --</option>
             {(categorias.data || []).map((c) => (
               <option key={c.id} value={c.id}>{c.nombre}</option>
             ))}
@@ -354,45 +404,85 @@ export function ProductoFormModal({ open, onClose, producto, onSaved }) {
             className="hud-input mt-1.5"
             disabled={busy || proveedores.loading}
           >
-            <option value="">— sin proveedor —</option>
+            <option value="">-- sin proveedor --</option>
             {(proveedores.data || []).map((p) => (
               <option key={p.id} value={p.id}>{p.nombreEmpresa || p.nombre}</option>
             ))}
           </select>
         </label>
 
-        {/* URL Imagen (ocupa 2 cols) */}
-        <label className="block md:col-span-2">
-          <span className="hud-label">URL de imagen</span>
+        {/* Imagen del producto (ocupa 2 cols) */}
+        <div className="md:col-span-2">
+          <span className="hud-label">Imagen del producto</span>
+
           <input
-            type="url"
-            value={form.imagenUrl}
-            onChange={(e) => set('imagenUrl', e.target.value)}
-            placeholder="https://… o /img/algo.jpg"
-            className="hud-input mt-1.5"
-            disabled={busy}
-            maxLength={500}
+            ref={fileInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            onChange={onArchivoElegido}
+            className="hidden"
           />
-          {form.imagenUrl && (
-            <div className="mt-2">
-              <img
-                src={form.imagenUrl}
-                alt="vista previa"
-                className="h-24 w-24 object-cover border border-cockpit-line"
-                onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                onLoad={(e) => { e.currentTarget.style.display = 'block'; }}
-              />
+
+          <div className="mt-1.5 flex items-start gap-4">
+            {/* Preview */}
+            <div className="shrink-0">
+              {tieneImagen ? (
+                <div className="relative">
+                  <img
+                    src={form.imagenUrl}
+                    alt="vista previa"
+                    className="h-28 w-28 object-cover border border-cockpit-line"
+                    onError={(e) => { e.currentTarget.style.opacity = '0.3'; }}
+                  />
+                  <button
+                    type="button"
+                    onClick={quitarImagen}
+                    disabled={busy || subiendoImagen}
+                    className="absolute -top-2 -right-2 h-6 w-6 grid place-items-center
+                               bg-cockpit-danger/90 text-white hover:bg-cockpit-danger
+                               border border-cockpit-danger"
+                    title="Quitar imagen"
+                  >
+                    <X size={12} />
+                  </button>
+                </div>
+              ) : (
+                <div className="h-28 w-28 border border-cockpit-line/40 grid place-items-center">
+                  <ImageOff size={28} className="text-slate-600" />
+                </div>
+              )}
             </div>
-          )}
-        </label>
+
+            {/* Boton subir + info */}
+            <div className="flex-1">
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={busy || subiendoImagen}
+                className="hud-btn hud-btn--cyan !px-4 !py-2"
+              >
+                {subiendoImagen
+                  ? <Loader2 size={14} className="animate-spin" />
+                  : <Upload size={14} />}
+                {subiendoImagen
+                  ? 'Subiendo...'
+                  : tieneImagen ? 'Cambiar imagen' : 'Subir imagen'}
+              </button>
+              <p className="hud-readout mt-2 opacity-70 leading-relaxed">
+                JPG, PNG o WEBP . Maximo 5 MB.<br />
+                Se recorta y normaliza a 600x600 automaticamente.
+              </p>
+            </div>
+          </div>
+        </div>
 
         {/* Botones */}
         <div className="md:col-span-2 flex gap-3 justify-end mt-2 pt-4 border-t border-cockpit-line">
           <button type="button" onClick={onClose} className="hud-btn hud-btn--cyan !px-4 !py-2" disabled={busy}>
             Cancelar
           </button>
-          <button type="submit" className="hud-btn !px-5 !py-2" disabled={busy}>
-            {busy ? 'Guardando…' : (esEdicion ? 'Guardar cambios' : 'Crear producto')}
+          <button type="submit" className="hud-btn !px-5 !py-2" disabled={busy || subiendoImagen}>
+            {busy ? 'Guardando...' : (esEdicion ? 'Guardar cambios' : 'Crear producto')}
           </button>
         </div>
       </form>

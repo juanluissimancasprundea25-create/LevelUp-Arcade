@@ -4,9 +4,11 @@ import com.leveluparcade.dto.request.AjusteStockRequest;
 import com.leveluparcade.dto.request.ProductoCreateRequest;
 import com.leveluparcade.dto.request.ProductoUpdateRequest;
 import com.leveluparcade.dto.response.ProductoResponse;
+import com.leveluparcade.service.ImagenProductoService;
 import com.leveluparcade.service.ProductoService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -19,24 +21,29 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Map;
 
 /**
  * API REST para la gestion de productos desde el panel admin.
  *
- * <p>Lectura abierta a ADMIN y EMPLEADO. Escritura, ajuste de stock y
- * borrado restringidos a ADMIN.
+ * <p>Lectura abierta a ADMIN y EMPLEADO. Escritura, ajuste de stock,
+ * subida de imagen y borrado restringidos a ADMIN.
  */
 @RestController
 @RequestMapping("/api/productos")
 public class ProductoApiController {
 
     private final ProductoService productoService;
+    private final ImagenProductoService imagenProductoService;
 
-    public ProductoApiController(ProductoService productoService) {
+    public ProductoApiController(ProductoService productoService,
+                                 ImagenProductoService imagenProductoService) {
         this.productoService = productoService;
+        this.imagenProductoService = imagenProductoService;
     }
 
     @GetMapping
@@ -99,5 +106,30 @@ public class ProductoApiController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void eliminar(@PathVariable Long id) {
         productoService.eliminar(id);
+    }
+
+    /**
+     * Subida de imagen de producto. La imagen se valida (MIME, tamano)
+     * y se recorta a 600x600 JPEG por {@link ImagenProductoService}. El
+     * fichero se guarda en disco bajo {@code uploads/productos/} y se
+     * devuelve la URL relativa lista para usar en {@code <img src=...>}.
+     *
+     * <p>El cliente debe luego enviar ese valor en {@code imagenUrl} al
+     * crear o actualizar el producto.
+     *
+     * @param file fichero multipart (campo {@code file}).
+     * @return JSON con la clave {@code imagenUrl} apuntando a
+     *         {@code /img/productos/{uuid}.jpg}.
+     */
+    @PostMapping(value = "/imagen", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Map<String, String>> subirImagen(
+            @RequestParam("file") MultipartFile file) {
+
+        String pathRelativo = imagenProductoService.guardar(file);
+        // guardar(...) devuelve "productos/uuid.jpg". Prefijamos /img/
+        // para que el front pueda usar la cadena directamente como src.
+        String urlPublica = "/img/" + pathRelativo;
+        return ResponseEntity.ok(Map.of("imagenUrl", urlPublica));
     }
 }

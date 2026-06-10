@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   Plus, Search, RefreshCw, Edit, Trash2, PackagePlus,
@@ -18,32 +19,62 @@ import { ConfirmModal } from '../../components/admin/ConfirmModal.jsx';
  * Funcionalidad:
  *  - Tabla con todos los productos
  *  - Buscador en vivo (filtra cliente-side por SKU/nombre/descripcion)
- *  - Filtros: categoría, proveedor, "solo stock bajo"
+ *  - Filtros: categoria, proveedor, "solo stock bajo"
  *  - Crear / Editar / Borrar (solo ADMIN)
  *  - Ajustar stock (solo ADMIN)
  *  - Refrescar manual
+ *
+ * Soporta query params:
+ *  - ?bajoStock=true   -> activa el filtro de stock bajo al cargar
+ *  - ?stockId={id}     -> abre el modal de ajuste de stock de ese producto
+ *                          (usado desde la alerta de stock del dashboard)
  */
 export default function Productos() {
   const { user } = useAuth();
   const esAdmin = user?.rol === 'ADMIN';
   const toast = useToast();
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  // Filtros
+  // Filtros (inicializados desde query params)
   const [busqueda, setBusqueda]   = useState('');
   const [catId, setCatId]         = useState('');
   const [provId, setProvId]       = useState('');
-  const [bajoStock, setBajoStock] = useState(false);
+  const [bajoStock, setBajoStock] = useState(
+    searchParams.get('bajoStock') === 'true'
+  );
 
   // Modales
-  const [editando, setEditando] = useState(null);   // null=cerrado | {} crear | {producto} editar
-  const [stockProd, setStockProd] = useState(null); // producto para ajuste
-  const [borrarProd, setBorrarProd] = useState(null); // producto a confirmar borrado
+  const [editando, setEditando] = useState(null);
+  const [stockProd, setStockProd] = useState(null);
+  const [borrarProd, setBorrarProd] = useState(null);
   const [borrando, setBorrando] = useState(false);
 
   // Carga de datos
   const productos   = useFetch('/productos');
   const categorias  = useFetch('/categorias');
   const proveedores = useFetch('/proveedores');
+
+  // Si la URL trae ?stockId=N, abrimos el modal de stock para ese producto
+  // en cuanto los productos esten cargados. Luego limpiamos el query param
+  // para que un refresco manual no reabra el modal sin razon.
+  useEffect(() => {
+    const stockId = searchParams.get('stockId');
+    if (!stockId) return;
+    if (!productos.data) return;
+
+    const id = Number(stockId);
+    const objetivo = productos.data.find(p => p.id === id);
+    if (objetivo) {
+      setStockProd(objetivo);
+    } else {
+      toast.err('Ese producto ya no esta disponible');
+    }
+    // Limpia el query param sin recargar la pagina
+    const params = new URLSearchParams(searchParams);
+    params.delete('stockId');
+    setSearchParams(params, { replace: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [productos.data]);
 
   // Filtrado client-side
   const filtrados = useMemo(() => {
@@ -95,13 +126,13 @@ export default function Productos() {
         className="flex items-end justify-between mb-5 pt-2 gap-4 flex-wrap"
       >
         <div>
-          <p className="hud-label text-cockpit-cyan/70">// MÓDULO</p>
+          <p className="hud-label text-cockpit-cyan/70">// MODULO</p>
           <h1 className="font-display text-2xl xl:text-3xl tracking-wider text-white mt-1">
             Productos
           </h1>
           <p className="hud-readout mt-1">
             {productos.loading
-              ? 'Sincronizando…'
+              ? 'Sincronizando...'
               : `${filtrados.length} de ${productos.data?.length || 0} productos`}
           </p>
         </div>
@@ -137,7 +168,7 @@ export default function Productos() {
               type="text"
               value={busqueda}
               onChange={(e) => setBusqueda(e.target.value)}
-              placeholder="Buscar SKU, nombre o descripción…"
+              placeholder="Buscar SKU, nombre o descripcion..."
               className="hud-input !pl-9"
             />
             {busqueda && (
@@ -151,13 +182,13 @@ export default function Productos() {
             )}
           </div>
 
-          {/* Categoría */}
+          {/* Categoria */}
           <select
             value={catId}
             onChange={(e) => setCatId(e.target.value)}
             className="hud-input"
           >
-            <option value="">Todas las categorías</option>
+            <option value="">Todas las categorias</option>
             {(categorias.data || []).map((c) => (
               <option key={c.id} value={c.id}>{c.nombre}</option>
             ))}
@@ -213,7 +244,7 @@ export default function Productos() {
                 <th className="hud-label text-left p-3 w-12"></th>
                 <th className="hud-label text-left p-3">SKU</th>
                 <th className="hud-label text-left p-3">Nombre</th>
-                <th className="hud-label text-left p-3 hidden md:table-cell">Categoría</th>
+                <th className="hud-label text-left p-3 hidden md:table-cell">Categoria</th>
                 <th className="hud-label text-right p-3">Precio</th>
                 <th className="hud-label text-right p-3">Stock</th>
                 <th className="hud-label text-center p-3 hidden lg:table-cell">Estado</th>
@@ -235,8 +266,8 @@ export default function Productos() {
                     <Package size={36} className="mx-auto mb-3 opacity-30 text-slate-500" />
                     <p className="hud-label text-slate-500">
                       {productos.data?.length === 0
-                        ? '// NO HAY PRODUCTOS · CREA EL PRIMERO'
-                        : '// NINGÚN RESULTADO CON ESOS FILTROS'}
+                        ? '// NO HAY PRODUCTOS . CREA EL PRIMERO'
+                        : '// NINGUN RESULTADO CON ESOS FILTROS'}
                     </p>
                   </td>
                 </tr>
@@ -274,8 +305,8 @@ export default function Productos() {
         open={!!borrarProd}
         onClose={() => setBorrarProd(null)}
         onConfirm={confirmarBorrado}
-        title={`¿Eliminar "${borrarProd?.nombre}"?`}
-        message="Esta acción es permanente. Si el producto está asociado a pedidos antiguos, considera marcarlo como Inactivo en lugar de borrarlo."
+        title={`Eliminar "${borrarProd?.nombre}"?`}
+        message="Esta accion es permanente. Si el producto esta asociado a pedidos antiguos, considera marcarlo como Inactivo en lugar de borrarlo."
         busy={borrando}
       />
     </div>
@@ -319,12 +350,12 @@ function ProductoRow({ producto: p, esAdmin, onEditar, onAjustarStock, onBorrar 
         <div className="text-sm text-white">{p.nombre}</div>
         {p.descripcion && (
           <div className="text-xs text-slate-500 truncate max-w-xs">
-            {p.descripcion.slice(0, 80)}{p.descripcion.length > 80 ? '…' : ''}
+            {p.descripcion.slice(0, 80)}{p.descripcion.length > 80 ? '...' : ''}
           </div>
         )}
       </td>
 
-      {/* Categoría */}
+      {/* Categoria */}
       <td className="p-3 hidden md:table-cell">
         {p.categoriaNombre ? (
           <span className="inline-block px-2 py-0.5 text-[10px] tracking-widest uppercase
@@ -332,13 +363,13 @@ function ProductoRow({ producto: p, esAdmin, onEditar, onAjustarStock, onBorrar 
             {p.categoriaNombre}
           </span>
         ) : (
-          <span className="text-slate-600 text-xs">—</span>
+          <span className="text-slate-600 text-xs">-</span>
         )}
       </td>
 
       {/* Precio */}
       <td className="p-3 text-right font-mono text-cockpit-cyan">
-        {Number(p.precio).toFixed(2)} €
+        {Number(p.precio).toFixed(2)} EUR
       </td>
 
       {/* Stock */}
