@@ -7,10 +7,14 @@ import { useToast } from '../Toast.jsx';
  * Panel principal del chat. Muestra:
  *  - Cabecera con el cliente seleccionado
  *  - Lista de mensajes con burbujas (yo a la derecha, otro a la izquierda)
- *  - Input de envío con Enter para mandar
+ *  - Input de envio con Enter para mandar
  *
  * Polling cada 4 segundos para cargar nuevos mensajes.
- * Auto-scroll al fondo cuando llegan mensajes nuevos si ya estás abajo.
+ * Auto-scroll al fondo cuando llegan mensajes nuevos si ya estas abajo.
+ *
+ * Marca automaticamente como leidos los mensajes del cliente al cargarlos
+ * (llama a PATCH /chat/mensajes/{id}/leido por cada uno) y refresca la
+ * lista de conversaciones para que baje el contador de no-leidos.
  */
 export function ChatPanel({ clienteUsuarioId, conversacion, miId, onEnviado }) {
   const [mensajes, setMensajes] = useState([]);
@@ -20,6 +24,15 @@ export function ChatPanel({ clienteUsuarioId, conversacion, miId, onEnviado }) {
   const [mostrarBotonBajar, setMostrarBotonBajar] = useState(false);
   const scrollRef = useRef(null);
   const toast = useToast();
+
+  // Memoria de mensajes ya marcados como leidos en esta sesion
+  // (para no spamear PATCH en cada poll).
+  const yaMarcadosRef = useRef(new Set());
+
+  // Al cambiar de conversacion limpiamos la memoria de "ya marcados"
+  useEffect(() => {
+    yaMarcadosRef.current = new Set();
+  }, [clienteUsuarioId]);
 
   // Cargar mensajes y poll cada 4s
   useEffect(() => {
@@ -50,6 +63,44 @@ export function ChatPanel({ clienteUsuarioId, conversacion, miId, onEnviado }) {
     const iv = setInterval(() => cargar(true), 4000);
     return () => { cancelado = true; clearInterval(iv); };
   }, [clienteUsuarioId]);
+
+  // Marcado automatico de no-leidos: cuando se cargan/refrescan los mensajes,
+  // detecta los recibidos (no mios) que aun no estan leidos y los marca.
+  // Luego refresca la lista de conversaciones para que el contador baje.
+  useEffect(() => {
+    if (!clienteUsuarioId || !miId || mensajes.length === 0) return;
+
+    const noLeidos = mensajes.filter(m =>
+      !m.leido &&
+      m.remitenteId !== miId &&
+      !yaMarcadosRef.current.has(m.id)
+    );
+
+    if (noLeidos.length === 0) return;
+
+    // Marca localmente para que la UI lo refleje al instante (los checks
+    // de leido cambian) sin esperar al PATCH.
+    setMensajes((arr) =>
+      arr.map(m =>
+        noLeidos.some(nl => nl.id === m.id) ? { ...m, leido: true } : m
+      )
+    );
+
+    // Llama al endpoint por cada mensaje no leido y registra que ya
+    // se intento, para no repetir en proximos polls.
+    let huboExito = false;
+    Promise.allSettled(
+      noLeidos.map(m => {
+        yaMarcadosRef.current.add(m.id);
+        return api.patch(`/chat/mensajes/${m.id}/leido`);
+      })
+    ).then(resultados => {
+      huboExito = resultados.some(r => r.status === 'fulfilled');
+      // Si al menos uno se marco bien, refresca la lista para que el
+      // contador "X sin leer" del padre se actualice.
+      if (huboExito && onEnviado) onEnviado();
+    });
+  }, [mensajes, clienteUsuarioId, miId, onEnviado]);
 
   // Auto-scroll al fondo cuando cambian los mensajes (si ya estabas abajo)
   useEffect(() => {
@@ -105,14 +156,14 @@ export function ChatPanel({ clienteUsuarioId, conversacion, miId, onEnviado }) {
     }
   }
 
-  // === Estado vacío ===
+  // === Estado vacio ===
   if (!clienteUsuarioId) {
     return (
       <div className="hud-panel flex flex-col h-full items-center justify-center text-center p-10">
         <MessageSquare size={56} className="opacity-20 text-slate-500 mb-4" />
-        <p className="hud-label text-slate-500">// SIN CONVERSACIÓN SELECCIONADA</p>
+        <p className="hud-label text-slate-500">// SIN CONVERSACION SELECCIONADA</p>
         <p className="text-xs text-slate-600 mt-2 max-w-sm">
-          Selecciona una conversación de la lista para ver los mensajes y responder al cliente.
+          Selecciona una conversacion de la lista para ver los mensajes y responder al cliente.
         </p>
       </div>
     );
@@ -153,8 +204,8 @@ export function ChatPanel({ clienteUsuarioId, conversacion, miId, onEnviado }) {
           </div>
         ) : mensajes.length === 0 ? (
           <div className="text-center py-10">
-            <p className="hud-label text-slate-600">// SIN MENSAJES TODAVÍA</p>
-            <p className="text-xs text-slate-700 mt-1">Escribe abajo para empezar la conversación.</p>
+            <p className="hud-label text-slate-600">// SIN MENSAJES TODAVIA</p>
+            <p className="text-xs text-slate-700 mt-1">Escribe abajo para empezar la conversacion.</p>
           </div>
         ) : (
           mensajes.map((m, i) => (
@@ -186,7 +237,7 @@ export function ChatPanel({ clienteUsuarioId, conversacion, miId, onEnviado }) {
           value={texto}
           onChange={(e) => setTexto(e.target.value)}
           onKeyDown={onKeyDown}
-          placeholder="Escribe un mensaje y pulsa Enter…"
+          placeholder="Escribe un mensaje y pulsa Enter..."
           className="hud-input flex-1"
           maxLength={4000}
           disabled={enviando}
@@ -198,7 +249,7 @@ export function ChatPanel({ clienteUsuarioId, conversacion, miId, onEnviado }) {
           title="Enviar (Enter)"
         >
           <Send size={14} />
-          <span className="hidden sm:inline">{enviando ? 'Enviando…' : 'Enviar'}</span>
+          <span className="hidden sm:inline">{enviando ? 'Enviando...' : 'Enviar'}</span>
         </button>
       </div>
     </div>
